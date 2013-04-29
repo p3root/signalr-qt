@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <Transports/LongPollingTransport.h>
 #include <Transports/ServerSentEventsTransport.h>
+#include <Helper/Helper.h>
 
 int main(int argc, char *argv[])
 {
@@ -27,18 +28,17 @@ int main(int argc, char *argv[])
     HubProxy* proxy = connection.createHubProxy("Chat");
     connection.start(tansport);
 
-    sleep(2);
-
+    Helper::sleep(2000);
 
     proxy->invoke("send", "c++: test123");
 
-    sleep(1);
+    Helper::sleep(1000);
     proxy->invoke("send", "c++: asdf");
     proxy->invoke("send", "c++: testasdf");
     proxy->invoke("send", "c++: asdfx3");
     proxy->invoke("send", "c++: asdfxcv23");
     proxy->invoke("send", "c++: asdfxv");
-    sleep(10);
+    Helper::sleep(10000);
 
 
 
