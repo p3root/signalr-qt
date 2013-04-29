@@ -1,0 +1,131 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/signalr/!svn/ver/7/trunk/Cpp/SignalRClient/Transports
+END
+FakeHttpClient.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/signalr/!svn/ver/11/trunk/Cpp/SignalRClient/Transports/FakeHttpClient.h
+END
+HttpClient.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClient/Transports/HttpClient.cpp
+END
+HttpClient.h
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClient/Transports/HttpClient.h
+END
+DefaultHttpClient.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClient/Transports/DefaultHttpClient.cpp
+END
+AutoTransport.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClient/Transports/AutoTransport.cpp
+END
+HttpRequest.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/signalr/!svn/ver/11/trunk/Cpp/SignalRClient/Transports/HttpRequest.cpp
+END
+DefaultHttpClient.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClient/Transports/DefaultHttpClient.h
+END
+AutoTransport.h
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/signalr/!svn/ver/11/trunk/Cpp/SignalRClient/Transports/AutoTransport.h
+END
+HttpBasedTransport.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClient/Transports/HttpBasedTransport.cpp
+END
+HttpEventStream.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClient/Transports/HttpEventStream.cpp
+END
+HttpRequest.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/signalr/!svn/ver/11/trunk/Cpp/SignalRClient/Transports/HttpRequest.h
+END
+HttpResponse.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/signalr/!svn/ver/11/trunk/Cpp/SignalRClient/Transports/HttpResponse.cpp
+END
+HttpBasedTransport.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClient/Transports/HttpBasedTransport.h
+END
+LongPollingTransport.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClient/Transports/LongPollingTransport.cpp
+END
+ServerSentEventsTransport.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClient/Transports/ServerSentEventsTransport.cpp
+END
+HttpEventStream.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClient/Transports/HttpEventStream.h
+END
+NegotiateResponse.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/signalr/!svn/ver/11/trunk/Cpp/SignalRClient/Transports/NegotiateResponse.h
+END
+HttpResponse.h
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/signalr/!svn/ver/11/trunk/Cpp/SignalRClient/Transports/HttpResponse.h
+END
+FakeHttpClient.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/signalr/!svn/ver/11/trunk/Cpp/SignalRClient/Transports/FakeHttpClient.cpp
+END
+LongPollingTransport.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClient/Transports/LongPollingTransport.h
+END
+ServerSentEventsTransport.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClient/Transports/ServerSentEventsTransport.h
+END

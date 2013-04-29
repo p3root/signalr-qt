@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/signalr/!svn/ver/7/trunk/Cpp/SignalRClientTest
+END
+main.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/signalr/!svn/ver/13/trunk/Cpp/SignalRClientTest/main.cpp
+END
+MyConnectionHandler.h
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/signalr/!svn/ver/11/trunk/Cpp/SignalRClientTest/MyConnectionHandler.h
+END
+SignalRClientTest.pro
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/signalr/!svn/ver/10/trunk/Cpp/SignalRClientTest/SignalRClientTest.pro
+END
+MyConnectionHandler.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/signalr/!svn/ver/11/trunk/Cpp/SignalRClientTest/MyConnectionHandler.cpp
+END

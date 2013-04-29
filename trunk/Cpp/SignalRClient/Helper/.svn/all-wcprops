@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/signalr/!svn/ver/7/trunk/Cpp/SignalRClient/Helper
+END
+TransportHelper.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/signalr/!svn/ver/12/trunk/Cpp/SignalRClient/Helper/TransportHelper.cpp
+END
+Helper.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/signalr/!svn/ver/12/trunk/Cpp/SignalRClient/Helper/Helper.cpp
+END
+TransportHelper.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/signalr/!svn/ver/12/trunk/Cpp/SignalRClient/Helper/TransportHelper.h
+END
+Helper.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/signalr/!svn/ver/12/trunk/Cpp/SignalRClient/Helper/Helper.h
+END
