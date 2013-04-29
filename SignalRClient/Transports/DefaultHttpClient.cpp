@@ -22,7 +22,11 @@ void DefaultHttpClient::get(QString url, HTTP_REQUEST_CALLBACK httpRequestCallba
     QUrl decodedUrl(url);
     QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(decodedUrl.port()) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl);
     QUrl reqUrl = QUrl();
-    reqUrl.setEncodedUrl(QByteArray().append(encodedUrl));
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    reqUrl.setUrl(QByteArray().append(encodedUrl));
+#else
+     reqUrl.setEncodedUrl(QByteArray().append(encodedUrl));
+#endif
 
     QNetworkRequest req = QNetworkRequest(reqUrl);
     req.setRawHeader("User-Agent", "SignalR.Client");
@@ -68,7 +72,11 @@ void DefaultHttpClient::post(QString url, QMap<QString, QString> arguments, HTTP
     QUrl decodedUrl(url);
     QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(decodedUrl.port()) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl);
     QUrl reqUrl = QUrl();
-    reqUrl.setEncodedUrl(QByteArray().append(encodedUrl));
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    reqUrl.setUrl(QByteArray().append(encodedUrl));
+#else
+     reqUrl.setEncodedUrl(QByteArray().append(encodedUrl));
+#endif
 
     QNetworkRequest req(reqUrl);
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");

@@ -11,7 +11,13 @@ void HttpEventStream::get(QUrl url, HTTP_EVENT_REQUEST_CALLBACK callback, void* 
 
     _sock = new QTcpSocket();
     QTextStream os(_sock);
+
+#ifdef Q_OS_WIN32
+    QString host = QString(url.host());
+#else
     QString host = QString(url.encodedHost());
+#endif
+
 
     _sock->connectToHost(QHostAddress(host), url.port());
     if(_sock->waitForConnected())
