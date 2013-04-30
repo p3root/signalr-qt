@@ -18,10 +18,6 @@ void LongPollingTransport::start(Connection* connection, START_CALLBACK startCal
     _state = state;
     mHttpClient->moveToThread(this);
     QThread::start();
-
-
-
-    // TODO: Need to set a timer here to trigger connected after 2 seconds or so
 }
 
 void LongPollingTransport::run()
@@ -32,8 +28,6 @@ void LongPollingTransport::run()
     {
         url += "/connect";
     }
-
-    // TODO: Handle reconnect
 
     url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 

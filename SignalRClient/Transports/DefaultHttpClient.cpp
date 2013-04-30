@@ -39,7 +39,6 @@ void DefaultHttpClient::get(QString url, HTTP_REQUEST_CALLBACK httpRequestCallba
 
     if(reply->error() == 0)
     {
-        usleep(1000);
         QString data = QString( reply->readAll());
 
         reply->deleteLater();

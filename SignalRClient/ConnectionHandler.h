@@ -15,7 +15,7 @@ public:
 
     virtual void onStateChanged(Connection::State old_state, Connection::State new_state) = 0;
     virtual void onError(SignalException error) = 0;
-    virtual void onReceived(QString data) = 0;
+    virtual void onReceived(QVariant data) = 0;
 };
 
 #endif

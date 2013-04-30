@@ -22,23 +22,23 @@ int main(int argc, char *argv[])
 
     ConnectionHandler* handler = new MyConnectionHandler();
     HttpClient* client = new DefaultHttpClient();
-    ClientTransport* tansport = new LongPollingTransport(client);
+    ClientTransport* tansport = new ServerSentEventsTransport(client);
 
     HubConnection connection = HubConnection("http://192.168.0.231:8080/signalr", handler);
     HubProxy* proxy = connection.createHubProxy("Chat");
     connection.start(tansport);
 
-    Helper::sleep(2000);
+    Helper::wait(2000);
 
     proxy->invoke("send", "c++: test123");
 
-    Helper::sleep(1000);
+    Helper::wait(1000);
     proxy->invoke("send", "c++: asdf");
     proxy->invoke("send", "c++: testasdf");
     proxy->invoke("send", "c++: asdfx3");
     proxy->invoke("send", "c++: asdfxcv23");
     proxy->invoke("send", "c++: asdfxv");
-    Helper::sleep(10000);
+    Helper::wait(10000);
 
 
 

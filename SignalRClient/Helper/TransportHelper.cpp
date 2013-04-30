@@ -82,7 +82,48 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
     Q_UNUSED(raw);
     Q_UNUSED(timedOut);
     Q_UNUSED(disconnected);
-    // Parse some JSON stuff
 
-    connection->onReceived(raw);
+
+    QVariant var = QtExtJson::parse(raw);
+    if(var.convert(QVariant::Map))
+    {
+        QVariantMap map = var.value<QVariantMap>();
+
+        if(map.contains("T"))
+        {
+            if(map["T"].value<int>() == 1)
+            {
+                *timedOut = true;
+            }
+        }
+
+        if(map.contains("D"))
+        {
+            if(map["D"].value<int>() == 1)
+            {
+                *disconnected = true;
+            }
+        }
+
+        if(map.contains("I"))
+        {
+            connection->onReceived(var);
+        }
+
+        if(*disconnected)
+            return;
+
+        if(map.contains("M"))
+        {
+            if(map["M"].convert(QVariant::List))
+            {
+                QVariantList lst = map["M"].value<QVariantList>();
+
+                foreach(QVariant cur, lst)
+                {
+                    connection->onReceived(cur);
+                }
+            }
+        }
+    }
 }

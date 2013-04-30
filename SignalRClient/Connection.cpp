@@ -82,7 +82,7 @@ void Connection::onError(SignalException error)
     _handler->onError(error);
 }
 
-void Connection::onReceived(QString data)
+void Connection::onReceived(QVariant data)
 {
     _handler->onReceived(data);
 }

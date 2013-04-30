@@ -13,11 +13,11 @@ ServerSentEventsTransport::~ServerSentEventsTransport(void)
 
 void ServerSentEventsTransport::start(Connection* connection, START_CALLBACK startCallback, QString, void* state)
 {
-   _connection = connection;
-   _startCallback = startCallback;
-   _state = state;
+    _connection = connection;
+    _startCallback = startCallback;
+    _state = state;
 
-   QThread::start();
+    QThread::start();
 }
 
 void ServerSentEventsTransport::abort(Connection*)
@@ -120,10 +120,12 @@ void ServerSentEventsTransport::onReadLine(QString data, SignalException* error,
     }
     else
     {
+        data = data.remove(0, data.indexOf("data: ")+6);
+        data = data.simplified();
         TransportHelper::processMessages(readInfo->connection, data, &timedOut, &disconnected);
     }
 
-    if(disconnected) 
+    if(disconnected)
     {
         readInfo->connection->stop();
     }
@@ -131,6 +133,8 @@ void ServerSentEventsTransport::onReadLine(QString data, SignalException* error,
     {
         readInfo->transport->readLoop(*readInfo->httpResponse, readInfo->connection, NULL);
     }
+
+    data = "";
 
 
     delete readInfo;

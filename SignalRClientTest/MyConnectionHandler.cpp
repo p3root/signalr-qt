@@ -15,7 +15,7 @@ void MyConnectionHandler::onError(SignalException error)
     QLOG_DEBUG() << error.what();
 }
 
-void MyConnectionHandler::onReceived(QString data)
+void MyConnectionHandler::onReceived(QVariant data)
 {
     QLOG_DEBUG() << data;
 }

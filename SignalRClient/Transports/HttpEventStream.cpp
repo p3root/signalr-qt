@@ -59,6 +59,7 @@ void HttpEventStream::readLine(HttpResponse::READ_CALLBACK readCallback, void *s
     {
         if(!_isAborting && _sock->error() != 0)
         {
+            //TODO READ correct!!
             QString response = QString(QByteArray(_sock->readAll()));
             if(_isFirstReponse)
             {

@@ -45,7 +45,7 @@ public:
     bool changeState(State oldState, State newState);
     bool ensureReconnecting();
     void onError(SignalException exp);
-    virtual void onReceived(QString data);
+    virtual void onReceived(QVariant data);
 
     void setConnectionState(NegotiateResponse negotiateResponse);
     virtual QString onSending();

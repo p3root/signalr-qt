@@ -10,7 +10,7 @@ public:
     static QString encode(QString val);
     static QString getEncodedQueryString(QUrl);
 
-    static void sleep(int milliseconds);
+    static void wait(int milliseconds);
 };
 
 #endif // HELPER_H
