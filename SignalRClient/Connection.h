@@ -6,6 +6,8 @@
 #include "Transports/HttpClient.h"
 #include "Transports/NegotiateResponse.h"
 #include "ClientTransport.h"
+#include <QDateTime>
+#include <QObject>
 
 class ConnectionHandler;
 class ClientTransport;
@@ -25,9 +27,9 @@ public:
     Connection(QString url, ConnectionHandler* handler);
     ~Connection(void);
 
-    void start();
-    void start(ClientTransport* tranport);
-    void start(HttpClient* client);
+    void start(bool autoReconnect = false);
+    void start(ClientTransport* tranport, bool autoReconnect = false);
+    void start(HttpClient* client, bool autoReconnect = false);
     virtual void stop();
     void send(QString data);
     
@@ -40,15 +42,18 @@ public:
     QString getMessageId();
     int getPort();
     quint64 getCount();
+    bool getAutoReconnect();
 
-    // Transport API
     bool changeState(State oldState, State newState);
     bool ensureReconnecting();
     void onError(SignalException exp);
     virtual void onReceived(QVariant data);
 
+
     void setConnectionState(NegotiateResponse negotiateResponse);
     virtual QString onSending();
+    void setHeartbeat() { _hearbeat = QDateTime::currentDateTime(); }
+    const QDateTime getLastHeartbeat() { return _hearbeat; }
 
 protected:
      State _state;
@@ -63,6 +68,8 @@ private:
     ConnectionHandler* _handler;
     quint64 _count;
     HttpClient *_httpClient;
+    QDateTime _hearbeat;
+    bool _autoReconnect;
 
     static void onTransportStartCompleted(SignalException* error, void* state);
     static void onNegotiateCompleted(NegotiateResponse* negotiateResponse, SignalException* error, void* state);

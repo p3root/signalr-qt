@@ -17,9 +17,11 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp \
-           MyConnectionHandler.cpp
+           MyConnectionHandler.cpp \
+    Client.cpp
 
-HEADERS += MyConnectionHandler.h
+HEADERS += MyConnectionHandler.h \
+    Client.h
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ThirdParty/QtExtLog/release/ -lQtExtLog

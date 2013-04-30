@@ -1,14 +1,14 @@
 #include "HttpEventStream.h"
 #include "Helper/Helper.h"
+#include "Transports/ServerSentEventsTransport.h"
 
-HttpEventStream::HttpEventStream() : _sock(0), _isFirstReponse(true), _isAborting(false)
+HttpEventStream::HttpEventStream() : _sock(0), _isFirstReponse(true)
 {
-
+    _isAborting = false;
 }
 
 void HttpEventStream::get(QUrl url, HTTP_EVENT_REQUEST_CALLBACK callback, void* state)
 {
-
     _sock = new QTcpSocket();
     QTextStream os(_sock);
 
@@ -25,8 +25,8 @@ void HttpEventStream::get(QUrl url, HTTP_EVENT_REQUEST_CALLBACK callback, void* 
         _sock->setSocketOption(QAbstractSocket::KeepAliveOption,1);
 
         QString getRequest = QString("%1 %2 %3").arg("GET", url.path() +"?"+ Helper::getEncodedQueryString(url), "HTTP/1.1\r\n");
-        QLOG_DEBUG() << getRequest;
 
+        //prepare http request
         os << QByteArray().append(getRequest);
         os << "Host: " << host << ":" << url.port() << "\r\n";
         os << "User-Agent: SignalR.Client\r\n";
@@ -38,15 +38,20 @@ void HttpEventStream::get(QUrl url, HTTP_EVENT_REQUEST_CALLBACK callback, void* 
     }
     else
     {
-        QLOG_DEBUG() << _sock->errorString();
+        callback(*this, new SignalException(_sock->errorString(), SignalException::ConnectionRefusedError), state);
+        QLOG_ERROR() << "EventStream Error:" << _sock->errorString();
     }
 
 }
 
 void HttpEventStream::abort()
 {
+
+}
+
+void HttpEventStream::closeConnection()
+{
     _isAborting = true;
-    QLOG_DEBUG() << "HttpEventStream is closing...";
 }
 
 
@@ -54,17 +59,11 @@ void HttpEventStream::readLine(HttpResponse::READ_CALLBACK readCallback, void *s
 {
     if(_sock == 0)
         return;
-
+    //TODO: error implement handling
     if(_sock->waitForReadyRead(-1))
     {
         if(!_isAborting && _sock->error() != 0)
         {
-            /*QString test = QString(QByteArray(_sock->readAll()));
-            QLOG_DEBUG() << test;
-            readCallback(test, 0, state);
-            return;*/
-
-
             if(_isFirstReponse)
             {
                 //read http header
@@ -93,19 +92,32 @@ void HttpEventStream::readLine(HttpResponse::READ_CALLBACK readCallback, void *s
             readCallback("", new SignalException("", SignalException::EventStreamSocketLost), state);
         }
     }
+    else
+    {
+        _sock->close();
+        _sock->deleteLater();
+        readCallback("", new SignalException("", SignalException::EventStreamSocketLost), state);
+    }
 }
 
 QString HttpEventStream::readPackage(QString val)
 {
     QString packetSize;
+    int count = 0;
     while(!packetSize.endsWith("\r\n"))
     {
+        if(packetSize.isEmpty() && count >= 10)
+            return "";
         packetSize += QString(_sock->read(1));
+        count++;
     }
 
     packetSize = packetSize.simplified();
     bool ok;
     int size = packetSize.toInt(&ok, 16);
+
+    if(!ok)
+        return "";
 
     QString packetLine;
     while(packetLine.length() < size+2)
@@ -121,7 +133,6 @@ QString HttpEventStream::readPackage(QString val)
     }
 
     return readPackage(val);
-
-
 }
+
 

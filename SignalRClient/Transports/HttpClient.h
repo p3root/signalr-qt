@@ -20,6 +20,8 @@ public:
 
     virtual void get(QString url, HTTP_REQUEST_CALLBACK httpRequestCallback, void* state = 0) = 0;
     virtual void post(QString url, QMap<QString, QString> arguments, HTTP_REQUEST_CALLBACK httpRequestCallback, void* state = 0) = 0;
+
+    virtual void abort()=0;
 };
 
 #endif

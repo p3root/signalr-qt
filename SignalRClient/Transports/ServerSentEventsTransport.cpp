@@ -1,7 +1,7 @@
 #include "ServerSentEventsTransport.h"
 #include "Helper/Helper.h"
 
-ServerSentEventsTransport::ServerSentEventsTransport(HttpClient* httpClient) : HttpBasedTransport(httpClient)
+ServerSentEventsTransport::ServerSentEventsTransport(HttpClient* httpClient) : HttpBasedTransport(httpClient), _eventStream(0)
 {
 
 }
@@ -23,12 +23,12 @@ void ServerSentEventsTransport::start(Connection* connection, START_CALLBACK sta
 void ServerSentEventsTransport::abort(Connection*)
 {
     _eventStream->abort();
+    _eventStream->deleteLater();
 }
 
 void ServerSentEventsTransport::stop(Connection*)
 {
     _eventStream->abort();
-
 }
 
 void ServerSentEventsTransport::run()
@@ -50,6 +50,10 @@ void ServerSentEventsTransport::run()
     requestInfo->data = _connection->onSending();
 
     QUrl qurl = QUrl(url);
+
+    if(_eventStream)
+        delete _eventStream;
+
     _eventStream = new HttpEventStream();
     _eventStream->get(qurl, &ServerSentEventsTransport::onStartHttpResponse, requestInfo);
 }
@@ -71,7 +75,19 @@ void ServerSentEventsTransport::onStartHttpResponse(HttpResponse& httpResponse, 
     }
     else
     {
-        requestInfo->callback(error, requestInfo->callbackState);
+        if(requestInfo->connection->getAutoReconnect())
+        {
+            QLOG_DEBUG() << "ServerSentEventsTransport: Could not establish connection...try it again";
+
+            Helper::wait(2);
+            ((ServerSentEventsTransport*)requestInfo->transport)->run();
+            return;
+        }
+        else
+        {
+            QLOG_DEBUG() << "ServerSentEventsTransport: (autoconnect=true) Could not establish connection...will not try it again";
+            requestInfo->callback(error, requestInfo->callbackState);
+        }
         delete requestInfo;
     }
 }
@@ -109,8 +125,22 @@ void ServerSentEventsTransport::onReadLine(QString data, SignalException* error,
     {
         if(readInfo->connection->ensureReconnecting())
         {
-            sleep(1000);
-            readInfo->transport->start(readInfo->connection, NULL, readInfo->requestInfo->data);
+            QLOG_DEBUG() << "ServerSentEventsTransport: Lost connection...try to reconnect";
+
+            //wait to seconds before reconnecting
+            Helper::wait(2);
+            ((ServerSentEventsTransport*)readInfo->requestInfo->transport)->run();
+
+            return;
+        }
+        else if(readInfo->connection->getAutoReconnect())
+        {
+            QLOG_DEBUG() << "ServerSentEventsTransport: (autoconnect=true)  Lost connection...try to reconnect";
+
+
+            //wait to seconds before reconnecting
+            Helper::wait(2);
+            ((ServerSentEventsTransport*)readInfo->requestInfo->transport)->run();
             return;
         }
         else
@@ -121,6 +151,7 @@ void ServerSentEventsTransport::onReadLine(QString data, SignalException* error,
     else
     {
         data = data.remove(0, data.indexOf("data: ")+5);
+        readInfo->connection->setHeartbeat();
         TransportHelper::processMessages(readInfo->connection, data, &timedOut, &disconnected);
     }
 
@@ -130,11 +161,8 @@ void ServerSentEventsTransport::onReadLine(QString data, SignalException* error,
     }
     else
     {
-        readInfo->transport->readLoop(*readInfo->httpResponse, readInfo->connection, NULL);
+        readInfo->transport->readLoop(*readInfo->httpResponse, readInfo->connection, readInfo->requestInfo);
     }
-
-    data = "";
-
 
     delete readInfo;
 }

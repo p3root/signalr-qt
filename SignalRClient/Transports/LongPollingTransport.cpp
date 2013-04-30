@@ -1,5 +1,6 @@
 #include "LongPollingTransport.h"
-
+#include "Helper/Helper.h"
+#include <QsLog.h>
 
 LongPollingTransport::LongPollingTransport(HttpClient* httpClient) :HttpBasedTransport(httpClient)
 {
@@ -16,8 +17,18 @@ void LongPollingTransport::start(Connection* connection, START_CALLBACK startCal
     _connection = connection;
     _startCallback = startCallback;
     _state = state;
-    mHttpClient->moveToThread(this);
+    //mHttpClient->moveToThread(this);
     QThread::start();
+}
+
+void LongPollingTransport::abort(Connection *)
+{
+    mHttpClient->abort();
+}
+
+void LongPollingTransport::stop(Connection *)
+{
+    mHttpClient->abort();
 }
 
 void LongPollingTransport::run()
@@ -43,7 +54,7 @@ void LongPollingTransport::run()
     {
         info->callback(0, info->callbackState);
     }
-
+    info->callback = 0;
     mHttpClient->get(url, &LongPollingTransport::onPollHttpResponse,  info);
 }
 
@@ -59,18 +70,38 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
     bool timedOut, disconnected;
 
     if(!error)
-    {        
+    {
         TransportHelper::processMessages(pollInfo->connection, httpResponse, &timedOut, &disconnected);
     }
     else
     {
-        if(pollInfo->callback != NULL) 
+        if(pollInfo->callback != NULL)
         {
             pollInfo->callback(error, pollInfo->callbackState);
         }
         else
         {
-            pollInfo->connection->onError(*error);
+            if(error->getType() == SignalException::ConnectionRefusedError)
+            {
+                pollInfo->connection->changeState(Connection::Reconnecting, Connection::Connected);
+            }
+
+            if(pollInfo->connection->ensureReconnecting())
+            {
+                QLOG_DEBUG() << "LongPollingTranpsort: lost connection...try to reconnect";
+                Helper::wait(2);
+                pollInfo->transport->run();
+            }
+            else if(pollInfo->connection->getAutoReconnect())
+            {
+                QLOG_DEBUG() << "LongPollingTranpsort: (autoconnect=true) lost connection...try to reconnect";
+                Helper::wait(2);
+                pollInfo->transport->run();
+            }
+            else
+            {
+                pollInfo->connection->onError(*error);
+            }
         }
     }
 

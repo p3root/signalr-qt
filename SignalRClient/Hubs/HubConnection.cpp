@@ -50,3 +50,8 @@ QString HubConnection::onSending()
     QString json = QtExtJson::stringify(QVariant::fromValue(lst));
     return json;
 }
+
+const HubProxy &HubConnection::getByName(const QString &name)
+{
+    return *_hubs[name];
+}

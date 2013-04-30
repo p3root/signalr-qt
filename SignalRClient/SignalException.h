@@ -10,12 +10,18 @@ public:
     {
         InvalidNegotiationValues = 0,
         InvalidProtocolVersion,
-        EventStreamSocketLost
+        EventStreamSocketLost,
+        CouldNotEstablishbConnection,
+        ConnectionRefusedError,
+        ServerClosedConnection,
+        UnkownError
     };
 
     SignalException(QString message, SignalExceptionType type);
     virtual ~SignalException() throw();
     const char* what() const throw() ;
+
+    SignalExceptionType getType()  { return _type; }
 
 
 private:

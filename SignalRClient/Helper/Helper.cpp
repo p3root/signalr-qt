@@ -50,12 +50,12 @@ QString Helper::getEncodedQueryString(QUrl url)
     return retVal;
 }
 
-void Helper::wait(int milliseconds)
+void Helper::wait(int seconds)
 {
 #ifdef Q_OS_LINUX
-    sleep(milliseconds);
+    sleep(seconds);
 #endif
 #ifdef Q_OS_WIN32
-    Sleep(milliseconds);
+    Sleep(seconds);
 #endif
 }

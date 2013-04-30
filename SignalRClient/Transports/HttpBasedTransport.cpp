@@ -70,14 +70,14 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalE
     transport->tryDequeueNextWorkItem();
 }
 
-void HttpBasedTransport::stop(Connection* connection)
+void HttpBasedTransport::stop(Connection*)
 {
-    Q_UNUSED(connection)
+    //emit aboutToClose();
 }
 
 
-void HttpBasedTransport::abort(Connection* connection)
+void HttpBasedTransport::abort(Connection*)
 {
-    Q_UNUSED(connection)
+    //emit aboutToAbort();
 }
 

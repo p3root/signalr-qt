@@ -6,6 +6,7 @@ class Connection;
 #include <QString>
 #include "SignalException.h"
 #include "Transports/NegotiateResponse.h"
+#include <QObject>
 
 class ClientTransport
 {

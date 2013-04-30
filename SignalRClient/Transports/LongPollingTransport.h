@@ -14,6 +14,8 @@ public:
     ~LongPollingTransport(void);
 
     void start(Connection* connection, START_CALLBACK startCallback, QString data, void* state = 0);
+    void abort(Connection *connection);
+    void stop(Connection *connection);
 
     void run();
 

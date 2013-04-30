@@ -28,25 +28,31 @@ void TransportHelper::onNegotiateHttpResponse(const QString& httpResponse, Signa
 {
     Q_UNUSED(error);
     NegotiationRequestInfo* negotiateInfo = (NegotiationRequestInfo*)state;
-    SignalException* ex = 0;
 
-    NegotiateResponse response = NegotiateResponse();
-    QVariant var = QtExtJson::parse(httpResponse);
-    if(var.convert(QVariant::Map))
+
+    if(!error)
     {
-        QVariantMap map = var.value<QVariantMap>();
+        NegotiateResponse response = NegotiateResponse();
+        QVariant var = QtExtJson::parse(httpResponse);
+        if(var.convert(QVariant::Map))
+        {
+            QVariantMap map = var.value<QVariantMap>();
 
-        response.connectionId = map.value("ConnectionId").toString();
-        response.connectionToken = map.value("ConnectionToken").toString();
-        response.protocolVersion = map.value("ProtocolVersion").toString();
+            response.connectionId = map.value("ConnectionId").toString();
+            response.connectionToken = map.value("ConnectionToken").toString();
+            response.protocolVersion = map.value("ProtocolVersion").toString();
+        }
+        else
+        {
+            error = new SignalException("Invalid Response type", SignalException::InvalidNegotiationValues);
+        }
+        negotiateInfo->callback(&response, error, negotiateInfo->userState);
     }
     else
     {
-        ex = new SignalException("Invalid Response type", SignalException::InvalidNegotiationValues);
+        ((Connection*)negotiateInfo->userState)->changeState(Connection::Connecting, Connection::Disconnected);
+        negotiateInfo->callback(0, error, negotiateInfo->userState);
     }
-
-
-    negotiateInfo->callback(&response, ex, negotiateInfo->userState);
 
     delete negotiateInfo;
 }

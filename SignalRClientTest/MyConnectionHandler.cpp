@@ -1,8 +1,10 @@
 #include "MyConnectionHandler.h"
 #include <iostream>
+#include <Hubs/HubConnection.h>
 
 MyConnectionHandler::MyConnectionHandler(void)
 {
+    _count = 0;
 }
 
 
@@ -18,6 +20,13 @@ void MyConnectionHandler::onError(SignalException error)
 void MyConnectionHandler::onReceived(QVariant data)
 {
     QLOG_DEBUG() << data;
+    _count++;
+    QLOG_DEBUG() << "MessageThread" << thread()->currentThreadId();
+    if(_proxy)
+    {
+        HubProxy prox = _con->getByName("Chat");
+        prox.invoke("send", QString::number(_count));
+    }
 }
 
 void MyConnectionHandler::onStateChanged(Connection::State old_state, Connection::State new_state)

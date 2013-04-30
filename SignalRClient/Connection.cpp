@@ -3,8 +3,9 @@
 #include <QString>
 #include "Transports/DefaultHttpClient.h"
 #include "Transports/AutoTransport.h"
+#include "Helper/Helper.h"
 
-Connection::Connection(const QString host,ConnectionHandler* handler) : _count(0)
+Connection::Connection(const QString host, ConnectionHandler* handler) : _count(0)
 {
     _host = host;
     _state = Disconnected;
@@ -17,19 +18,20 @@ Connection::~Connection()
 }
 
 
-void Connection::start()
+void Connection::start(bool autoReconnect)
 {
-     start(new DefaultHttpClient());
+     start(new DefaultHttpClient(), autoReconnect);
 }
 
-void Connection::start(HttpClient* client)
+void Connection::start(HttpClient* client, bool autoReconnect)
 {	
-    start(new AutoTransport(client));
+    start(new AutoTransport(client), autoReconnect);
 }
 
-void Connection::start(ClientTransport* transport)
+void Connection::start(ClientTransport* transport, bool autoReconnect)
 {	
     _transport = transport;
+    _autoReconnect = autoReconnect;
 
     if(changeState(Disconnected, Connecting))
     {
@@ -51,7 +53,7 @@ bool Connection::changeState(State oldState, State newState)
     {
         _state = newState;
 
-        _handler->onStateChanged(oldState, oldState);
+        _handler->onStateChanged(oldState, newState);
 
         return true;
     }
@@ -84,7 +86,7 @@ void Connection::onError(SignalException error)
 
 void Connection::onReceived(QVariant data)
 {
-    _handler->onReceived(data);
+    _handler->receivedData(data);
 }
 
 ClientTransport* Connection::getTransport()
@@ -110,6 +112,16 @@ QString Connection::getGroupsToken()
 QString Connection::getMessageId()
 {
     return _messageId;
+}
+
+quint64 Connection::getCount()
+{
+    return _count;
+}
+
+bool Connection::getAutoReconnect()
+{
+    return _autoReconnect;
 }
 
 void Connection::stop()
@@ -138,8 +150,17 @@ void Connection::onNegotiateCompleted(NegotiateResponse* negotiateResponse, Sign
     }
     else 
     {
-        connection->onError(SignalException("Negotiation failed", SignalException::InvalidNegotiationValues));
-        connection->stop();
+        if(connection->getAutoReconnect())
+        {
+            QLOG_DEBUG() << "Negotation failed, will try it again";
+            Helper::wait(2);
+            connection->getTransport()->negotiate(connection, &Connection::onNegotiateCompleted, connection);
+        }
+        else
+        {
+            connection->onError(SignalException("Negotiation failed", SignalException::InvalidNegotiationValues));
+            connection->stop();
+        }
     }
 }
 
@@ -158,8 +179,3 @@ void Connection::onTransportStartCompleted(SignalException* error, void* state)
     }
 }
 
-
-quint64 Connection::getCount()
-{
-    return _count;
-}

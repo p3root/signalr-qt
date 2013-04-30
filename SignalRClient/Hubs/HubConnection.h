@@ -19,6 +19,8 @@ public:
 
     QString onSending();
 
+    const HubProxy& getByName(const QString& name);
+
 private:
     QMap<QString, HubProxy*> _hubs;
 
