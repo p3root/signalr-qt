@@ -26,6 +26,8 @@ private:
     bool _isFirstReponse;
     bool _isAborting;
 
+    QString readPackage(QString);
+
 };
 
 #endif // EVENTSTREAM_H

@@ -59,20 +59,28 @@ void HttpEventStream::readLine(HttpResponse::READ_CALLBACK readCallback, void *s
     {
         if(!_isAborting && _sock->error() != 0)
         {
-            //TODO READ correct!!
-            QString response = QString(QByteArray(_sock->readAll()));
+            /*QString test = QString(QByteArray(_sock->readAll()));
+            QLOG_DEBUG() << test;
+            readCallback(test, 0, state);
+            return;*/
+
+
             if(_isFirstReponse)
             {
-                //remove http header infos
-                response = response.remove(0, response.indexOf("\r\n\r\n")+4);
-                response = response.remove(0, response.indexOf("\r\n"));
-                response = response.replace("\n", "");
-                response = response.replace("\r", "");
+                //read http header
+                QString header ="";
+
+                while(!header.endsWith("\r\n\r\n"))
+                {
+                    header += QString(_sock->read(1));
+                }
 
                 _isFirstReponse = false;
             }
-            QLOG_DEBUG() << response;
-            readCallback(response, 0, state);
+            QString packet = readPackage("");
+
+            QLOG_DEBUG() << packet;
+            readCallback(packet, 0, state);
         }
         else
         {
@@ -85,5 +93,35 @@ void HttpEventStream::readLine(HttpResponse::READ_CALLBACK readCallback, void *s
             readCallback("", new SignalException("", SignalException::EventStreamSocketLost), state);
         }
     }
+}
+
+QString HttpEventStream::readPackage(QString val)
+{
+    QString packetSize;
+    while(!packetSize.endsWith("\r\n"))
+    {
+        packetSize += QString(_sock->read(1));
+    }
+
+    packetSize = packetSize.simplified();
+    bool ok;
+    int size = packetSize.toInt(&ok, 16);
+
+    QString packetLine;
+    while(packetLine.length() < size+2)
+    {
+        packetLine += QString(_sock->read(1));
+    }
+
+    val += packetLine;
+
+    if(val.endsWith("\n\n\r\n"))
+    {
+        return val.simplified();
+    }
+
+    return readPackage(val);
+
+
 }
 

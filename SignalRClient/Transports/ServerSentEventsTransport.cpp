@@ -120,8 +120,7 @@ void ServerSentEventsTransport::onReadLine(QString data, SignalException* error,
     }
     else
     {
-        data = data.remove(0, data.indexOf("data: ")+6);
-        data = data.simplified();
+        data = data.remove(0, data.indexOf("data: ")+5);
         TransportHelper::processMessages(readInfo->connection, data, &timedOut, &disconnected);
     }
 
