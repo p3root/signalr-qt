@@ -42,3 +42,11 @@ unix:!symbian {
     }
     INSTALLS += target
 }
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../SignalRHttp/release/ -lSignalRHttp
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../SignalRHttp/debug/ -lSignalRHttp
+else:symbian: LIBS += -lSignalRHttp
+else:unix: LIBS += -L$$OUT_PWD/../SignalRHttp/ -lSignalRHttp
+
+INCLUDEPATH += $$PWD/../SignalRHttp
+DEPENDPATH += $$PWD/../SignalRHttp

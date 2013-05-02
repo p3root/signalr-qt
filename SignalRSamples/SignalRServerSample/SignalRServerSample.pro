@@ -25,3 +25,11 @@ else:unix: LIBS += -L$$OUT_PWD/../../SignalR/SignalRCore/ -lSignalRCore
 
 INCLUDEPATH += $$PWD/../../SignalR/SignalRCore
 DEPENDPATH += $$PWD/../../SignalR/SignalRCore
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../SignalR/SignalRHttp/release/ -lSignalRHttp
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../SignalR/SignalRHttp/debug/ -lSignalRHttp
+else:symbian: LIBS += -lSignalRHttp
+else:unix: LIBS += -L$$OUT_PWD/../../SignalR/SignalRHttp/ -lSignalRHttp
+
+INCLUDEPATH += $$PWD/../../SignalR/SignalRHttp
+DEPENDPATH += $$PWD/../../SignalR/SignalRHttp
