@@ -33,3 +33,11 @@ else:unix: LIBS += -L$$OUT_PWD/../../SignalR/SignalRHttp/ -lSignalRHttp
 
 INCLUDEPATH += $$PWD/../../SignalR/SignalRHttp
 DEPENDPATH += $$PWD/../../SignalR/SignalRHttp
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/release/ -lQextJson
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/debug/ -lQextJson
+else:symbian: LIBS += -lQextJson
+else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/ -lQextJson
+
+INCLUDEPATH += $$PWD/../../ThirdParty/QtExtJson
+DEPENDPATH += $$PWD/../../ThirdParty/QtExtJson

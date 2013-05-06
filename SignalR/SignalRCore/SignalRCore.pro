@@ -16,13 +16,19 @@ DEFINES += SIGNALRCORE_LIBRARY
 SOURCES += \
     ConnectionListener.cpp \
     ConnectionManager.cpp \
-    SignalRServer.cpp
+    SignalRServer.cpp \
+    ConnectionHelper.cpp \
+    Messages/NegotiationMessage.cpp \
+    Transports/Transport.cpp
 
 HEADERS +=\
         SignalRCore_global.h \
     ConnectionListener.h \
     ConnectionManager.h \
-    SignalRServer.h
+    SignalRServer.h \
+    ConnectionHelper.h \
+    Messages/NegotiationMessage.h \
+    Transports/Transport.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
@@ -50,3 +56,11 @@ else:unix: LIBS += -L$$OUT_PWD/../SignalRHttp/ -lSignalRHttp
 
 INCLUDEPATH += $$PWD/../SignalRHttp
 DEPENDPATH += $$PWD/../SignalRHttp
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/release/ -lQextJson
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/debug/ -lQextJson
+else:symbian: LIBS += -lQextJson
+else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/ -lQextJson
+
+INCLUDEPATH += $$PWD/../../ThirdParty/QtExtJson
+DEPENDPATH += $$PWD/../../ThirdParty/QtExtJson

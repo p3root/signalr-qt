@@ -20,6 +20,7 @@ public:
 
 private Q_SLOTS:
     void acceptConnection();
+    void onDeleteListener(ConnectionListener* list);
     
 private:
     SignalRServer& _server;

@@ -34,6 +34,13 @@ void ConnectionManager::acceptConnection()
 {
     QTcpSocket* sock = _connection->nextPendingConnection();
     ConnectionListener *listener = new ConnectionListener(sock);
+    connect(listener, SIGNAL(onDelete(ConnectionListener*)), this, SLOT(onDeleteListener(ConnectionListener*)));
 
     _listeners.append(listener);
+}
+
+void ConnectionManager::onDeleteListener(ConnectionListener *list)
+{
+    _listeners.removeOne(list);
+    delete list;
 }

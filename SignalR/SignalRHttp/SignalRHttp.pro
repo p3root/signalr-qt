@@ -13,10 +13,12 @@ TEMPLATE = lib
 
 DEFINES += SIGNALRHTTP_LIBRARY
 
-SOURCES += HttpRequest.cpp
+SOURCES += HttpRequest.cpp \
+    HttpResponse.cpp
 
 HEADERS += HttpRequest.h\
-        SignalRHttp_global.h
+        SignalRHttp_global.h \
+    HttpResponse.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
