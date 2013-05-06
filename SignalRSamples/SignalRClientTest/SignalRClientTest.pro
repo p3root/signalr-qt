@@ -38,9 +38,9 @@ else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/ -lQextJson
 INCLUDEPATH += $$PWD/../../ThirdParty/QtExtJson
 DEPENDPATH += $$PWD/../../ThirdParty/QtExtJson
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../SignalRClient/release/ -lSignalRClient
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../SignalRClient/debug/ -lSignalRClient
-else:unix: LIBS += -L$$OUT_PWD/../../SignalRClient/ -lSignalRClient
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../SignalR/SignalRClient/release/ -lSignalRClient
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../SignalR/SignalRClient/debug/ -lSignalRClient
+else:unix: LIBS += -L$$OUT_PWD/../../SignalR/SignalRClient/ -lSignalRClient
 
-INCLUDEPATH += $$PWD/../../SignalRClient
-DEPENDPATH += $$PWD/../../SignalRClient
+INCLUDEPATH += $$PWD/../../SignalR/SignalRClient
+DEPENDPATH += $$PWD/../../SignalR/SignalRClient

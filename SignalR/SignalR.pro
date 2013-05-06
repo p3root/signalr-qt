@@ -2,4 +2,5 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     SignalRCore \
-    SignalRHttp
+    SignalRHttp \
+    SignalRClient
