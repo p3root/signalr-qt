@@ -2,6 +2,10 @@
 #include <QUrl>
 #include "Messages/NegotiationMessage.h"
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+#include <QUrlQuery>
+#endif
+
 ConnectionHelper::ConnectionHelper()
 {
 }
@@ -20,9 +24,11 @@ HttpResponse *ConnectionHelper::processRequest(HttpRequest *req)
         return processPingRequest(req);
     }
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    QString connectionToken = QUrlQuery(req->getUrl().query()).queryItemValue("connectionToken");
+#else
     QString connectionToken = req->getUrl().queryItemValue("connectionToken");
-
-
+#endif
 
     if(connectionToken.isEmpty())
         return errorResponse(500, "No connection token found in query string");

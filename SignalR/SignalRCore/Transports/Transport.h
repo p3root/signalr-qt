@@ -1,8 +1,8 @@
 #ifndef TRANSPORT_H
 #define TRANSPORT_H
 
-#include "HttpResponse.h"
-#include "HttpRequest.h"
+#include "Http/HttpResponse.h"
+#include "Http/HttpRequest.h"
 
 class Transport
 {

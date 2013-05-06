@@ -32,8 +32,7 @@
 #include <Windows.h>
 void QsDebugOutput::output( const QString& message )
 {
-   OutputDebugStringW(reinterpret_cast<const WCHAR*>(message.utf16()));
-   OutputDebugStringW(L"\n");
+    qDebug(message.toStdString().c_str());
 }
 #elif defined(Q_OS_SYMBIAN)
 #include <e32debug.h>

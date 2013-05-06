@@ -1,9 +1,18 @@
 #include "HttpRequest.h"
 #include <QStringList>
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+#include <QUrlQuery>
+#endif
+
 #define HTTP_HEADER_SEPERATOR "\r\n"
 HttpRequest::HttpRequest()
 {
+}
+
+HttpRequest::~HttpRequest()
+{
+
 }
 
 HttpRequest *HttpRequest::parse(QString data)
@@ -39,13 +48,27 @@ HttpRequest *HttpRequest::parse(QString data)
 
 void HttpRequest::setQuery(QString url)
 {
-    QUrl qurl(url);
+
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    QUrl urlq(url);
+    QUrlQuery qurl(urlq.query());
+#else
+   QUrl qurl(url);
+#endif
 
     for(int i = 0; i < qurl.queryItems().count(); i++)
     {
         addQuery(qurl.queryItems()[i].first, qurl.queryItems()[i].second);
     }
 
-    setUrl(qurl);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    urlq.setQuery(qurl);
+    setUrl(urlq);
+#else
+   setUrl(qurl);
+#endif
+
+
 
 }

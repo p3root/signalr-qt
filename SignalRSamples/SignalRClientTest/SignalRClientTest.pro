@@ -32,7 +32,7 @@ INCLUDEPATH += $$PWD/../../ThirdParty/QtExtLog
 DEPENDPATH += $$PWD/../../ThirdParty/QtExtLog
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/release/ -lQextJson
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../T../hirdParty/QtExtJson/debug/ -lQextJson
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/debug/ -lQextJson
 else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/ -lQextJson
 
 INCLUDEPATH += $$PWD/../../ThirdParty/QtExtJson

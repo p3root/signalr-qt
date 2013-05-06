@@ -1,12 +1,15 @@
 #ifndef HTTPRESPONSE_H
 #define HTTPRESPONSE_H
 
-#include <QtCore>
+#include <QString>
+#include <QObject>
+#include <QMap>
 
-class HttpResponse
+class HttpResponse : public QObject
 {
 public:
-    HttpResponse();
+    HttpResponse(void);
+    virtual ~HttpResponse();
 
     void addHeader(QString key, QString value) { _headers.insert(key, value); }
     void setContent(QString content)  { _content = content; }
@@ -23,4 +26,4 @@ private:
     int _statusCode;
 };
 
-#endif // HTTPRESPONSE_H
+#endif // HTTPRESPONSEQ_H

@@ -1,5 +1,5 @@
 #include "ConnectionListener.h"
-#include "HttpRequest.h"
+#include "Http/HttpRequest.h"
 #include "ConnectionHelper.h"
 
 ConnectionListener::ConnectionListener(QTcpSocket* socket) : _socket(socket)

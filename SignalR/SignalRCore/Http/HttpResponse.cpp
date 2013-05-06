@@ -1,6 +1,10 @@
 #include "HttpResponse.h"
 
-HttpResponse::HttpResponse()
+HttpResponse::HttpResponse(void) : QObject()
+{
+}
+
+HttpResponse::~HttpResponse()
 {
 }
 

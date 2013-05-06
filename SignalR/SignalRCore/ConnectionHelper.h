@@ -1,8 +1,8 @@
 #ifndef CONNECTIONHELPER_H
 #define CONNECTIONHELPER_H
 
-#include <HttpRequest.h>
-#include <HttpResponse.h>
+#include "Http/HttpRequest.h"
+#include "Http/HttpResponse.h"
 
 class ConnectionHelper
 {

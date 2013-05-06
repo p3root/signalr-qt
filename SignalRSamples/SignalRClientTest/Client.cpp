@@ -1,5 +1,8 @@
 #include "Client.h"
 
+#include <QsLog.h>
+#include <QsLogDest.h>
+
 #include <Connection.h>
 #include <Hubs/HubConnection.h>
 #include <MyConnectionHandler.h>
@@ -10,6 +13,12 @@
 
 Client::Client()
 {
+    qDebug() << "Started";
+    QLOG_DEBUG() << "";
+    QsLogging::Logger& logger = QsLogging::Logger::instance();
+    logger.setLoggingLevel(QsLogging::TraceLevel);
+    QsLogging::DestinationPtr debugDestination(QsLogging::DestinationFactory::MakeDebugOutputDestination() );
+    logger.addDestination(debugDestination.get());
 }
 
 void Client::start()

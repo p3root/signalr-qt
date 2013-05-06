@@ -3,7 +3,7 @@
 
 #include <QString>
 #include <QtExtJson.h>
-#include <HttpRequest.h>
+#include "Http/HttpRequest.h"
 
 class NegotiationMessage
 {

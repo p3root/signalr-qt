@@ -1,15 +1,15 @@
 #ifndef HTTPREQUEST_H
 #define HTTPREQUEST_H
 
-#include "SignalRHttp_global.h"
 #include <QString>
 #include <QMap>
 #include <QUrl>
 
-class SIGNALRHTTPSHARED_EXPORT HttpRequest
+class HttpRequest
 {
 public:
     HttpRequest();
+    virtual ~HttpRequest();
 
     static HttpRequest* parse(QString data);
 
