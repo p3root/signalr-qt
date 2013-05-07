@@ -1,7 +1,5 @@
 #include "Client.h"
 
-#include <QsLog.h>
-#include <QsLogDest.h>
 
 #include <Connection.h>
 #include <Hubs/HubConnection.h>
@@ -13,19 +11,14 @@
 
 Client::Client()
 {
-    qDebug() << "Started";
-    QLOG_DEBUG() << "";
-    QsLogging::Logger& logger = QsLogging::Logger::instance();
-    logger.setLoggingLevel(QsLogging::TraceLevel);
-    QsLogging::DestinationPtr debugDestination(QsLogging::DestinationFactory::MakeDebugOutputDestination() );
-    logger.addDestination(debugDestination.get());
+
 }
 
 void Client::start()
 {
     QLOG_DEBUG() << "Client Thread: " << thread()->currentThreadId();
     MyConnectionHandler* handler = new MyConnectionHandler();
-    HubConnection* connection = new HubConnection("http://localhost:8080/signalr", handler);
+    HubConnection* connection = new HubConnection("http://patrik.pfaffenbauer.at:8888/signalr", handler);
 
     HttpClient* client = new DefaultHttpClient();
     ClientTransport* tansport = new LongPollingTransport(client);

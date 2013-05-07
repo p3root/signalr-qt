@@ -103,6 +103,8 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                 pollInfo->connection->onError(*error);
             }
         }
+
+        delete error;
     }
 
     if(disconnected)
