@@ -25,7 +25,7 @@ public:
     };
 
     Connection(QString url, ConnectionHandler* handler);
-    ~Connection(void);
+    virtual ~Connection(void);
 
     void start(bool autoReconnect = false);
     void start(ClientTransport* tranport, bool autoReconnect = false);

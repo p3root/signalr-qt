@@ -28,6 +28,7 @@ void LongPollingTransport::abort(Connection *)
 
 void LongPollingTransport::stop(Connection *)
 {
+    quit();
     mHttpClient->abort();
 }
 
@@ -115,6 +116,9 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
     {
         pollInfo->client->get(pollInfo->data, &LongPollingTransport::onPollHttpResponse,  pollInfo);
     }
+
+    if(pollInfo->connection->getState() == Connection::Disconnected)
+        return;
 
     delete pollInfo;
 }

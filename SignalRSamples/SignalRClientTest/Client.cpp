@@ -1,35 +1,51 @@
 #include "Client.h"
 
+#include <QCoreApplication>
 
-#include <Connection.h>
-#include <Hubs/HubConnection.h>
-#include <MyConnectionHandler.h>
-#include <Transports/DefaultHttpClient.h>
-#include <Transports/LongPollingTransport.h>
-#include <Transports/ServerSentEventsTransport.h>
-#include <Helper/Helper.h>
 
-Client::Client()
+Client::Client(QCoreApplication &app)
 {
+    _timer.setSingleShot(true);
+    _timer.setInterval(108000);
+    _timer.start();
+    connect(&_timer, SIGNAL(timeout()), this, SLOT(timerTick()));
+    connect(&app, SIGNAL(aboutToQuit()), SLOT(stop()));
+}
 
+Client::~Client()
+{
+    delete _handler;
+    delete _connection;
+    delete _client;
 }
 
 void Client::start()
 {
     QLOG_DEBUG() << "Client Thread: " << thread()->currentThreadId();
-    MyConnectionHandler* handler = new MyConnectionHandler();
-    HubConnection* connection = new HubConnection("http://patrik.pfaffenbauer.at:8888/signalr", handler);
+    _handler = new MyConnectionHandler();
+    _connection = new HubConnection("http://patrik.pfaffenbauer.at:8888/signalr", _handler);
 
-    HttpClient* client = new DefaultHttpClient();
-    ClientTransport* tansport = new LongPollingTransport(client);
+    _client = new DefaultHttpClient();
+    _transport = new LongPollingTransport(_client);
 
-    HubProxy* proxy = connection->createHubProxy("Chat");
-    connection->start(tansport, true);
+    HubProxy* proxy = _connection->createHubProxy("Chat");
+    _connection->start(_transport, true);
 
-    handler->setHubProxy(proxy);
-    handler->setConnection(connection);
+    _handler->setHubProxy(proxy);
+    _handler->setConnection(_connection);
 
     Helper::wait(1);
 
     proxy->invoke("send", "0");
 }
+
+void Client::stop()
+{
+    _connection->stop();
+}
+
+void Client::timerTick()
+{
+    qApp->exit(3);
+}
+

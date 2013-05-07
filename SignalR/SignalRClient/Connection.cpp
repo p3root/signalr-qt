@@ -47,6 +47,11 @@ void Connection::send(QString data)
     _transport->send(this, data);
 }
 
+Connection::State Connection::getState()
+{
+    return _state;
+}
+
 bool Connection::changeState(State oldState, State newState)
 {
     if(_state == oldState)

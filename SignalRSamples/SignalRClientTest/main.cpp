@@ -15,10 +15,9 @@ int main(int argc, char *argv[])
     QsLogging::DestinationPtr debugDestination(QsLogging::DestinationFactory::MakeDebugOutputDestination() );
     logger.addDestination(debugDestination.get());
 
-    Client *c = new Client();
-    c->start();
-
-
+    Client c(a);
+    c.start();
 
     return a.exec();
+
 }
