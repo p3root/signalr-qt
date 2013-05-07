@@ -10,7 +10,7 @@ For questions please send me an email (patrik.pfaffenbauer@p3.co.at) or conatct 
 Client
 ======
 
-After some long time tests, and stress tests it should be done. (hopefully :P)
+After some long time tests, and stress tests it should be done.
 
 
 Server
