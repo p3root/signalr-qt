@@ -4,48 +4,32 @@
 #include "HttpBasedTransport.h"
 #include "HttpEventStream.h"
 
-class ServerSentEventsTransport : public QThread, public HttpBasedTransport
+class ServerSentEventsTransport : public HttpBasedTransport
 {
     Q_OBJECT
 public:
-    ServerSentEventsTransport(HttpClient* client);
+    ServerSentEventsTransport(HttpClient* client, Connection *con);
     ~ServerSentEventsTransport(void);
 
-    void start(Connection* connection, START_CALLBACK startCallback, QString data, void* state = 0);
-    void abort(Connection* connection);
-    void stop(Connection*);
-
-    void run();
+    void start(Connection*, QString data);
+    void abort(Connection *connection);
+    void stop(Connection *connection);
 
     const QString& getTransportType();
 
-    struct HttpRequestInfo
-    {
-        START_CALLBACK callback;
-        void* callbackState;
-        ServerSentEventsTransport* transport;
-        Connection* connection;
-        QString data;
-    };
+private Q_SLOTS:
+    void packetReceived(QString packet, SignalException *ex);
+    void connected(SignalException* ex);
 
-    struct ReadInfo
-    {
-        Connection* connection;
-        HttpResponse* httpResponse;
-        ServerSentEventsTransport* transport;
-        HttpRequestInfo* requestInfo;
-    };
-
-    void readLoop(HttpResponse& httpResponse, Connection* connection, HttpRequestInfo* reqestInfo);
 
 private:
-    static void onStartHttpResponse(HttpResponse& httpResponse, SignalException* error, void* state);
-    static void onReadLine(QString data, SignalException* error, void* state);
+    void reconnect();
 
+private:
     HttpEventStream *_eventStream;
-    Connection * _connection;
-    START_CALLBACK _startCallback;
     void* _state;
+    QString _url;
+    bool _started;
 };
 
 #endif

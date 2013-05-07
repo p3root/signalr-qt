@@ -1,15 +1,17 @@
 #include "Connection.h"
 #include "ConnectionHandler.h"
 #include <QString>
-#include "Transports/DefaultHttpClient.h"
-#include "Transports/AutoTransport.h"
+#include "Transports/HttpClient.h"
 #include "Helper/Helper.h"
+#include "Transports/LongPollingTransport.h"
 
 Connection::Connection(const QString host, ConnectionHandler* handler) : _count(0)
 {
     _host = host;
     _state = Disconnected;
     _handler = handler;
+
+    qRegisterMetaType<SignalException>("SignalException");
 }
 
 Connection::~Connection()
@@ -20,12 +22,12 @@ Connection::~Connection()
 
 void Connection::start(bool autoReconnect)
 {
-     start(new DefaultHttpClient(), autoReconnect);
+    start(new HttpClient(), autoReconnect);
 }
 
 void Connection::start(HttpClient* client, bool autoReconnect)
 {	
-    start(new AutoTransport(client), autoReconnect);
+    start(new LongPollingTransport(client, this), autoReconnect);
 }
 
 void Connection::start(ClientTransport* transport, bool autoReconnect)
@@ -35,7 +37,7 @@ void Connection::start(ClientTransport* transport, bool autoReconnect)
 
     if(changeState(Disconnected, Connecting))
     {
-        _transport->negotiate(this, &Connection::onNegotiateCompleted, this);
+        _transport->negotiate();
     }
 }
 
@@ -69,7 +71,7 @@ bool Connection::changeState(State oldState, State newState)
 bool Connection::ensureReconnecting()
 {
     changeState(Connected, Reconnecting);
-            
+
     return _state == Reconnecting;
 }
 
@@ -136,51 +138,48 @@ void Connection::stop()
     delete _transport;
 }
 
-void Connection::onNegotiateCompleted(NegotiateResponse* negotiateResponse, SignalException* error, void* state)
-{	
-    Connection* connection = (Connection*)state;
-
+void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, SignalException* error)
+{
     if(!error)
     {
         if(negotiateResponse->protocolVersion != "1.2")
         {
-            connection->onError(SignalException("Invalid protocol version", SignalException::InvalidProtocolVersion));
-            connection->stop();
+            onError(SignalException("Invalid protocol version", SignalException::InvalidProtocolVersion));
+            stop();
         }
         else
         {
-            connection->setConnectionState(*negotiateResponse);
-            connection->getTransport()->start(connection, Connection::onTransportStartCompleted, "", connection);
+            setConnectionState(*negotiateResponse);
+            connect(_transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(transportStarted(SignalException*)));
+            getTransport()->start(this, "");
         }
     }
-    else 
+    else
     {
-        if(connection->getAutoReconnect())
+        if(getAutoReconnect())
         {
             QLOG_DEBUG() << "Negotation failed, will try it again";
             Helper::wait(2);
-            connection->getTransport()->negotiate(connection, &Connection::onNegotiateCompleted, connection);
+            getTransport()->negotiate();
         }
         else
         {
-            connection->onError(SignalException("Negotiation failed", SignalException::InvalidNegotiationValues));
-            connection->stop();
+            onError(SignalException("Negotiation failed", SignalException::InvalidNegotiationValues));
+            stop();
         }
     }
 }
 
-void Connection::onTransportStartCompleted(SignalException* error, void* state)
+void Connection::transportStarted(SignalException* error)
 {
-    Connection* connection = (Connection*)state;
-
     if(!error)
     {
-        connection->changeState(Connecting, Connected);
+        changeState(Connecting, Connected);
     }
-    else 
+    else
     {
-        connection->onError(*error);
-        connection->stop();
+        onError(*error);
+        stop();
     }
 }
 

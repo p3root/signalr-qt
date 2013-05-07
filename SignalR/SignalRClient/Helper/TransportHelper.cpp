@@ -12,54 +12,14 @@ TransportHelper::~TransportHelper(void)
 {
 }
 
-void TransportHelper::getNegotiationResponse(HttpClient* httpClient, Connection* connnection, ClientTransport::NEGOTIATE_CALLBACK negotiateCallback, void* state)
+void TransportHelper::getNegotiationResponse(HttpClient* httpClient, Connection* connnection, ClientTransport* transport)
 {
-    QString url = connnection->getUrl() + "/negotiate";
 
-    NegotiationRequestInfo* info = new NegotiationRequestInfo();
-    info->userState = state;
-    info->callback = negotiateCallback;
-
-    httpClient->get(url, &TransportHelper::onNegotiateHttpResponse, info);
-}
-
-
-void TransportHelper::onNegotiateHttpResponse(const QString& httpResponse, SignalException* error, void* state)
-{
-    Q_UNUSED(error);
-    NegotiationRequestInfo* negotiateInfo = (NegotiationRequestInfo*)state;
-
-
-    if(!error)
-    {
-        NegotiateResponse response = NegotiateResponse();
-        QVariant var = QtExtJson::parse(httpResponse);
-        if(var.convert(QVariant::Map))
-        {
-            QVariantMap map = var.value<QVariantMap>();
-
-            response.connectionId = map.value("ConnectionId").toString();
-            response.connectionToken = map.value("ConnectionToken").toString();
-            response.protocolVersion = map.value("ProtocolVersion").toString();
-        }
-        else
-        {
-            error = new SignalException("Invalid Response type", SignalException::InvalidNegotiationValues);
-        }
-        negotiateInfo->callback(&response, error, negotiateInfo->userState);
-    }
-    else
-    {
-        ((Connection*)negotiateInfo->userState)->changeState(Connection::Connecting, Connection::Disconnected);
-        negotiateInfo->callback(0, error, negotiateInfo->userState);
-    }
-
-    delete negotiateInfo;
 }
 
 QString TransportHelper::getReceiveQueryString(Connection* connection, QString data, QString transport)
 {
-    QString qs = "?transport=" + transport + "&connectionToken=" + connection->getConnectionToken();//Helper::encode(connection->GetConnectionToken());
+    QString qs = "?transport=" + transport + "&connectionToken=" + connection->getConnectionToken();
 
     QString messageId = connection->getMessageId();
     QString groupsToken = connection->getGroupsToken();
@@ -132,4 +92,23 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
             }
         }
     }
+}
+
+const NegotiateResponse* TransportHelper::parseNegotiateHttpResponse(const QString &httpResponse)
+{
+    NegotiateResponse* response = new NegotiateResponse();
+    QVariant var = QtExtJson::parse(httpResponse);
+    if(var.convert(QVariant::Map))
+    {
+        QVariantMap map = var.value<QVariantMap>();
+
+        response->connectionId = map.value("ConnectionId").toString();
+        response->connectionToken = map.value("ConnectionToken").toString();
+        response->protocolVersion = map.value("ProtocolVersion").toString();
+    }
+    else
+    {
+        return 0;
+    }
+    return response;
 }

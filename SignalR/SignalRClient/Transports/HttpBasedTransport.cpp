@@ -1,9 +1,10 @@
 #include "HttpBasedTransport.h"
 
 
-HttpBasedTransport::HttpBasedTransport(HttpClient* httpClient) : _sending(false)
+HttpBasedTransport::HttpBasedTransport(HttpClient* httpClient, Connection *con) : _sending(false), _connection(0)
 {
     mHttpClient = httpClient;
+    _connection = con;
 }
 
 
@@ -12,15 +13,38 @@ HttpBasedTransport::~HttpBasedTransport(void)
 
 }
 
-void HttpBasedTransport::negotiate(Connection* connection, NEGOTIATE_CALLBACK negotiateCallback, void* state)
+void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
 {
-    TransportHelper::getNegotiationResponse(mHttpClient, connection, negotiateCallback, state);
+    if(!ex)
+    {
+        disconnect(mHttpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
+        const NegotiateResponse* res = TransportHelper::parseNegotiateHttpResponse(data);
+
+        if(res)
+        {
+            _connection->negotiateCompleted(res, ex);
+            delete res;
+        }
+    }
+    else
+    {
+         _connection->negotiateCompleted(0, ex);
+    }
+
+}
+
+void HttpBasedTransport::negotiate()
+{
+    QString url = _connection->getUrl() + "/negotiate";
+
+    connect(mHttpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
+    mHttpClient->get(url);
 }
 
 void HttpBasedTransport::send(Connection* connection, QString data)
 {
     QString url = connection->getUrl() +
-        "/send";
+            "/send";
 
     url += TransportHelper::getReceiveQueryString(connection, "", getTransportType());
 
@@ -37,7 +61,8 @@ void HttpBasedTransport::send(Connection* connection, QString data)
     }
     else
     {
-        mHttpClient->post(url, postData, &HttpBasedTransport::onSendHttpResponse, this);
+        //TODO: POST
+        //mHttpClient->post(url, postData, &HttpBasedTransport::onSendHttpResponse, this);
     }
 }
 
@@ -54,7 +79,8 @@ void HttpBasedTransport::tryDequeueNextWorkItem()
         // Nuke the work item
         _sendQueue.dequeue();
 
-        mHttpClient->post(workItem->url, workItem->postData, &HttpBasedTransport::onSendHttpResponse, this);
+        //TODO: POST
+        //mHttpClient->post(workItem->url, workItem->postData, &HttpBasedTransport::onSendHttpResponse, this);
 
         delete workItem;
     }

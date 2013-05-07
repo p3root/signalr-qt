@@ -15,10 +15,11 @@ protected:
     HttpClient* mHttpClient;
 
 public:
-    HttpBasedTransport(HttpClient* httpClient);
+    HttpBasedTransport(HttpClient* httpClient, Connection* con);
     ~HttpBasedTransport(void);
 
-    void negotiate(Connection* connection, NEGOTIATE_CALLBACK negotiateCallback, void* state = NULL);
+    void negotiateCompleted(QString data, SignalException* ex);
+    void negotiate();
     void send(Connection* connection, QString data);
     virtual void stop(Connection* connection);
     void abort(Connection* connection);
@@ -38,6 +39,9 @@ private:
     QQueue<SendQueueItem*> _sendQueue;
     bool _sending;
     static void onSendHttpResponse(const QString& httpResponse, SignalException* error, void* state);
+
+protected:
+    Connection* _connection;
 };
 
 #endif

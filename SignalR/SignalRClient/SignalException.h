@@ -2,6 +2,7 @@
 #define SIGNALEXCEPTION_H
 
 #include <QString>
+#include <QMetaType>
 
 class SignalException : public std::exception
 {
@@ -17,16 +18,20 @@ public:
         UnkownError
     };
 
-    SignalException(QString message, SignalExceptionType type);
-    virtual ~SignalException() throw();
+    SignalException();
+    SignalException(const QString message, SignalExceptionType type);
+    ~SignalException() throw();
     const char* what() const throw() ;
 
     SignalExceptionType getType()  { return _type; }
 
 
 private:
-    QString _message;
+    const QString _message;
     SignalExceptionType _type;
 };
+
+
+Q_DECLARE_METATYPE(SignalException*)
 
 #endif // SIGNALEXCEPTION_H

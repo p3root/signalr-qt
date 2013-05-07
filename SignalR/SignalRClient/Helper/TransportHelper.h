@@ -9,24 +9,20 @@
 #include <QtExtJson.h>
 
 
-class TransportHelper
+class TransportHelper : public QObject
 {
+    Q_OBJECT
 public:
     TransportHelper(void);
     ~TransportHelper(void);
 
-    static void getNegotiationResponse(HttpClient* httpClient, Connection* connnection, ClientTransport::NEGOTIATE_CALLBACK negotiateCallback, void* state = 0);
+
+    static void getNegotiationResponse(HttpClient* httpClient, Connection* connnection, ClientTransport *transport);
     static QString getReceiveQueryString(Connection* connection, QString data, QString transport);
     static void processMessages(Connection* connection, QString raw, bool* timedOut, bool* disconnected);
 
-private:
-    struct NegotiationRequestInfo
-    {
-        void* userState;
-        ClientTransport::NEGOTIATE_CALLBACK callback;
-    };
 
-    static void onNegotiateHttpResponse(const QString& httpResponse, SignalException* error, void* state);
+    static const NegotiateResponse* parseNegotiateHttpResponse(const QString& httpResponse);
 };
 
 #endif

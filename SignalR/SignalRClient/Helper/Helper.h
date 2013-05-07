@@ -11,6 +11,7 @@ public:
     static QString getEncodedQueryString(QUrl);
 
     static void wait(int seconds);
+    static void waitMs(int milliseconds);
 };
 
 #endif // HELPER_H

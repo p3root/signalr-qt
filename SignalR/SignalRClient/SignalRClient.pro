@@ -13,16 +13,13 @@ TEMPLATE = lib
 
 DEFINES += SIGNALR_LIBRARY
 
-SOURCES +=  Transports/DefaultHttpClient.cpp \
-            Transports/AutoTransport.cpp \
-            Transports/FakeHttpClient.cpp \
+SOURCES +=  \
             Transports/HttpBasedTransport.cpp\
             Transports/LongPollingTransport.cpp\
             Transports/ServerSentEventsTransport.cpp\
             Transports/HttpResponse.cpp \
             Transports/HttpRequest.cpp \
             Transports/HttpEventStream.cpp \
-            Transports/HttpClient.cpp \
             ClientTransport.cpp \
             ConnectionHandler.cpp \
             Connection.cpp \
@@ -30,18 +27,16 @@ SOURCES +=  Transports/DefaultHttpClient.cpp \
             Helper/Helper.cpp \
             Helper/TransportHelper.cpp \
             Hubs/HubConnection.cpp \
-            Hubs/HubProxy.cpp
+            Hubs/HubProxy.cpp \
+    Transports/HttpClient.cpp
 
 
 
-HEADERS +=  Transports/DefaultHttpClient.h \
-            Transports/AutoTransport.h \
-            Transports/FakeHttpClient.h \
+HEADERS +=  \
             Transports/HttpBasedTransport.h \
             Transports/LongPollingTransport.h \
             Transports/ServerSentEventsTransport.h \
             Transports/NegotiateResponse.h \
-            Transports/HttpClient.h \
             Transports/HttpResponse.h \
             Transports/HttpRequest.h \
             Transports/HttpEventStream.h \
@@ -53,7 +48,8 @@ HEADERS +=  Transports/DefaultHttpClient.h \
             ConnectionHandler.h \
             SignalException.h \
             Hubs/HubConnection.h \
-            Hubs/HubProxy.h
+            Hubs/HubProxy.h \
+    Transports/HttpClient.h
 
 
 

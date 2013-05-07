@@ -2,7 +2,7 @@
 #include "Helper/Helper.h"
 #include <QsLog.h>
 
-LongPollingTransport::LongPollingTransport(HttpClient* httpClient) :HttpBasedTransport(httpClient)
+LongPollingTransport::LongPollingTransport(HttpClient* httpClient, Connection *con) :HttpBasedTransport(httpClient, con)
 {
 
 }
@@ -12,13 +12,17 @@ LongPollingTransport::~LongPollingTransport(void)
 {
 }
 
-void LongPollingTransport::start(Connection* connection, START_CALLBACK startCallback, QString, void* state)
-{    
-    _connection = connection;
-    _startCallback = startCallback;
-    _state = state;
-    //mHttpClient->moveToThread(this);
-    QThread::start();
+void LongPollingTransport::start(Connection*, QString)
+{
+    connect(mHttpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
+
+    _url = _connection->getUrl() + "/connect";
+    _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
+
+    Q_EMIT transportStarted(0);
+
+    _started = true;
+    mHttpClient->get(_url);
 }
 
 void LongPollingTransport::abort(Connection *)
@@ -28,35 +32,7 @@ void LongPollingTransport::abort(Connection *)
 
 void LongPollingTransport::stop(Connection *)
 {
-    quit();
     mHttpClient->abort();
-}
-
-void LongPollingTransport::run()
-{
-    QString url = _connection->getUrl();
-
-    if(_startCallback != NULL)
-    {
-        url += "/connect";
-    }
-
-    url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
-
-    PollHttpRequestInfo* info = new PollHttpRequestInfo();
-    info->callbackState = _state;
-    info->transport = this;
-    info->callback = _startCallback;
-    info->connection = _connection;
-    info->data = url;
-    info->client = mHttpClient;
-
-    if(info->callback != NULL)
-    {
-        info->callback(0, info->callbackState);
-    }
-    info->callback = 0;
-    mHttpClient->get(url, &LongPollingTransport::onPollHttpResponse,  info);
 }
 
 const QString &LongPollingTransport::getTransportType()
@@ -65,43 +41,45 @@ const QString &LongPollingTransport::getTransportType()
     return type;
 }
 
-void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, SignalException * error, void* state)
-{
-    PollHttpRequestInfo* pollInfo = (PollHttpRequestInfo*)state;
+void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, SignalException *ex)
+{ 
     bool timedOut = false, disconnected = false;
+    SignalException *error = 0;
+    if(ex)
+       error = (SignalException*)ex;
 
     if(!error)
     {
-        TransportHelper::processMessages(pollInfo->connection, httpResponse, &timedOut, &disconnected);
+        TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected);
     }
     else
     {
-        if(pollInfo->callback != NULL)
+        if(_started)
         {
-            pollInfo->callback(error, pollInfo->callbackState);
+            Q_EMIT transportStarted(error);
         }
         else
         {
             if(error->getType() == SignalException::ConnectionRefusedError)
             {
-                pollInfo->connection->changeState(Connection::Reconnecting, Connection::Connected);
+                _connection->changeState(Connection::Reconnecting, Connection::Connected);
             }
 
-            if(pollInfo->connection->ensureReconnecting())
+            if(_connection->ensureReconnecting())
             {
                 QLOG_DEBUG() << "LongPollingTranpsort: lost connection...try to reconnect";
                 Helper::wait(2);
-                pollInfo->transport->run();
+                //_transport->run();
             }
-            else if(pollInfo->connection->getAutoReconnect())
+            else if(_connection->getAutoReconnect())
             {
                 QLOG_DEBUG() << "LongPollingTranpsort: (autoconnect=true) lost connection...try to reconnect";
                 Helper::wait(2);
-                pollInfo->transport->run();
+                //pollInfo->transport->run();
             }
             else
             {
-                pollInfo->connection->onError(*error);
+                _connection->onError(*error);
             }
         }
 
@@ -110,15 +88,13 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
 
     if(disconnected)
     {
-        pollInfo->connection->stop();
+        _connection->stop();
     }
     else
     {
-        pollInfo->client->get(pollInfo->data, &LongPollingTransport::onPollHttpResponse,  pollInfo);
+        mHttpClient->get(_url);
     }
 
-    if(pollInfo->connection->getState() == Connection::Disconnected)
+    if(_connection->getState() == Connection::Disconnected)
         return;
-
-    delete pollInfo;
 }

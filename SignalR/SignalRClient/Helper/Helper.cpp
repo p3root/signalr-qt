@@ -59,3 +59,13 @@ void Helper::wait(int seconds)
     Sleep(seconds);
 #endif
 }
+
+void Helper::waitMs(int milliseconds)
+{
+#ifdef Q_OS_LINUX
+    usleep(milliseconds);
+#endif
+#ifdef Q_OS_WIN32
+    Sleep(milliseconds);
+#endif
+}

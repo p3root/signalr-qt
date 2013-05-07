@@ -1,7 +1,7 @@
 #include "ServerSentEventsTransport.h"
 #include "Helper/Helper.h"
 
-ServerSentEventsTransport::ServerSentEventsTransport(HttpClient* httpClient) : HttpBasedTransport(httpClient), _eventStream(0)
+ServerSentEventsTransport::ServerSentEventsTransport(HttpClient* httpClient, Connection* con) : HttpBasedTransport(httpClient, con), _eventStream(0)
 {
 
 }
@@ -11,51 +11,34 @@ ServerSentEventsTransport::~ServerSentEventsTransport(void)
 
 }
 
-void ServerSentEventsTransport::start(Connection* connection, START_CALLBACK startCallback, QString, void* state)
+void ServerSentEventsTransport::start(Connection*, QString)
 {
-    _connection = connection;
-    _startCallback = startCallback;
-    _state = state;
+    _url = _connection->getUrl() + "/connect";
+    _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
-    QThread::start();
+    QUrl qurl = QUrl(_url);
+
+    if(_eventStream)
+        delete _eventStream;
+
+    _eventStream = new HttpEventStream(qurl);
+
+    connect(_eventStream, SIGNAL(packetReady(QString,SignalException*)), this, SLOT(packetReceived(QString,SignalException*)));
+    connect(_eventStream, SIGNAL(connected(SignalException*)), this, SLOT(connected(SignalException*)));
+
+    _eventStream->start();
+
 }
 
 void ServerSentEventsTransport::abort(Connection*)
 {
-    _eventStream->abort();
+    _eventStream->close();
     _eventStream->deleteLater();
 }
 
 void ServerSentEventsTransport::stop(Connection*)
 {
-    _eventStream->abort();
-}
-
-void ServerSentEventsTransport::run()
-{
-    QString url = _connection->getUrl();
-
-    if(_startCallback != NULL)
-    {
-        url += "/connect";
-    }
-
-    url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
-
-    HttpRequestInfo* requestInfo = new HttpRequestInfo();
-    requestInfo->callbackState = _state;
-    requestInfo->transport = this;
-    requestInfo->callback = _startCallback;
-    requestInfo->connection = _connection;
-    requestInfo->data = _connection->onSending();
-
-    QUrl qurl = QUrl(url);
-
-    if(_eventStream)
-        delete _eventStream;
-
-    _eventStream = new HttpEventStream();
-    _eventStream->get(qurl, &ServerSentEventsTransport::onStartHttpResponse, requestInfo);
+    _eventStream->close();
 }
 
 const QString &ServerSentEventsTransport::getTransportType()
@@ -64,6 +47,78 @@ const QString &ServerSentEventsTransport::getTransportType()
     return type;
 }
 
+void ServerSentEventsTransport::packetReceived(QString data, SignalException *error)
+{
+    bool timedOut = false, disconnected = false;
+
+    if(data == "data: initialized")
+    {
+        if(_started)
+        {
+            Q_EMIT transportStarted(0);
+        }
+        else
+        {
+            // Reconnected
+            _connection->changeState(Connection::Reconnecting, Connection::Connected);
+        }
+    }
+    else if(error != 0)
+    {
+        if(error->getType() == SignalException::EventStreamSocketLost)
+        {
+            reconnect();
+        }
+        else if(_connection->ensureReconnecting())
+        {
+            QLOG_DEBUG() << "ServerSentEventsTransport: Lost connection...try to reconnect";
+
+            //wait to seconds before reconnecting
+            Helper::wait(2);
+            reconnect();
+        }
+        else if(_connection->getAutoReconnect())
+        {
+            QLOG_DEBUG() << "ServerSentEventsTransport: (autoconnect=true)  Lost connection...try to reconnect";
+
+
+            //wait to seconds before reconnecting
+            Helper::wait(2);
+            reconnect();
+        }
+        else
+        {
+            _connection->onError(*error);
+        }
+
+        delete error;
+    }
+    else
+    {
+        data = data.remove(0, data.indexOf("data: ")+5);
+        _connection->setHeartbeat();
+        TransportHelper::processMessages(_connection, data, &timedOut, &disconnected);
+    }
+
+    if(disconnected)
+    {
+        _connection->stop();
+    }
+}
+
+void ServerSentEventsTransport::connected(SignalException *error)
+{
+    Q_EMIT transportStarted(error);
+}
+
+void ServerSentEventsTransport::reconnect()
+{
+    _eventStream->close();
+    _eventStream->start();
+}
+
+
+/*
 void ServerSentEventsTransport::onStartHttpResponse(HttpResponse& httpResponse, SignalException* error, void* state)
 {
     HttpRequestInfo* requestInfo = (HttpRequestInfo*)state;
@@ -165,4 +220,4 @@ void ServerSentEventsTransport::onReadLine(QString data, SignalException* error,
     }
 
     delete readInfo;
-}
+}*/

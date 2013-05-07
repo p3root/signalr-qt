@@ -7,10 +7,10 @@
 #include <Connection.h>
 #include <Hubs/HubConnection.h>
 #include <MyConnectionHandler.h>
-#include <Transports/DefaultHttpClient.h>
+#include <Transports/HttpClient.h>
 #include <Transports/LongPollingTransport.h>
-#include <Transports/ServerSentEventsTransport.h>
 #include <Helper/Helper.h>
+#include <Transports/ServerSentEventsTransport.h>
 
 class Client : public QObject
 {

@@ -10,24 +10,33 @@
 
 class ServerSentEventsTransport;
 
-class HttpEventStream : public QObject, public HttpResponse
+class HttpEventStream : public QThread
 {
     Q_OBJECT
 
 public:
-    HttpEventStream();
+    HttpEventStream(QUrl url);
 
-    typedef void (*HTTP_EVENT_REQUEST_CALLBACK)(HttpResponse& httpResponse, SignalException* error, void* state);
+    void close();
 
-    void get(QUrl url, HTTP_EVENT_REQUEST_CALLBACK callback, void* state);
-    void abort();
-    void closeConnection();
+    void run();
 
-    void readLine(READ_CALLBACK readCallback, void* state = 0);
+Q_SIGNALS:
+    void packetReady(QString packet, SignalException *ex);
+    void connected(SignalException*);
+
+private:
+    void open();
+
+private Q_SLOTS:
+    void onReadyRead();
+
 private:
     QTcpSocket *_sock;
     bool _isFirstReponse;
     bool _isAborting;
+    QMutex _mutex;
+    QUrl _url;
 
     QString readPackage(QString);
 

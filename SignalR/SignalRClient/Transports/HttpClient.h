@@ -1,27 +1,36 @@
-#ifndef IHTTPCLIENT_H
-#define IHTTPCLIENT_H
+#ifndef HTTPCLIENT_H
+#define HTTPCLIENT_H
 
-#include "HttpRequest.h"
-#include "HttpResponse.h"
+#include <QNetworkAccessManager>
 #include "SignalException.h"
-#include <QString>
 #include <QMap>
-#include <QObject>
-
+#include <QNetworkReply>
 
 class HttpClient : public QObject
 {
     Q_OBJECT
 public:
-    HttpClient(void);
-    virtual	~HttpClient(void);
+    HttpClient();
+    virtual ~HttpClient();
 
-    typedef void (*HTTP_REQUEST_CALLBACK)(const QString& httpResponse, SignalException* error, void* state);
+    void get(QString url);
+    void post(QString url, QMap<QString, QString> arguments);
 
-    virtual void get(QString url, HTTP_REQUEST_CALLBACK httpRequestCallback, void* state = 0) = 0;
-    virtual void post(QString url, QMap<QString, QString> arguments, HTTP_REQUEST_CALLBACK httpRequestCallback, void* state = 0) = 0;
+    void abort();
 
-    virtual void abort()=0;
+Q_SIGNALS:
+    void getRequestCompleted(const QString& httpResponse, SignalException* error);
+    void postRequestCompleted(const QString& httpResponse, SignalException* error);
+
+private Q_SLOTS:
+    void getRequestFinished();
+    void getError(QNetworkReply::NetworkError);
+
+private:
+    bool _isAborting;
+    QNetworkReply *_getReply;
+    QNetworkReply *_postReply;
+    QNetworkAccessManager* _man;
 };
 
-#endif
+#endif // HTTPCLIENT_H

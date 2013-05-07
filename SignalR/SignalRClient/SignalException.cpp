@@ -1,8 +1,12 @@
 #include "SignalException.h"
 
-SignalException::SignalException(QString message, SignalExceptionType type)
+SignalException::SignalException() : _message("")
 {
-    _message = message;
+    _type = UnkownError;
+}
+
+SignalException::SignalException(const QString message, SignalExceptionType type) : _message(message)
+{
     _type = type;
 }
 

@@ -15,6 +15,8 @@ int main(int argc, char *argv[])
     QsLogging::DestinationPtr debugDestination(QsLogging::DestinationFactory::MakeDebugOutputDestination() );
     logger.addDestination(debugDestination.get());
 
+     QLOG_DEBUG() << a.thread()->currentThreadId();
+
     Client c(a);
     c.start();
 

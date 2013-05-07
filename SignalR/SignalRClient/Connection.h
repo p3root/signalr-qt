@@ -12,8 +12,9 @@
 class ConnectionHandler;
 class ClientTransport;
 
-class Connection
+class Connection : public QObject
 {
+    Q_OBJECT
 public:
     enum State
     {
@@ -55,8 +56,13 @@ public:
     void setHeartbeat() { _hearbeat = QDateTime::currentDateTime(); }
     const QDateTime getLastHeartbeat() { return _hearbeat; }
 
+    void negotiateCompleted(const NegotiateResponse *negotiateResponse, SignalException* error);
+
 protected:
      State _state;
+
+private Q_SLOTS:
+     void transportStarted(SignalException *ex);
 
 private:
     QString _host;
@@ -70,9 +76,6 @@ private:
     HttpClient *_httpClient;
     QDateTime _hearbeat;
     bool _autoReconnect;
-
-    static void onTransportStartCompleted(SignalException* error, void* state);
-    static void onNegotiateCompleted(NegotiateResponse* negotiateResponse, SignalException* error, void* state);
 };
 
 #endif
