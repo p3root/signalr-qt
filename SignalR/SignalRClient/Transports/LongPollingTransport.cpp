@@ -68,7 +68,7 @@ const QString &LongPollingTransport::getTransportType()
 void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, SignalException * error, void* state)
 {
     PollHttpRequestInfo* pollInfo = (PollHttpRequestInfo*)state;
-    bool timedOut, disconnected;
+    bool timedOut = false, disconnected = false;
 
     if(!error)
     {

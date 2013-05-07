@@ -1,6 +1,7 @@
 #include "HttpEventStream.h"
 #include "Helper/Helper.h"
 #include "Transports/ServerSentEventsTransport.h"
+#include <QHostInfo>
 
 HttpEventStream::HttpEventStream() : _sock(0), _isFirstReponse(true)
 {
@@ -18,28 +19,40 @@ void HttpEventStream::get(QUrl url, HTTP_EVENT_REQUEST_CALLBACK callback, void* 
     QString host = QString(url.encodedHost());
 #endif
 
+    QHostInfo info = QHostInfo::fromName(host);
 
-    _sock->connectToHost(QHostAddress(host), url.port());
-    if(_sock->waitForConnected())
+    if(info.error() == QHostInfo::NoError)
     {
-        _sock->setSocketOption(QAbstractSocket::KeepAliveOption,1);
+        if(!info.addresses().isEmpty())
+        {
+            _sock->connectToHost(info.addresses().first(), url.port());
+            if(_sock->waitForConnected())
+            {
+                _sock->setSocketOption(QAbstractSocket::KeepAliveOption,1);
 
-        QString getRequest = QString("%1 %2 %3").arg("GET", url.path() +"?"+ Helper::getEncodedQueryString(url), "HTTP/1.1\r\n");
+                QString getRequest = QString("%1 %2 %3").arg("GET", url.path() +"?"+ Helper::getEncodedQueryString(url), "HTTP/1.1\r\n");
 
-        //prepare http request
-        os << QByteArray().append(getRequest);
-        os << "Host: " << host << ":" << url.port() << "\r\n";
-        os << "User-Agent: SignalR.Client\r\n";
-        os << "Accept: text/event-stream\r\n";
-        os << "\r\n";
-        os.flush();
+                //prepare http request
+                os << QByteArray().append(getRequest);
+                os << "Host: " << host << ":" << url.port() << "\r\n";
+                os << "User-Agent: SignalR.Client\r\n";
+                os << "Accept: text/event-stream\r\n";
+                os << "\r\n";
+                os.flush();
 
-        callback(*this, NULL, state);
+                callback(*this, NULL, state);
+            }
+            else
+            {
+                callback(*this, new SignalException(_sock->errorString(), SignalException::ConnectionRefusedError), state);
+                QLOG_ERROR() << "EventStream Error:" << _sock->errorString();
+            }
+        }
     }
     else
     {
-        callback(*this, new SignalException(_sock->errorString(), SignalException::ConnectionRefusedError), state);
-        QLOG_ERROR() << "EventStream Error:" << _sock->errorString();
+        callback(*this, new SignalException(info.errorString(), SignalException::ConnectionRefusedError), state);
+        QLOG_ERROR() << "Host Error:" << info.errorString();
     }
 
 }
@@ -76,10 +89,7 @@ void HttpEventStream::readLine(HttpResponse::READ_CALLBACK readCallback, void *s
 
                 _isFirstReponse = false;
             }
-            QString packet = readPackage("");
-
-            QLOG_DEBUG() << packet;
-            readCallback(packet, 0, state);
+            readCallback(readPackage(""), 0, state);
         }
         else
         {

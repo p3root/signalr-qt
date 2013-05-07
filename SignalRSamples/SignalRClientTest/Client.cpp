@@ -7,7 +7,7 @@ Client::Client(QCoreApplication &app)
 {
     _timer.setSingleShot(true);
     _timer.setInterval(108000);
-    _timer.start();
+   // _timer.start();
     connect(&_timer, SIGNAL(timeout()), this, SLOT(timerTick()));
     connect(&app, SIGNAL(aboutToQuit()), SLOT(stop()));
 }
@@ -26,7 +26,7 @@ void Client::start()
     _connection = new HubConnection("http://patrik.pfaffenbauer.at:8888/signalr", _handler);
 
     _client = new DefaultHttpClient();
-    _transport = new LongPollingTransport(_client);
+    _transport = new ServerSentEventsTransport(_client);
 
     HubProxy* proxy = _connection->createHubProxy("Chat");
     _connection->start(_transport, true);

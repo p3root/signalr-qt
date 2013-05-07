@@ -46,7 +46,8 @@ void DefaultHttpClient::get(QString url, HTTP_REQUEST_CALLBACK httpRequestCallba
     reply->deleteLater();
     reply = 0;
     _getReply = 0;
-    delete nam;
+    nam->deleteLater();
+    nam = 0;
 
     if(error == 0)
     {
@@ -118,7 +119,8 @@ void DefaultHttpClient::post(QString url, QMap<QString, QString> arguments, HTTP
     reply->deleteLater();
     reply = 0;
     _postReply = 0;
-    delete nam;
+    nam->deleteLater();
+    nam = 0;
 
 }
 

@@ -106,7 +106,7 @@ void ServerSentEventsTransport::readLoop(HttpResponse& httpResponse, Connection*
 void ServerSentEventsTransport::onReadLine(QString data, SignalException* error, void* state)
 {
     ReadInfo* readInfo = (ReadInfo*)state;
-    bool timedOut, disconnected;
+    bool timedOut = false, disconnected = false;
 
     if(data == "data: initialized")
     {
