@@ -67,16 +67,16 @@ unix:!symbian {
 }
 
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ThirdParty/QtExtLog/release/ -lQtExtLog
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ThirdParty/QtExtLog/debug/ -lQtExtLog
-else:unix: LIBS += -L$$OUT_PWD/../ThirdParty/QtExtLog/ -lQtExtLog
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtLog/release/ -lQtExtLog
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtLog/debug/ -lQtExtLog
+else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtLog/ -lQtExtLog
 
-INCLUDEPATH += $$PWD/../ThirdParty/QtExtLog
-DEPENDPATH += $$PWD/../ThirdParty/QtExtLog
+INCLUDEPATH += $$PWD/../../ThirdParty/QtExtLog
+DEPENDPATH += $$PWD/../T../hirdParty/QtExtLog
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ThirdParty/QtExtJson/release/ -lQextJson
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ThirdParty/QtExtJson/debug/ -lQextJson
-else:unix: LIBS += -L$$OUT_PWD/../ThirdParty/QtExtJson/ -lQextJson
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/release/ -lQextJson
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/debug/ -lQextJson
+else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/ -lQextJson
 
-INCLUDEPATH += $$PWD/../ThirdParty/QtExtJson
-DEPENDPATH += $$PWD/../ThirdParty/QtExtJson
+INCLUDEPATH += $$PWD/../../ThirdParty/QtExtJson
+DEPENDPATH += $$PWD/../../ThirdParty/QtExtJson

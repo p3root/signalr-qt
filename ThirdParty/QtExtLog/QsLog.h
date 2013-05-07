@@ -61,7 +61,7 @@ public:
 
    //! The helper forwards the streaming to QDebug and builds the final
    //! log message.
-   class Helper
+    class Helper
    {
    public:
       explicit Helper(Level logLevel) :

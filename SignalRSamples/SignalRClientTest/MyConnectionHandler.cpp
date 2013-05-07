@@ -21,11 +21,10 @@ void MyConnectionHandler::onReceived(QVariant data)
 {
     QLOG_DEBUG() << data;
     _count++;
-    QLOG_DEBUG() << "MessageThread" << thread()->currentThreadId();
     if(_proxy)
     {
         HubProxy prox = _con->getByName("Chat");
-        prox.invoke("send", QString::number(_count));
+        //prox.invoke("send", QString::number(_count));
     }
 }
 

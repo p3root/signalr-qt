@@ -1,5 +1,6 @@
 #include "Client.h"
 
+
 #include <Connection.h>
 #include <Hubs/HubConnection.h>
 #include <MyConnectionHandler.h>
@@ -10,13 +11,14 @@
 
 Client::Client()
 {
+
 }
 
 void Client::start()
 {
     QLOG_DEBUG() << "Client Thread: " << thread()->currentThreadId();
     MyConnectionHandler* handler = new MyConnectionHandler();
-    HubConnection* connection = new HubConnection("http://192.168.0.231:8080/signalr", handler);
+    HubConnection* connection = new HubConnection("http://patrik.pfaffenbauer.at:8888/signalr", handler);
 
     HttpClient* client = new DefaultHttpClient();
     ClientTransport* tansport = new LongPollingTransport(client);
