@@ -8,14 +8,16 @@ HubConnection::HubConnection(QString url, ConnectionHandler *handler) : Connecti
 
 HubConnection::~HubConnection()
 {
+    for(int i = 0; i < _hubs.count(); i++)
+    {
+        HubProxy* hub = _hubs.values().at(i);;
+        _hubs.remove(_hubs.keys()[i]);
+        delete hub;
+    }
 }
 
 void HubConnection::stop()
 {
-    for(int i = 0; i < _hubs.count(); i++)
-    {
-        delete _hubs.values().at(i);
-    }
     Connection::stop();
 }
 
