@@ -178,8 +178,19 @@ void Connection::transportStarted(SignalException* error)
     }
     else
     {
-        onError(*error);
-        stop();
+        if(_autoReconnect)
+        {
+            if(changeState(Disconnected, Connecting))
+            {
+                _transport->negotiate();
+            }
+        }
+        else
+        {
+
+            onError(*error);
+            stop();
+        }
     }
 }
 

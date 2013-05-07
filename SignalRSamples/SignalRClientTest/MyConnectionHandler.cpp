@@ -31,4 +31,10 @@ void MyConnectionHandler::onReceived(QVariant data)
 void MyConnectionHandler::onStateChanged(Connection::State old_state, Connection::State new_state)
 {
     QLOG_DEBUG()  << "state changed: " << old_state << " -> " << new_state;
+
+    if(new_state == Connection::Connected)
+    {
+        HubProxy prox = _con->getByName("Chat");
+        prox.invoke("send", "test");
+    }
 }

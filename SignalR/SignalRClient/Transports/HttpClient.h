@@ -26,6 +26,9 @@ private Q_SLOTS:
     void getRequestFinished();
     void getError(QNetworkReply::NetworkError);
 
+    void postRequestFinished();
+    void postError(QNetworkReply::NetworkError);
+
 private:
     bool _isAborting;
     QNetworkReply *_getReply;

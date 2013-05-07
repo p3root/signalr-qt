@@ -10,7 +10,7 @@
 
 class HttpBasedTransport : public ClientTransport
 {
-
+    Q_OBJECT
 protected:
     HttpClient* mHttpClient;
 
@@ -38,7 +38,9 @@ private:
     
     QQueue<SendQueueItem*> _sendQueue;
     bool _sending;
-    static void onSendHttpResponse(const QString& httpResponse, SignalException* error, void* state);
+
+private Q_SLOTS:
+    void onSendHttpResponse(const QString& httpResponse, SignalException* error);
 
 protected:
     Connection* _connection;

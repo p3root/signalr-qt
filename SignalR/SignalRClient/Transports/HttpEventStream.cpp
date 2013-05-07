@@ -5,11 +5,12 @@
 
 HttpEventStream::HttpEventStream(QUrl url) : _sock(0), _isFirstReponse(true), _url(url)
 {
-    _isAborting = false;
+
 }
 
 void HttpEventStream::open()
 {
+    _isAborting = false;
     _sock = new QTcpSocket();
     QTextStream os(_sock);
 
@@ -62,7 +63,6 @@ void HttpEventStream::open()
 void HttpEventStream::close()
 {
     _isAborting = true;
-    _sock->abort();
 
     QEventLoop loop;
     connect(this, SIGNAL(finished()), &loop, SLOT(quit()));
@@ -76,8 +76,11 @@ void HttpEventStream::run()
 
     while(!_isAborting)
     {
-        if(_sock->waitForReadyRead(-1))
+        if(_sock->waitForReadyRead())
         {
+            if(!_sock->bytesAvailable())
+                continue;
+
             if(!_isAborting && _sock->error() != 0)
             {
                 if(_isFirstReponse)
@@ -96,6 +99,8 @@ void HttpEventStream::run()
             }
             else
             {
+                int error = _sock->error();
+                QString errorStr = _sock->errorString();
                 if(!_isAborting)
                 {
                     Q_EMIT packetReady("", new SignalException("", SignalException::EventStreamSocketLost));
@@ -108,6 +113,8 @@ void HttpEventStream::run()
         }
         else
         {
+            int error1 = _sock->error();
+            QString errorStr1 = _sock->errorString();
             if(!_isAborting)
             {
                 Q_EMIT packetReady("", new SignalException("", SignalException::EventStreamSocketLost));

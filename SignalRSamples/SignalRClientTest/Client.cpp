@@ -33,10 +33,6 @@ void Client::start()
 
     _handler->setHubProxy(proxy);
     _handler->setConnection(_connection);
-
-    Helper::wait(1);
-
-    proxy->invoke("send", "0");
 }
 
 void Client::stop()

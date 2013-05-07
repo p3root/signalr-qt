@@ -24,7 +24,7 @@ void HttpClient::get(QString url)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
     reqUrl.setUrl(QByteArray().append(encodedUrl));
 #else
-     reqUrl.setEncodedUrl(QByteArray().append(encodedUrl));
+    reqUrl.setEncodedUrl(QByteArray().append(encodedUrl));
 #endif
 
     QNetworkRequest req = QNetworkRequest(reqUrl);
@@ -37,8 +37,6 @@ void HttpClient::get(QString url)
 
 void HttpClient::post(QString url, QMap<QString, QString> arguments)
 {
-    /*QNetworkAccessManager* nam = new QNetworkAccessManager();
-
     QString queryString;
     QMap<QString, QString>::iterator it = arguments.begin();
     while(it != arguments.end())
@@ -51,40 +49,20 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
     QUrl decodedUrl(url);
     QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(decodedUrl.port()) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl);
     QUrl reqUrl = QUrl();
+
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
     reqUrl.setUrl(QByteArray().append(encodedUrl));
 #else
-     reqUrl.setEncodedUrl(QByteArray().append(encodedUrl));
+    reqUrl.setEncodedUrl(QByteArray().append(encodedUrl));
 #endif
 
-    QNetworkRequest req(reqUrl);
-    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    QNetworkRequest req = QNetworkRequest(reqUrl);
     req.setRawHeader("User-Agent", "SignalR-Qt.Client");
+    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    _postReply = _man->post(req, QByteArray().append(queryString));
 
-    QNetworkReply* reply = nam->post(req, QByteArray().append(queryString));
-    _postReply = reply;
-    QEventLoop loop;
-    QObject::connect(reply, SIGNAL(readyRead()), &loop, SLOT(quit()));
-
-    loop.exec();
-
-    if(reply->error() == 0)
-    {
-        QByteArray data = reply->readAll();
-        //httpRequestCallback(QString(data), 0, state);
-    }
-    else
-    {
-        //if(!_isAborting)
-           // httpRequestCallback("", new SignalException(reply->errorString(), SignalException::CouldNotEstablishbConnection), state);
-    }
-
-    reply->deleteLater();
-    reply = 0;
-    _postReply = 0;
-    nam->deleteLater();
-    nam = 0;*/
-
+    connect(_postReply, SIGNAL(finished()), this, SLOT(postRequestFinished()), Qt::AutoConnection);
+    connect(_postReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(postError(QNetworkReply::NetworkError)), Qt::QueuedConnection);
 }
 
 void HttpClient::abort()
@@ -118,15 +96,48 @@ void HttpClient::getError(QNetworkReply::NetworkError)
         SignalException* ex = 0;
         switch(error)
         {
-            case 1:
-                ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
-                break;
-            default:
-                ex = new SignalException(errorString, SignalException::UnkownError);
-                break;
+        case 1:
+            ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
+            break;
+        default:
+            ex = new SignalException(errorString, SignalException::UnkownError);
+            break;
         }
 
         if(!_isAborting)
             Q_EMIT getRequestCompleted("", ex);
+    }
+}
+
+void HttpClient::postRequestFinished()
+{
+    QString data = QString(_postReply->readAll());
+
+    if( _postReply->error() == QNetworkReply::NoError)
+    {
+        Q_EMIT postRequestCompleted(data, 0);
+    }
+}
+
+void HttpClient::postError(QNetworkReply::NetworkError)
+{
+    int error = _postReply->error();
+    QString errorString = _postReply->errorString();
+
+    if(error != QNetworkReply::NoError)
+    {
+        SignalException* ex = 0;
+        switch(error)
+        {
+        case 1:
+            ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
+            break;
+        default:
+            ex = new SignalException(errorString, SignalException::UnkownError);
+            break;
+        }
+
+        if(!_isAborting)
+            Q_EMIT postRequestCompleted("", ex);
     }
 }
