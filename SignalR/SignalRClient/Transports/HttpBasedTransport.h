@@ -12,7 +12,7 @@ class HttpBasedTransport : public ClientTransport
 {
     Q_OBJECT
 protected:
-    HttpClient* mHttpClient;
+    HttpClient* _httpClient;
 
 public:
     HttpBasedTransport(HttpClient* httpClient, Connection* con);

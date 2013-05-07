@@ -14,7 +14,7 @@ LongPollingTransport::~LongPollingTransport(void)
 
 void LongPollingTransport::start(Connection*, QString)
 {
-    connect(mHttpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
+    connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
 
     _url = _connection->getUrl() + "/connect";
     _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
@@ -22,17 +22,17 @@ void LongPollingTransport::start(Connection*, QString)
     Q_EMIT transportStarted(0);
 
     _started = true;
-    mHttpClient->get(_url);
+    _httpClient->get(_url);
 }
 
 void LongPollingTransport::abort(Connection *)
 {
-    mHttpClient->abort();
+    _httpClient->abort();
 }
 
 void LongPollingTransport::stop(Connection *)
 {
-    mHttpClient->abort();
+    _httpClient->abort();
 }
 
 const QString &LongPollingTransport::getTransportType()
@@ -92,7 +92,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
     }
     else
     {
-        mHttpClient->get(_url);
+        _httpClient->get(_url);
     }
 
     if(_connection->getState() == Connection::Disconnected)

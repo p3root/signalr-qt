@@ -21,11 +21,6 @@ void MyConnectionHandler::onReceived(QVariant data)
 {
     QLOG_DEBUG() << data;
     _count++;
-    if(_proxy)
-    {
-        HubProxy prox = _con->getByName("Chat");
-        //prox.invoke("send", QString::number(_count));
-    }
 }
 
 void MyConnectionHandler::onStateChanged(Connection::State old_state, Connection::State new_state)
@@ -34,7 +29,7 @@ void MyConnectionHandler::onStateChanged(Connection::State old_state, Connection
 
     if(new_state == Connection::Connected)
     {
-        HubProxy prox = _con->getByName("Chat");
-        prox.invoke("send", "test");
+        //HubProxy prox = _con->getByName("Chat");
+        //prox.invoke("send", "test");
     }
 }

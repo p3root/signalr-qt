@@ -99,11 +99,9 @@ void HttpEventStream::run()
             }
             else
             {
-                int error = _sock->error();
-                QString errorStr = _sock->errorString();
                 if(!_isAborting)
                 {
-                    Q_EMIT packetReady("", new SignalException("", SignalException::EventStreamSocketLost));
+                    Q_EMIT packetReady("", new SignalException(_sock->errorString(), SignalException::EventStreamSocketLost));
                 }
                 else
                 {
@@ -113,11 +111,9 @@ void HttpEventStream::run()
         }
         else
         {
-            int error1 = _sock->error();
-            QString errorStr1 = _sock->errorString();
             if(!_isAborting)
             {
-                Q_EMIT packetReady("", new SignalException("", SignalException::EventStreamSocketLost));
+                Q_EMIT packetReady("", new SignalException(_sock->errorString(), SignalException::EventStreamSocketLost));
             }
             else
             {

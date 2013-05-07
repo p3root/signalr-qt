@@ -7,7 +7,7 @@ Client::Client(QCoreApplication &app)
 {
     _timer.setSingleShot(true);
     _timer.setInterval(400000);
-    _timer.start();
+   // _timer.start();
     connect(&_timer, SIGNAL(timeout()), this, SLOT(timerTick()));
     connect(&app, SIGNAL(aboutToQuit()), SLOT(stop()));
 }

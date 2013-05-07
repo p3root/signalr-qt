@@ -3,7 +3,7 @@
 
 HttpBasedTransport::HttpBasedTransport(HttpClient* httpClient, Connection *con) : _sending(false), _connection(0)
 {
-    mHttpClient = httpClient;
+    _httpClient = httpClient;
     _connection = con;
 }
 
@@ -17,7 +17,7 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
 {
     if(!ex)
     {
-        disconnect(mHttpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
+        disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
         const NegotiateResponse* res = TransportHelper::parseNegotiateHttpResponse(data);
 
         if(res)
@@ -37,8 +37,8 @@ void HttpBasedTransport::negotiate()
 {
     QString url = _connection->getUrl() + "/negotiate";
 
-    connect(mHttpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
-    mHttpClient->get(url);
+    connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
+    _httpClient->get(url);
 }
 
 void HttpBasedTransport::send(Connection* connection, QString data)
@@ -61,8 +61,8 @@ void HttpBasedTransport::send(Connection* connection, QString data)
     }
     else
     {
-        connect(mHttpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
-        mHttpClient->post(url, postData);
+        connect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
+        _httpClient->post(url, postData);
     }
 }
 
@@ -79,8 +79,8 @@ void HttpBasedTransport::tryDequeueNextWorkItem()
         // Nuke the work item
         _sendQueue.dequeue();
 
-        connect(mHttpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
-        mHttpClient->post(workItem->url, workItem->postData);
+        connect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
+        _httpClient->post(workItem->url, workItem->postData);
 
         delete workItem;
     }
@@ -95,7 +95,7 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalE
     {
         //TODO error handling
     }
-    disconnect(mHttpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
+    disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
     tryDequeueNextWorkItem();
 }
 
