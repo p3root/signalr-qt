@@ -5,6 +5,7 @@
 #include "SignalException.h"
 #include <QMap>
 #include <QNetworkReply>
+#include <QMutex>
 
 class HttpClient : public QObject
 {
@@ -34,6 +35,8 @@ private:
     QNetworkReply *_getReply;
     QNetworkReply *_postReply;
     QNetworkAccessManager* _man;
+    QMutex *_getMutex;
+    QMutex *_postMutex;
 };
 
 #endif // HTTPCLIENT_H

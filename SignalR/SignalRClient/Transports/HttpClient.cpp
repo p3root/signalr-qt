@@ -9,18 +9,24 @@
 HttpClient::HttpClient() : _isAborting(false), _getReply(0), _postReply(0), _man(0)
 {
     _man = new QNetworkAccessManager();
+    _getMutex = new QMutex(QMutex::Recursive);
+    _postMutex = new QMutex(QMutex::Recursive);
 }
 
 HttpClient::~HttpClient()
 {
     delete _man;
+    delete _getMutex;
+    delete _postMutex;
 }
 
 void HttpClient::get(QString url)
 {
+    QMutexLocker l(_getMutex);
+    Q_UNUSED(l);
     if(_getReply)
     {
-        delete _getReply;
+        _getReply->deleteLater();
         _getReply = 0;
     }
 
@@ -44,9 +50,11 @@ void HttpClient::get(QString url)
 
 void HttpClient::post(QString url, QMap<QString, QString> arguments)
 {
+    QMutexLocker l(_postMutex);
+    Q_UNUSED(l);
     if(_postReply)
     {
-        delete _postReply;
+        _postReply->deleteLater();
         _postReply = 0;
     }
 
