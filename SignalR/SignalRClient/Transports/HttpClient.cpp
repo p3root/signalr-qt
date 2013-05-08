@@ -13,10 +13,17 @@ HttpClient::HttpClient() : _isAborting(false), _getReply(0), _postReply(0), _man
 
 HttpClient::~HttpClient()
 {
+    delete _man;
 }
 
 void HttpClient::get(QString url)
 {
+    if(_getReply)
+    {
+        delete _getReply;
+        _getReply = 0;
+    }
+
     QUrl decodedUrl(url);
     QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(decodedUrl.port()) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl);
     QUrl reqUrl = QUrl();
@@ -37,6 +44,12 @@ void HttpClient::get(QString url)
 
 void HttpClient::post(QString url, QMap<QString, QString> arguments)
 {
+    if(_postReply)
+    {
+        delete _postReply;
+        _postReply = 0;
+    }
+
     QString queryString;
     QMap<QString, QString>::iterator it = arguments.begin();
     while(it != arguments.end())

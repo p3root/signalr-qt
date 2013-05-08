@@ -95,6 +95,4 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
         _httpClient->get(_url);
     }
 
-    if(_connection->getState() == Connection::Disconnected)
-        return;
 }
