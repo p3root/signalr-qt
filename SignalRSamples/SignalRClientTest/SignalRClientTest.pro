@@ -17,10 +17,9 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp \
-           MyConnectionHandler.cpp \
     Client.cpp
 
-HEADERS += MyConnectionHandler.h \
+HEADERS += \
     Client.h
 
 

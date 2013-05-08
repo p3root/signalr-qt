@@ -1,7 +1,7 @@
 #include "HubConnection.h"
 #include <QtExtJson.h>
 
-HubConnection::HubConnection(QString url, ConnectionHandler *handler) : Connection(url, handler)
+HubConnection::HubConnection(QString url) : Connection(url)
 {
 
 }
@@ -53,7 +53,30 @@ QString HubConnection::onSending()
     return json;
 }
 
-const HubProxy &HubConnection::getByName(const QString &name)
+void HubConnection::onReceived(QVariant data)
 {
-    return *_hubs[name];
+    if(data.convert(QVariant::Map))
+    {
+        QVariantMap map = data.value<QVariantMap>();
+
+        //if message is from hub, search hub and write message to it
+        if(map.contains("H"))
+        {
+            QVariant hub = map["H"];
+
+            if(_hubs.contains(hub.toString()))
+            {
+                _hubs[hub.toString()]->onReceive(data);
+            }
+        }
+        else
+        {
+            Connection::onReceived(data);
+        }
+    }
+}
+
+HubProxy *HubConnection::getByName(const QString &name)
+{
+    return _hubs[name];
 }

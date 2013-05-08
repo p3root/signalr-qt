@@ -29,6 +29,11 @@ void HubProxy::invoke(QString method, QStringList params)
     _connection->send(QtExtJson::stringify(QVariant::fromValue(map)));
 }
 
+void HubProxy::onReceive(QVariant var)
+{
+    Q_EMIT hubMessageReceived(var);
+}
+
 const QString &HubProxy::getName()
 {
     return _hubName;

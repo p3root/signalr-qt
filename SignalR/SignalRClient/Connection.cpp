@@ -5,11 +5,10 @@
 #include "Helper/Helper.h"
 #include "Transports/LongPollingTransport.h"
 
-Connection::Connection(const QString host, ConnectionHandler* handler) : _count(0)
+Connection::Connection(const QString host) : _count(0)
 {
     _host = host;
     _state = Disconnected;
-    _handler = handler;
 
     qRegisterMetaType<SignalException>("SignalException");
 }
@@ -60,7 +59,7 @@ bool Connection::changeState(State oldState, State newState)
     {
         _state = newState;
 
-        _handler->onStateChanged(oldState, newState);
+        Q_EMIT stateChanged(oldState, newState);
 
         return true;
     }
@@ -88,12 +87,12 @@ QString Connection::onSending()
 
 void Connection::onError(SignalException error)
 {
-    _handler->onError(error);
+    Q_EMIT errorOccured(error);
 }
 
 void Connection::onReceived(QVariant data)
 {
-    _handler->receivedData(data);
+    Q_EMIT messageReceived(data);
 }
 
 ClientTransport* Connection::getTransport()

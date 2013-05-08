@@ -21,7 +21,6 @@ SOURCES +=  \
             Transports/HttpRequest.cpp \
             Transports/HttpEventStream.cpp \
             ClientTransport.cpp \
-            ConnectionHandler.cpp \
             Connection.cpp \
             SignalException.cpp \
             Helper/Helper.cpp \
@@ -45,7 +44,6 @@ HEADERS +=  \
             Connection.h \
             SignalR_global.h \
             ClientTransport.h \
-            ConnectionHandler.h \
             SignalException.h \
             Hubs/HubConnection.h \
             Hubs/HubProxy.h \

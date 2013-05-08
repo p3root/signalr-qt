@@ -6,7 +6,6 @@
 
 #include <Connection.h>
 #include <Hubs/HubConnection.h>
-#include <MyConnectionHandler.h>
 #include <Transports/HttpClient.h>
 #include <Transports/LongPollingTransport.h>
 #include <Helper/Helper.h>
@@ -24,10 +23,12 @@ public:
 private Q_SLOTS:
     void timerTick();
     void stop();
+    void onHubMessageReceived(QVariant);
+    void onError(SignalException);
+    void onStateChanged(Connection::State oldState, Connection::State newState);
 
 private:
     QTimer _timer;
-    MyConnectionHandler* _handler;
     HubConnection* _connection;
     HttpClient* _client;
     ClientTransport* _transport;

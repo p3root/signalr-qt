@@ -10,7 +10,7 @@
 class HubConnection : public Connection
 {
 public:
-    HubConnection(QString url, ConnectionHandler* handler);
+    HubConnection(QString url);
     ~HubConnection();
 
     void stop();
@@ -18,8 +18,9 @@ public:
     HubProxy* createHubProxy(QString name);
 
     QString onSending();
+    void onReceived(QVariant data);
 
-    const HubProxy& getByName(const QString& name);
+    HubProxy* getByName(const QString& name);
 
 private:
     QMap<QString, HubProxy*> _hubs;

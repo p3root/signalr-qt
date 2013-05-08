@@ -25,7 +25,7 @@ public:
         Disconnected
     };
 
-    Connection(QString url, ConnectionHandler* handler);
+    Connection(QString url);
     virtual ~Connection(void);
 
     void start(bool autoReconnect = false);
@@ -58,6 +58,11 @@ public:
 
     void negotiateCompleted(const NegotiateResponse *negotiateResponse, SignalException* error);
 
+Q_SIGNALS:
+    void stateChanged(Connection::State old_state, Connection::State new_state);
+    void errorOccured(SignalException error);
+    void messageReceived(QVariant data);
+
 protected:
      State _state;
 
@@ -71,7 +76,7 @@ private:
     QString _groupsToken;
     QString _messageId;
     ClientTransport* _transport;
-    ConnectionHandler* _handler;
+   // ConnectionHandler* _handler;
     quint64 _count;
     HttpClient *_httpClient;
     QDateTime _hearbeat;
