@@ -1,7 +1,12 @@
 #include "HttpEventStream.h"
 #include "Helper/Helper.h"
 #include "Transports/ServerSentEventsTransport.h"
-#include <QHostInfo>
+
+#if defined(Q_OS_QNX)
+	#include <QtNetwork/qhostinfo.h>
+#else
+	#include <QHostInfo>
+#endif
 
 HttpEventStream::HttpEventStream(QUrl url) : _sock(0), _isFirstReponse(true), _url(url)
 {

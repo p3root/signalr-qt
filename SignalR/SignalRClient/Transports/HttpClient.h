@@ -1,11 +1,17 @@
 #ifndef HTTPCLIENT_H
 #define HTTPCLIENT_H
 
-#include <QNetworkAccessManager>
 #include "SignalException.h"
 #include <QMap>
-#include <QNetworkReply>
 #include <QMutex>
+
+#if defined(Q_OS_QNX)
+	#include <QtNetwork/qnetworkaccessmanager.h>
+	#include <QtNetwork/qnetworkreply.h>
+#else
+	#include <QNetworkAccessManager>
+	#include <QNetworkReply>
+#endif
 
 class HttpClient : public QObject
 {

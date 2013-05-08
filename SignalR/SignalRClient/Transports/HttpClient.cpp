@@ -1,6 +1,13 @@
 #include "HttpClient.h"
-#include <QNetworkRequest>
-#include <QNetworkReply>
+
+#if defined(Q_OS_QNX)
+	#include <QtNetwork/qnetworkrequest.h>
+	#include <QtNetwork/qnetworkreply.h>
+#else
+	#include <QNetworkRequest>
+	#include <QNetworkReply>
+#endif
+
 #include <QEventLoop>
 #include "Helper/Helper.h"
 #include <QsLog.h>
