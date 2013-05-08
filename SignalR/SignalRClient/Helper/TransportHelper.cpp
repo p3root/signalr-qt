@@ -79,6 +79,12 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
         if(*disconnected)
             return;
 
+        //its a hub message, dispatch it to the correct hub
+        if(map.contains("H"))
+        {
+
+        }
+
         if(map.contains("M"))
         {
             if(map["M"].convert(QVariant::List))
