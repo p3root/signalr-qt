@@ -41,6 +41,12 @@ void QsDebugOutput::output( const QString& message )
    TPtrC8 symbianMessage(reinterpret_cast<const TUint8*>(qPrintable(message)));
    RDebug::RawPrint(symbianMessage);
 }
+#elif defined(Q_OS_QNX)
+#include <QDebug>
+void QsDebugOutput::output( const QString& message )
+{
+   qDebug() << message;
+}
 #elif defined(Q_OS_UNIX)
 #include <cstdio>
 void QsDebugOutput::output( const QString& message )

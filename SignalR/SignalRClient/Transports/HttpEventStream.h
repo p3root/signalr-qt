@@ -2,8 +2,14 @@
 #define HTTPEVENTSTREAM_H
 
 #include <QtCore>
-#include <QHostAddress>
-#include <QTcpSocket>
+
+#if defined(Q_OS_QNX)
+	#include <QtNetwork/qhostaddress.h>
+	#include <QtNetwork/qtcpsocket.h>
+#else
+	#include <QHostAddress>
+	#include <QTcpSocket>
+#endif
 #include <QsLog.h>
 #include "HttpRequest.h"
 #include "HttpResponse.h"
