@@ -46,7 +46,7 @@ void Connection::send(QString data)
     if(_count == sizeof(quint64))
         _count = 0;
     _count++;
-    _transport->send(this, data);
+    _transport->send(data);
 }
 
 Connection::State Connection::getState()
@@ -134,7 +134,7 @@ bool Connection::getAutoReconnect()
 void Connection::stop()
 {
     changeState(_state, Disconnected);
-    _transport->stop(this);
+    _transport->stop();
     delete _transport;
 }
 
@@ -151,7 +151,7 @@ void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, 
         {
             setConnectionState(*negotiateResponse);
             connect(_transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(transportStarted(SignalException*)));
-            getTransport()->start(this, "");
+            getTransport()->start("");
         }
     }
     else

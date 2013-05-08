@@ -12,20 +12,23 @@ class ClientTransport : public QObject
 {
     Q_OBJECT
 public:
-    ClientTransport(void);
+    ClientTransport(Connection* con);
     virtual ~ClientTransport(void);
 
     virtual void negotiate() = 0;
-    virtual void start(Connection* connection, QString data) = 0;
-    virtual void send(Connection* connection, QString data) = 0;
-    virtual void stop(Connection* connection) = 0;
-    virtual void abort(Connection* connection) = 0;
+    virtual void start(QString data) = 0;
+    virtual void send(QString data) = 0;
+    virtual void stop() = 0;
+    virtual void abort() = 0;
 
 Q_SIGNALS:
     void transportStarted(SignalException* ex);
 
 private Q_SLOTS:
     virtual void negotiateCompleted(QString data, SignalException* ex) = 0;
+
+protected:
+    Connection* _connection;
 };
 
 #endif

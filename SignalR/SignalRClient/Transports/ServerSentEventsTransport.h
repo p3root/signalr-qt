@@ -11,9 +11,9 @@ public:
     ServerSentEventsTransport(HttpClient* client, Connection *con);
     ~ServerSentEventsTransport(void);
 
-    void start(Connection*, QString data);
-    void abort(Connection *connection);
-    void stop(Connection *connection);
+    void start(QString data);
+    void abort();
+    void stop();
 
     const QString& getTransportType();
 

@@ -1,10 +1,9 @@
 #include "HttpBasedTransport.h"
 
 
-HttpBasedTransport::HttpBasedTransport(HttpClient* httpClient, Connection *con) : _sending(false), _connection(0)
+HttpBasedTransport::HttpBasedTransport(HttpClient* httpClient, Connection *con) : ClientTransport(con), _sending(false)
 {
     _httpClient = httpClient;
-    _connection = con;
 }
 
 
@@ -41,12 +40,12 @@ void HttpBasedTransport::negotiate()
     _httpClient->get(url);
 }
 
-void HttpBasedTransport::send(Connection* connection, QString data)
+void HttpBasedTransport::send(QString data)
 {
-    QString url = connection->getUrl() +
+    QString url = _connection->getUrl() +
             "/send";
 
-    url += TransportHelper::getReceiveQueryString(connection, "", getTransportType());
+    url += TransportHelper::getReceiveQueryString(_connection, "", getTransportType());
 
     QMap<QString, QString> postData;
     postData.insert("data",data);
@@ -54,7 +53,7 @@ void HttpBasedTransport::send(Connection* connection, QString data)
     if(_sending)
     {
         SendQueueItem *queueItem = new SendQueueItem();
-        queueItem->connection = connection;
+        queueItem->connection = _connection;
         queueItem->url = url;
         queueItem->postData = postData;
         _sendQueue.append(queueItem);
@@ -99,13 +98,13 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalE
     tryDequeueNextWorkItem();
 }
 
-void HttpBasedTransport::stop(Connection*)
+void HttpBasedTransport::stop()
 {
     //emit aboutToClose();
 }
 
 
-void HttpBasedTransport::abort(Connection*)
+void HttpBasedTransport::abort()
 {
     //emit aboutToAbort();
 }

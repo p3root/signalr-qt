@@ -11,7 +11,7 @@ ServerSentEventsTransport::~ServerSentEventsTransport(void)
 
 }
 
-void ServerSentEventsTransport::start(Connection*, QString)
+void ServerSentEventsTransport::start(QString)
 {
     _url = _connection->getUrl() + "/connect";
     _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
@@ -30,13 +30,13 @@ void ServerSentEventsTransport::start(Connection*, QString)
 
 }
 
-void ServerSentEventsTransport::abort(Connection*)
+void ServerSentEventsTransport::abort()
 {
     _eventStream->close();
     _eventStream->deleteLater();
 }
 
-void ServerSentEventsTransport::stop(Connection*)
+void ServerSentEventsTransport::stop()
 {
     _eventStream->close();
 }

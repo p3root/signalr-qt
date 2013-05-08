@@ -12,7 +12,7 @@ LongPollingTransport::~LongPollingTransport(void)
 {
 }
 
-void LongPollingTransport::start(Connection*, QString)
+void LongPollingTransport::start(QString)
 {
     connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
 
@@ -25,12 +25,12 @@ void LongPollingTransport::start(Connection*, QString)
     _httpClient->get(_url);
 }
 
-void LongPollingTransport::abort(Connection *)
+void LongPollingTransport::abort()
 {
     _httpClient->abort();
 }
 
-void LongPollingTransport::stop(Connection *)
+void LongPollingTransport::stop()
 {
     _httpClient->abort();
 }

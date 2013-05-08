@@ -12,11 +12,6 @@ TransportHelper::~TransportHelper(void)
 {
 }
 
-void TransportHelper::getNegotiationResponse(HttpClient* httpClient, Connection* connnection, ClientTransport* transport)
-{
-
-}
-
 QString TransportHelper::getReceiveQueryString(Connection* connection, QString data, QString transport)
 {
     QString qs = "?transport=" + transport + "&connectionToken=" + connection->getConnectionToken();

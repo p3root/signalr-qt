@@ -20,9 +20,9 @@ public:
 
     void negotiateCompleted(QString data, SignalException* ex);
     void negotiate();
-    void send(Connection* connection, QString data);
-    virtual void stop(Connection* connection);
-    void abort(Connection* connection);
+    void send(QString data);
+    virtual void stop();
+    void abort();
 
     virtual const QString& getTransportType() = 0;
 
@@ -41,9 +41,6 @@ private:
 
 private Q_SLOTS:
     void onSendHttpResponse(const QString& httpResponse, SignalException* error);
-
-protected:
-    Connection* _connection;
 };
 
 #endif

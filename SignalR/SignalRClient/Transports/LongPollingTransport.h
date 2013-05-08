@@ -13,9 +13,9 @@ public:
     LongPollingTransport(HttpClient* httpClient, Connection* con);
     ~LongPollingTransport(void);
 
-    void start(Connection* connection, QString data);
-    void abort(Connection *connection);
-    void stop(Connection *connection);
+    void start(QString connection);
+    void abort();
+    void stop();
 
     const QString& getTransportType();
 

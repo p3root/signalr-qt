@@ -17,7 +17,6 @@ public:
     ~TransportHelper(void);
 
 
-    static void getNegotiationResponse(HttpClient* httpClient, Connection* connnection, ClientTransport *transport);
     static QString getReceiveQueryString(Connection* connection, QString data, QString transport);
     static void processMessages(Connection* connection, QString raw, bool* timedOut, bool* disconnected);
 
