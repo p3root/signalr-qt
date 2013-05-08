@@ -1,9 +1,9 @@
 #include "Connection.h"
-#include "ConnectionHandler.h"
 #include <QString>
 #include "Transports/HttpClient.h"
 #include "Helper/Helper.h"
 #include "Transports/LongPollingTransport.h"
+#include <QsLog.h>
 
 Connection::Connection(const QString host) : _count(0)
 {

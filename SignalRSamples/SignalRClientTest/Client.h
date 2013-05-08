@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QTimer>
 
-#include <Connection.h>
 #include <Hubs/HubConnection.h>
 #include <Transports/HttpClient.h>
 #include <Transports/LongPollingTransport.h>
