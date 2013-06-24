@@ -46,8 +46,9 @@ QString HubConnection::onSending()
     for(int i = 0; i < _hubs.count(); i++)
     {
         map.insert("Name", _hubs.keys().at(i));
+        lst.append(map);
     }
-    lst.append(map);
+    
 
     QString json = QtExtJson::stringify(QVariant::fromValue(lst));
     return json;
