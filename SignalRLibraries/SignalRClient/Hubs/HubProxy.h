@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QVariant>
+#include "HubCallback.h"
 
 class HubConnection;
 
@@ -14,8 +15,8 @@ public:
     HubProxy(HubConnection* connection, QString hubName);
     ~HubProxy();
 
-    void invoke(QString method, QString param);
-    void invoke(QString method, QStringList params);
+    void invoke(QString method, QString param, HubCallback*);
+    void invoke(QString method, QStringList params,HubCallback*);
 
     void onReceive(QVariant var);
 

@@ -16,6 +16,12 @@ HubConnection::~HubConnection()
     }
 }
 
+void HubConnection::send(QString data, QString id, HubCallback *c)
+{
+    _callbacks.insert(id, c);
+    Connection::send(data);
+}
+
 void HubConnection::stop()
 {
     Connection::stop();
@@ -68,6 +74,18 @@ void HubConnection::onReceived(QVariant data)
             if(_hubs.contains(hub.toString()))
             {
                 _hubs[hub.toString()]->onReceive(data);
+            }
+        }
+        else if(map.contains("I"))
+        {
+            QVariant id = map["I"];
+
+            if(_callbacks.contains(id.toString()))
+            {
+                HubCallback* callback = _callbacks[id.toString()];
+                if(callback)
+                    Q_EMIT callback->raiseMessageReceived(data);
+                _callbacks.remove(id.toString());
             }
         }
         else

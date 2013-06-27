@@ -89,11 +89,15 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalE
 {    
     Q_UNUSED(httpResponse);
     Q_UNUSED(error);
+    bool timedOut, disconnected;
 
     if(!error)
     {
         //TODO error handling
     }
+
+    TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected);
+
     disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
     tryDequeueNextWorkItem();
 }

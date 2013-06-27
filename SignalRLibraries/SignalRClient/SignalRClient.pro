@@ -27,7 +27,8 @@ SOURCES +=  \
             Helper/TransportHelper.cpp \
             Hubs/HubConnection.cpp \
             Hubs/HubProxy.cpp \
-    Transports/HttpClient.cpp
+    Transports/HttpClient.cpp \
+    Hubs/HubCallback.cpp
 
 
 
@@ -47,7 +48,8 @@ HEADERS +=  \
             SignalException.h \
             Hubs/HubConnection.h \
             Hubs/HubProxy.h \
-    Transports/HttpClient.h
+    Transports/HttpClient.h \
+    Hubs/HubCallback.h
 
 
 

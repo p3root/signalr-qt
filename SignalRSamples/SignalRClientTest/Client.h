@@ -25,6 +25,7 @@ private Q_SLOTS:
     void onHubMessageReceived(QVariant);
     void onError(SignalException);
     void onStateChanged(Connection::State oldState, Connection::State newState);
+    void answerReceived(HubCallback*, QVariant);
 
 private:
     QTimer _timer;

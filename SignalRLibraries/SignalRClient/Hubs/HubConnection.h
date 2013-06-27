@@ -6,6 +6,7 @@
 #include "HubProxy.h"
 #include <QStringList>
 #include <QsLog.h>
+#include "HubCallback.h"
 
 class HubConnection : public Connection
 {
@@ -13,6 +14,7 @@ public:
     HubConnection(QString url);
     ~HubConnection();
 
+    void send(QString data, QString id, HubCallback*);
     void stop();
 
     HubProxy* createHubProxy(QString name);
@@ -24,6 +26,7 @@ public:
 
 private:
     QMap<QString, HubProxy*> _hubs;
+    QMap<QString, HubCallback*> _callbacks;
 
 };
 

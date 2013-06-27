@@ -32,7 +32,7 @@ public:
     void start(ClientTransport* tranport, bool autoReconnect = false);
     void start(HttpClient* client, bool autoReconnect = false);
     virtual void stop();
-    void send(QString data);
+    virtual void send(QString data);
     
     State getState();
     QString getConnectionId();
