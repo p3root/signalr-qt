@@ -127,5 +127,7 @@ void HubConnection::onReceived(QVariant data)
 
 HubProxy *HubConnection::getByName(const QString &name)
 {
+    if(!_hubs.contains(name))
+        qCritical() << "could not find proxy with name " << name;
     return _hubs[name];
 }
