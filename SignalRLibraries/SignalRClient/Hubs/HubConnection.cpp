@@ -61,7 +61,7 @@ HubProxy *HubConnection::createHubProxy(QString name)
 {
     if(_state != Disconnected)
     {
-        QLOG_ERROR() << "A HubProxy cannot be added after the connection has been started.";
+        qCritical() << "A HubProxy cannot be added after the connection has been started.";
         return 0;
     }
 

@@ -40,7 +40,6 @@
 	#include <QHostAddress>
 	#include <QTcpSocket>
 #endif
-#include <QsLog.h>
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 

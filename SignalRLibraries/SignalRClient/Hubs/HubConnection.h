@@ -35,7 +35,6 @@
 #include <QtCore>
 #include "HubProxy.h"
 #include <QStringList>
-#include <QsLog.h>
 #include "HubCallback.h"
 
 class HubConnection : public Connection

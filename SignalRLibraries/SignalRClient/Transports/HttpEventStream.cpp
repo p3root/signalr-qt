@@ -52,7 +52,7 @@ void HttpEventStream::open()
 #ifdef Q_OS_WIN32
     QString host = QString(_url.host());
 #else
-    QString host = QString(_url.encodedHost());
+    QString host = QString(_url.host());
 #endif
 
     QHostInfo info = QHostInfo::fromName(host);
@@ -83,14 +83,14 @@ void HttpEventStream::open()
             else
             {
                 Q_EMIT connected(new SignalException(_sock->errorString(), SignalException::ConnectionRefusedError));
-                QLOG_ERROR() << "EventStream Error:" << _sock->errorString();
+                qCritical() << "EventStream Error:" << _sock->errorString();
             }
         }
     }
     else
     {
         Q_EMIT connected(new SignalException(info.errorString(), SignalException::ConnectionRefusedError));
-        QLOG_ERROR() << "Host Error:" << info.errorString();
+        qCritical() << "Host Error:" << info.errorString();
     }
 
 }

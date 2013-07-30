@@ -31,21 +31,64 @@
 #include <QCoreApplication>
 #include "Client.h"
 #include <QThread>
+#include <QtGlobal>
+
+#if QT_VERSION >= 0x050000
+void messageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    Q_UNUSED(context);
+    QByteArray localMsg = msg.toLocal8Bit();
+    QString dateTime = QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss.zzz");
+
+    switch (type) {
+    case QtDebugMsg:
+        fprintf(stdout, "Debug: %s %s\n", dateTime.toStdString().c_str(), localMsg.constData());
+        break;
+    case QtWarningMsg:
+        fprintf(stderr, "Warning: %s %s\n", dateTime.toStdString().c_str(), localMsg.constData());
+        break;
+    case QtCriticalMsg:
+        fprintf(stderr, "Critical: %s %s\n", dateTime.toStdString().c_str(), localMsg.constData());
+        break;
+    case QtFatalMsg:
+        fprintf(stderr, "Fatal: %s %s\n", dateTime.toStdString().c_str(), localMsg.constData());
+        abort();
+    }
+}
+#else
+void messageOutput(QtMsgType type, const char *msg)
+{
+    QString dateTime = QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss.zzz");
+
+    switch (type) {
+    case QtDebugMsg:
+        fprintf(stdout, "Debug: %s %s\n", dateTime.toStdString().c_str(), msg);
+        break;
+    case QtWarningMsg:
+        fprintf(stderr, "Warning: %s %s\n", dateTime.toStdString().c_str(), msg);
+        break;
+    case QtCriticalMsg:
+        fprintf(stderr, "Critical: %s %s\n", dateTime.toStdString().c_str(), msg);
+        break;
+    case QtFatalMsg:
+        fprintf(stderr, "Fatal: %s %s\n", dateTime.toStdString().c_str(), msg);
+        abort();
+    }
+}
 
 
-#include <QsLog.h>
-#include <QsLogDest.h>
-
+#endif
 int main(int argc, char *argv[])
 {
+#if QT_VERSION >= 0x050000
+    qInstallMessageHandler(messageOutput);
+#else
+    qInstallMsgHandler(messageOutput);
+#endif
     QCoreApplication a(argc, argv);
 
-    QsLogging::Logger& logger = QsLogging::Logger::instance();
-    logger.setLoggingLevel(QsLogging::TraceLevel);
-    QsLogging::DestinationPtr debugDestination(QsLogging::DestinationFactory::MakeDebugOutputDestination() );
-    logger.addDestination(debugDestination.get());
 
-     QLOG_DEBUG() << a.thread()->currentThreadId();
+    qDebug() << a.thread()->currentThreadId();
 
     Client c(a);
     c.start();

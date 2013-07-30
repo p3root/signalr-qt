@@ -33,7 +33,6 @@
 #include "Transports/HttpClient.h"
 #include "Helper/Helper.h"
 #include "Transports/LongPollingTransport.h"
-#include <QsLog.h>
 
 Connection::Connection(const QString host) : _count(0)
 {
@@ -187,7 +186,7 @@ void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, 
     {
         if(getAutoReconnect())
         {
-            QLOG_DEBUG() << "Negotation failed, will try it again";
+            qDebug() << "Negotation failed, will try it again";
             Helper::wait(2);
             getTransport()->negotiate();
         }

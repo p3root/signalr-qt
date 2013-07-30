@@ -101,7 +101,7 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
         }
         else if(_connection->ensureReconnecting())
         {
-            QLOG_DEBUG() << "ServerSentEventsTransport: Lost connection...try to reconnect";
+            qDebug() << "ServerSentEventsTransport: Lost connection...try to reconnect";
 
             //wait to seconds before reconnecting
             Helper::wait(2);
@@ -109,7 +109,7 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
         }
         else if(_connection->getAutoReconnect())
         {
-            QLOG_DEBUG() << "ServerSentEventsTransport: (autoconnect=true)  Lost connection...try to reconnect";
+            qDebug() << "ServerSentEventsTransport: (autoconnect=true)  Lost connection...try to reconnect";
 
 
             //wait to seconds before reconnecting
@@ -162,7 +162,7 @@ void ServerSentEventsTransport::onStartHttpResponse(HttpResponse& httpResponse, 
     {
         if(requestInfo->connection->getAutoReconnect())
         {
-            QLOG_DEBUG() << "ServerSentEventsTransport: Could not establish connection...try it again";
+            qDebug() << "ServerSentEventsTransport: Could not establish connection...try it again";
 
             Helper::wait(2);
             ((ServerSentEventsTransport*)requestInfo->transport)->run();
@@ -170,7 +170,7 @@ void ServerSentEventsTransport::onStartHttpResponse(HttpResponse& httpResponse, 
         }
         else
         {
-            QLOG_DEBUG() << "ServerSentEventsTransport: (autoconnect=true) Could not establish connection...will not try it again";
+            qDebug() << "ServerSentEventsTransport: (autoconnect=true) Could not establish connection...will not try it again";
             requestInfo->callback(error, requestInfo->callbackState);
         }
         delete requestInfo;
@@ -210,7 +210,7 @@ void ServerSentEventsTransport::onReadLine(QString data, SignalException* error,
     {
         if(readInfo->connection->ensureReconnecting())
         {
-            QLOG_DEBUG() << "ServerSentEventsTransport: Lost connection...try to reconnect";
+            qDebug() << "ServerSentEventsTransport: Lost connection...try to reconnect";
 
             //wait to seconds before reconnecting
             Helper::wait(2);
@@ -220,7 +220,7 @@ void ServerSentEventsTransport::onReadLine(QString data, SignalException* error,
         }
         else if(readInfo->connection->getAutoReconnect())
         {
-            QLOG_DEBUG() << "ServerSentEventsTransport: (autoconnect=true)  Lost connection...try to reconnect";
+            qDebug() << "ServerSentEventsTransport: (autoconnect=true)  Lost connection...try to reconnect";
 
 
             //wait to seconds before reconnecting

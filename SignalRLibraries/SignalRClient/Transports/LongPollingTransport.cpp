@@ -30,7 +30,6 @@
 
 #include "LongPollingTransport.h"
 #include "Helper/Helper.h"
-#include <QsLog.h>
 
 LongPollingTransport::LongPollingTransport(HttpClient* httpClient, Connection *con) :HttpBasedTransport(httpClient, con)
 {
@@ -97,13 +96,13 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
 
             if(_connection->ensureReconnecting())
             {
-                QLOG_DEBUG() << "LongPollingTranpsort: lost connection...try to reconnect";
+                qDebug() << "LongPollingTranpsort: lost connection...try to reconnect";
                 Helper::wait(2);
                 //_transport->run();
             }
             else if(_connection->getAutoReconnect())
             {
-                QLOG_DEBUG() << "LongPollingTranpsort: (autoconnect=true) lost connection...try to reconnect";
+                qDebug() << "LongPollingTranpsort: (autoconnect=true) lost connection...try to reconnect";
                 Helper::wait(2);
                 //pollInfo->transport->run();
             }

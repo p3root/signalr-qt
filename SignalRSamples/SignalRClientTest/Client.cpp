@@ -50,7 +50,7 @@ Client::~Client()
 
 void Client::start()
 {
-    QLOG_DEBUG() << "Client Thread: " << thread()->currentThreadId();
+    qDebug() << "Client Thread: " << thread()->currentThreadId();
     _connection = new HubConnection("http://192.168.0.202:8080/signalr");
 
     _client = new HttpClient();
@@ -73,17 +73,17 @@ void Client::stop()
 
 void Client::onHubMessageReceived(QVariant v)
 {
-    QLOG_DEBUG() << v;
+    qDebug() << v;
 }
 
 void Client::onError(SignalException error)
 {
-     QLOG_DEBUG() << error.what();
+     qDebug() << error.what();
 }
 
 void Client::onStateChanged(Connection::State oldState, Connection::State newState)
 {
-    QLOG_DEBUG()  << "state changed: " << oldState << " -> " << newState;
+    qDebug()  << "state changed: " << oldState << " -> " << newState;
 
     if(newState == Connection::Connected)
     {
@@ -96,7 +96,7 @@ void Client::onStateChanged(Connection::State oldState, Connection::State newSta
 
 void Client::answerReceived(HubCallback *c, QVariant v)
 {
-
+    Q_UNUSED(v);
 
 
     delete c; //VERY IMPORTANT, otherwise the callback will not be delete -> memory leak
