@@ -16,6 +16,10 @@ Client
 
 After some long time tests, and stress tests it should be done.
 
+Tested on:
+ * Linux Qt 4.8.2 and QT 5.1 (x86_64)
+ * Windows Qt 5.1 (x64)
+
 
 Server
 ======
