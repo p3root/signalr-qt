@@ -38,6 +38,7 @@
 #include "ClientTransport.h"
 #include <QDateTime>
 #include <QObject>
+#include "KeepAliveData.h"
 
 class ConnectionHandler;
 class ClientTransport;
@@ -75,6 +76,10 @@ public:
     quint64 getCount();
     bool getAutoReconnect();
 
+    KeepAliveData& getKeepAliveData();
+    void updateLastKeepAlive();
+    void connectionSlow();
+
     bool changeState(State oldState, State newState);
     bool ensureReconnecting();
     void onError(SignalException exp);
@@ -83,8 +88,6 @@ public:
 
     void setConnectionState(NegotiateResponse negotiateResponse);
     virtual QString onSending();
-    void setHeartbeat() { _hearbeat = QDateTime::currentDateTime(); }
-    const QDateTime getLastHeartbeat() { return _hearbeat; }
 
     void negotiateCompleted(const NegotiateResponse *negotiateResponse, SignalException* error);
 
@@ -92,6 +95,7 @@ Q_SIGNALS:
     void stateChanged(Connection::State old_state, Connection::State new_state);
     void errorOccured(SignalException error);
     void messageReceived(QVariant data);
+    void onConnectionSlow();
 
 protected:
      State _state;
@@ -109,8 +113,8 @@ private:
    // ConnectionHandler* _handler;
     quint64 _count;
     HttpClient *_httpClient;
-    QDateTime _hearbeat;
     bool _autoReconnect;
+    KeepAliveData *_keepAliveData;
 };
 
 #endif

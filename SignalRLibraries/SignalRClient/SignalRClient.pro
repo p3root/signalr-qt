@@ -28,7 +28,9 @@ SOURCES +=  \
             Hubs/HubConnection.cpp \
             Hubs/HubProxy.cpp \
     Transports/HttpClient.cpp \
-    Hubs/HubCallback.cpp
+    Hubs/HubCallback.cpp \
+    KeepAliveData.cpp \
+    HeartbeatMonitor.cpp
 
 
 
@@ -49,7 +51,9 @@ HEADERS +=  \
             Hubs/HubConnection.h \
             Hubs/HubProxy.h \
     Transports/HttpClient.h \
-    Hubs/HubCallback.h
+    Hubs/HubCallback.h \
+    KeepAliveData.h \
+    HeartbeatMonitor.h
 
 
 

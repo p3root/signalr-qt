@@ -28,39 +28,85 @@
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SERVERSENTEVENTSTRANSPORT_H
-#define SERVERSENTEVENTSTRANSPORT_H
+#include "HeartbeatMonitor.h"
+#include <QDebug>
 
-#include "HttpBasedTransport.h"
-#include "HttpEventStream.h"
-
-class ServerSentEventsTransport : public HttpBasedTransport
+HeartbeatMonitor::HeartbeatMonitor(Connection *con, QMutex *stateLocker)
 {
-    Q_OBJECT
-public:
-    ServerSentEventsTransport(HttpClient* client, Connection *con);
-    ~ServerSentEventsTransport(void);
+    _connection = con;
+    _locker = stateLocker;
+    _timedOut = false;
+    _hasBeenWarned = false;
 
-    void start(QString data);
-    void abort();
-    void stop();
-    void lostConnection(Connection *);
+}
 
-    const QString& getTransportType();
+void HeartbeatMonitor::start()
+{
+    if(!checkKeepAliveData())
+        return;
 
-private Q_SLOTS:
-    void packetReceived(QString packet, SignalException *ex);
-    void connected(SignalException* ex);
+    connect(&_timer, SIGNAL(timeout()), this, SLOT(beat()));
+    int tick = _connection->getKeepAliveData().getCheckInterval() * 1000;
+    _timer.setInterval(tick);
+    _timer.start();
+}
 
+void HeartbeatMonitor::stop()
+{
+    _timer.stop();
+}
 
-private:
-    void reconnect();
+void HeartbeatMonitor::beat(double timeElapsed)
+{
+    if(!checkKeepAliveData())
+        return;
 
-private:
-    HttpEventStream *_eventStream;
-    void* _state;
-    QString _url;
-    bool _started;
-};
+    if(_locker)
+        QMutexLocker l(_locker);
 
-#endif
+    if(_connection->getState() == Connection::Connected)
+    {
+        if(timeElapsed >= _connection->getKeepAliveData().getTimeout())
+        {
+            if(!_timedOut)
+            {
+                qCritical() << "Connection Timed-Out";
+                _timedOut = true;
+                _connection->getTransport()->lostConnection(_connection);
+            }
+        }
+        else if(timeElapsed >= _connection->getKeepAliveData().getTimeoutWarning())
+        {
+            if(!_hasBeenWarned)
+            {
+                qWarning() << "Connection Timeout-Warning";
+                _hasBeenWarned = true;
+                _connection->connectionSlow();
+            }
+        }
+        else
+        {
+            _hasBeenWarned = false;
+            _timedOut = false;
+        }
+    }
+}
+
+void HeartbeatMonitor::beat()
+{
+    if(!checkKeepAliveData())
+        return;
+
+    double timeElapsed = QDateTime::currentDateTime().secsTo(_connection->getKeepAliveData().getLastKeepAlive()) * -1;
+    beat(timeElapsed);
+}
+
+bool HeartbeatMonitor::checkKeepAliveData()
+{
+    if(!&_connection->getKeepAliveData())
+    {
+        return false;
+    }
+
+    return true;
+}

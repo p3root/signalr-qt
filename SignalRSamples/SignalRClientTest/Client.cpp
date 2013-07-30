@@ -51,12 +51,13 @@ Client::~Client()
 void Client::start()
 {
     qDebug() << "Client Thread: " << thread()->currentThreadId();
-    _connection = new HubConnection("http://192.168.0.202:8080/signalr");
+    _connection = new HubConnection("http://localhost:7777/push/signalr");
+    _monitor = new HeartbeatMonitor(_connection, 0);
 
     _client = new HttpClient();
     _transport = new LongPollingTransport(_client, _connection);
 
-    HubProxy* proxy = _connection->createHubProxy("Chat");
+    HubProxy* proxy = _connection->createHubProxy("chat");
 
     connect(proxy, SIGNAL(hubMessageReceived(QVariant)), this, SLOT(onHubMessageReceived(QVariant)));
 
@@ -87,9 +88,10 @@ void Client::onStateChanged(Connection::State oldState, Connection::State newSta
 
     if(newState == Connection::Connected)
     {
+        _monitor->start();
         HubCallback* callback = new HubCallback(0);
         connect(callback, SIGNAL(messageReceived(HubCallback*,QVariant)), this, SLOT(answerReceived(HubCallback*,QVariant)));
-        HubProxy* prox = _connection->getByName("Chat");
+        HubProxy* prox = _connection->getByName("chat");
         prox->invoke("send", "test", callback);
     }
 }

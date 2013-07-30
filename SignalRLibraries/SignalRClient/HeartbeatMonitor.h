@@ -28,39 +28,36 @@
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SERVERSENTEVENTSTRANSPORT_H
-#define SERVERSENTEVENTSTRANSPORT_H
+#ifndef HEARTBEATMONITOR_H
+#define HEARTBEATMONITOR_H
 
-#include "HttpBasedTransport.h"
-#include "HttpEventStream.h"
+#include "Connection.h"
+#include <QMutex>
+#include <QTimer>
 
-class ServerSentEventsTransport : public HttpBasedTransport
+class HeartbeatMonitor : QObject
 {
     Q_OBJECT
 public:
-    ServerSentEventsTransport(HttpClient* client, Connection *con);
-    ~ServerSentEventsTransport(void);
+    HeartbeatMonitor(Connection* con, QMutex* stateLocker);
 
-    void start(QString data);
-    void abort();
+    void start();
     void stop();
-    void lostConnection(Connection *);
+    void beat(double timeElapsed);
 
-    const QString& getTransportType();
-
-private Q_SLOTS:
-    void packetReceived(QString packet, SignalException *ex);
-    void connected(SignalException* ex);
-
+public slots:
+    void beat();
 
 private:
-    void reconnect();
+    bool checkKeepAliveData();
 
 private:
-    HttpEventStream *_eventStream;
-    void* _state;
-    QString _url;
-    bool _started;
+    Connection *_connection;
+    QMutex *_locker;
+
+    QTimer _timer;
+    bool _hasBeenWarned;
+    bool _timedOut;
 };
 
-#endif
+#endif // HEARTBEATMONITOR_H

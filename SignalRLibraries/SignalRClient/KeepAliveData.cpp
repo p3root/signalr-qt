@@ -28,39 +28,47 @@
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SERVERSENTEVENTSTRANSPORT_H
-#define SERVERSENTEVENTSTRANSPORT_H
+#include "KeepAliveData.h"
 
-#include "HttpBasedTransport.h"
-#include "HttpEventStream.h"
+const static double _keepAliveWarnAt = 2.0 / 3.0;
 
-class ServerSentEventsTransport : public HttpBasedTransport
+KeepAliveData::KeepAliveData(double timeout)
 {
-    Q_OBJECT
-public:
-    ServerSentEventsTransport(HttpClient* client, Connection *con);
-    ~ServerSentEventsTransport(void);
+    _timeout = timeout;
+    _timeoutWarning = timeout * _keepAliveWarnAt;
+    _checkInterval = (timeout - _timeoutWarning) / 3;
+}
 
-    void start(QString data);
-    void abort();
-    void stop();
-    void lostConnection(Connection *);
+KeepAliveData::KeepAliveData(QDateTime lastKeepAlive, double timeout, double timeoutWarning, double checkInterval)
+{
+    _lastKeepAlive = lastKeepAlive;
+    _timeout = timeout;
+    _timeoutWarning = timeoutWarning;
+    _checkInterval = checkInterval;
+}
 
-    const QString& getTransportType();
+void KeepAliveData::setLastKeepAlive(QDateTime dt)
+{
+    _lastKeepAlive = dt;
+}
 
-private Q_SLOTS:
-    void packetReceived(QString packet, SignalException *ex);
-    void connected(SignalException* ex);
+const QDateTime &KeepAliveData::getLastKeepAlive()
+{
+    return _lastKeepAlive;
+}
+
+const double &KeepAliveData::getTimeout()
+{
+    return _timeout;
+}
+
+const double &KeepAliveData::getTimeoutWarning()
+{
+    return _timeoutWarning;
+}
 
 
-private:
-    void reconnect();
-
-private:
-    HttpEventStream *_eventStream;
-    void* _state;
-    QString _url;
-    bool _started;
-};
-
-#endif
+const double &KeepAliveData::getCheckInterval()
+{
+    return _checkInterval;
+}

@@ -34,7 +34,7 @@
 #include "Helper/Helper.h"
 #include "Transports/LongPollingTransport.h"
 
-Connection::Connection(const QString host) : _count(0)
+Connection::Connection(const QString host) : _count(0), _keepAliveData(0)
 {
     _host = host;
     _state = Disconnected;
@@ -44,7 +44,8 @@ Connection::Connection(const QString host) : _count(0)
 
 Connection::~Connection()
 {
-
+    if(_keepAliveData)
+        delete _keepAliveData;
 }
 
 
@@ -159,6 +160,22 @@ bool Connection::getAutoReconnect()
     return _autoReconnect;
 }
 
+KeepAliveData &Connection::getKeepAliveData()
+{
+    return *_keepAliveData;
+}
+
+void Connection::updateLastKeepAlive()
+{
+    if(_keepAliveData)
+        _keepAliveData->setLastKeepAlive(QDateTime::currentDateTime());
+}
+
+void Connection::connectionSlow()
+{
+   Q_EMIT onConnectionSlow();
+}
+
 void Connection::stop()
 {
     changeState(_state, Disconnected);
@@ -177,6 +194,10 @@ void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, 
         }
         else
         {
+            if(negotiateResponse->keepAliveTimeout > 0)
+            {
+                _keepAliveData = new KeepAliveData(negotiateResponse->keepAliveTimeout);
+            }
             setConnectionState(*negotiateResponse);
             connect(_transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(transportStarted(SignalException*)));
             getTransport()->start("");

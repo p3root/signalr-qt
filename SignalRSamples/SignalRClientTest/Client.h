@@ -39,6 +39,7 @@
 #include <Transports/LongPollingTransport.h>
 #include <Helper/Helper.h>
 #include <Transports/ServerSentEventsTransport.h>
+#include <HeartbeatMonitor.h>
 
 class Client : public QObject
 {
@@ -62,6 +63,7 @@ private:
     HubConnection* _connection;
     HttpClient* _client;
     ClientTransport* _transport;
+    HeartbeatMonitor *_monitor;
 };
 
 #endif // CLIENT_H

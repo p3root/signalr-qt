@@ -50,6 +50,7 @@ public:
     virtual void send(QString data) = 0;
     virtual void stop() = 0;
     virtual void abort() = 0;
+    virtual void lostConnection(Connection*);
 
 Q_SIGNALS:
     void transportStarted(SignalException* ex);

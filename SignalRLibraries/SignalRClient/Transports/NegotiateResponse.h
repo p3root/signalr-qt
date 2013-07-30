@@ -39,6 +39,7 @@ struct NegotiateResponse
     QString connectionToken;
     QString protocolVersion;
     double disconnectTimeout;
+    double keepAliveTimeout;
 };
 
 #endif

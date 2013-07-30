@@ -28,39 +28,30 @@
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SERVERSENTEVENTSTRANSPORT_H
-#define SERVERSENTEVENTSTRANSPORT_H
+#ifndef KEEPALIVEDATA_H
+#define KEEPALIVEDATA_H
 
-#include "HttpBasedTransport.h"
-#include "HttpEventStream.h"
+#include <QDateTime>
 
-class ServerSentEventsTransport : public HttpBasedTransport
+class KeepAliveData
 {
-    Q_OBJECT
 public:
-    ServerSentEventsTransport(HttpClient* client, Connection *con);
-    ~ServerSentEventsTransport(void);
+    KeepAliveData(double timeout);
+    KeepAliveData(QDateTime lastKeepAlive, double timeout, double timeoutWarning, double checkInterval);
 
-    void start(QString data);
-    void abort();
-    void stop();
-    void lostConnection(Connection *);
+    void setLastKeepAlive(QDateTime);
 
-    const QString& getTransportType();
-
-private Q_SLOTS:
-    void packetReceived(QString packet, SignalException *ex);
-    void connected(SignalException* ex);
+    const QDateTime &getLastKeepAlive();
+    const double &getTimeout();
+    const double &getTimeoutWarning();
+    const double &getCheckInterval();
 
 
 private:
-    void reconnect();
-
-private:
-    HttpEventStream *_eventStream;
-    void* _state;
-    QString _url;
-    bool _started;
+    QDateTime _lastKeepAlive;
+    double _timeout;
+    double _timeoutWarning;
+    double _checkInterval;
 };
 
-#endif
+#endif // KEEPALIVEDATA_H

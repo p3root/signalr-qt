@@ -71,6 +71,11 @@ void ServerSentEventsTransport::stop()
     _eventStream->close();
 }
 
+void ServerSentEventsTransport::lostConnection(Connection *)
+{
+    reconnect();
+}
+
 const QString &ServerSentEventsTransport::getTransportType()
 {
     static QString type = "serverSentEvents";
@@ -126,7 +131,7 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
     else
     {
         data = data.remove(0, data.indexOf("data: ")+5);
-        _connection->setHeartbeat();
+        _connection->getKeepAliveData().setLastKeepAlive(QDateTime::currentDateTime());
         TransportHelper::processMessages(_connection, data, &timedOut, &disconnected);
     }
 
@@ -146,108 +151,3 @@ void ServerSentEventsTransport::reconnect()
     _eventStream->close();
     _eventStream->start();
 }
-
-
-/*
-void ServerSentEventsTransport::onStartHttpResponse(HttpResponse& httpResponse, SignalException* error, void* state)
-{
-    HttpRequestInfo* requestInfo = (HttpRequestInfo*)state;
-
-    if(!error)
-    {
-        requestInfo->callback(0, requestInfo->callbackState);
-        requestInfo->transport->readLoop(httpResponse, requestInfo->connection, requestInfo);
-    }
-    else
-    {
-        if(requestInfo->connection->getAutoReconnect())
-        {
-            qDebug() << "ServerSentEventsTransport: Could not establish connection...try it again";
-
-            Helper::wait(2);
-            ((ServerSentEventsTransport*)requestInfo->transport)->run();
-            return;
-        }
-        else
-        {
-            qDebug() << "ServerSentEventsTransport: (autoconnect=true) Could not establish connection...will not try it again";
-            requestInfo->callback(error, requestInfo->callbackState);
-        }
-        delete requestInfo;
-    }
-}
-
-void ServerSentEventsTransport::readLoop(HttpResponse& httpResponse, Connection* connection, HttpRequestInfo* requestInfo)
-{
-    ReadInfo* readInfo = new ReadInfo();
-
-    readInfo->httpResponse = &httpResponse;
-    readInfo->connection = connection;
-    readInfo->requestInfo = requestInfo;
-
-    httpResponse.readLine(&ServerSentEventsTransport::onReadLine, readInfo);
-}
-
-void ServerSentEventsTransport::onReadLine(QString data, SignalException* error, void* state)
-{
-    ReadInfo* readInfo = (ReadInfo*)state;
-    bool timedOut = false, disconnected = false;
-
-    if(data == "data: initialized")
-    {
-        if(!readInfo->requestInfo->callback)
-        {
-            readInfo->requestInfo->callback(NULL, readInfo->requestInfo->callbackState);
-            readInfo->requestInfo->callback = NULL;
-        }
-        else
-        {
-            // Reconnected
-            readInfo->connection->changeState(Connection::Reconnecting, Connection::Connected);
-        }
-    }
-    else if(error != 0)
-    {
-        if(readInfo->connection->ensureReconnecting())
-        {
-            qDebug() << "ServerSentEventsTransport: Lost connection...try to reconnect";
-
-            //wait to seconds before reconnecting
-            Helper::wait(2);
-            ((ServerSentEventsTransport*)readInfo->requestInfo->transport)->run();
-
-            return;
-        }
-        else if(readInfo->connection->getAutoReconnect())
-        {
-            qDebug() << "ServerSentEventsTransport: (autoconnect=true)  Lost connection...try to reconnect";
-
-
-            //wait to seconds before reconnecting
-            Helper::wait(2);
-            ((ServerSentEventsTransport*)readInfo->requestInfo->transport)->run();
-            return;
-        }
-        else
-        {
-            readInfo->connection->onError(*error);
-        }
-    }
-    else
-    {
-        data = data.remove(0, data.indexOf("data: ")+5);
-        readInfo->connection->setHeartbeat();
-        TransportHelper::processMessages(readInfo->connection, data, &timedOut, &disconnected);
-    }
-
-    if(disconnected)
-    {
-        readInfo->connection->stop();
-    }
-    else
-    {
-        readInfo->transport->readLoop(*readInfo->httpResponse, readInfo->connection, readInfo->requestInfo);
-    }
-
-    delete readInfo;
-}*/

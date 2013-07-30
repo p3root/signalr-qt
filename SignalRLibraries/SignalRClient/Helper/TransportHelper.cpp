@@ -69,11 +69,7 @@ QString TransportHelper::getReceiveQueryString(Connection* connection, QString d
 
 void TransportHelper::processMessages(Connection* connection, QString raw, bool* timedOut, bool* disconnected)
 {
-    Q_UNUSED(connection);
-    Q_UNUSED(raw);
-    Q_UNUSED(timedOut);
-    Q_UNUSED(disconnected);
-
+    connection->updateLastKeepAlive();
 
     QVariant var = QtExtJson::parse(raw);
     if(var.convert(QVariant::Map))
@@ -130,6 +126,16 @@ const NegotiateResponse* TransportHelper::parseNegotiateHttpResponse(const QStri
         response->connectionId = map.value("ConnectionId").toString();
         response->connectionToken = map.value("ConnectionToken").toString();
         response->protocolVersion = map.value("ProtocolVersion").toString();
+
+        if(map.contains("KeepAliveTimeout"))
+            response->keepAliveTimeout = map.value("KeepAliveTimeout").toDouble();
+        else
+            response->keepAliveTimeout = -1;
+
+        if(map.contains("DisconnectTimeout"))
+            response->disconnectTimeout = map.value("DisconnectTimeout").toDouble();
+        else
+            response->disconnectTimeout = -1;
     }
     else
     {
