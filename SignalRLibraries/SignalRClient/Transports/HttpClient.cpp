@@ -40,7 +40,6 @@
 
 #include <QEventLoop>
 #include "Helper/Helper.h"
-#include <QsLog.h>
 #include <unistd.h>
 
 HttpClient::HttpClient() : _isAborting(false), _getReply(0), _postReply(0), _man(0)
