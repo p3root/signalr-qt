@@ -24,7 +24,7 @@
  ****************************************************************************/
 
 #ifndef QEXTJSON_H
-#define QXETJSON_H
+#define QEXTJSON_H
 
 #include <QVariant>
 #include <QString>
