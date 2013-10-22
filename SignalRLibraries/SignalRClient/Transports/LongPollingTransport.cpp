@@ -44,8 +44,12 @@ LongPollingTransport::~LongPollingTransport(void)
 void LongPollingTransport::start(QString)
 {
     connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
+    QString connectUrl = _connection->getUrl() + "/connect";
+    connectUrl += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
-    _url = _connection->getUrl() + "/connect";
+    _httpClient->post(connectUrl, QMap<QString, QString>());
+
+    _url = _connection->getUrl() + "/poll";
     _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
     Q_EMIT transportStarted(0);
@@ -121,6 +125,8 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
     }
     else
     {
+        _url = _connection->getUrl() + "/poll";
+        _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
         _httpClient->get(_url);
     }
 

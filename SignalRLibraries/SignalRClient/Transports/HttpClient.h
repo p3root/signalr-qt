@@ -34,6 +34,7 @@
 #include "SignalException.h"
 #include <QMap>
 #include <QMutex>
+#include <QSslError>
 
 #if defined(Q_OS_QNX)
 	#include <QtNetwork/qnetworkaccessmanager.h>
@@ -66,6 +67,7 @@ private Q_SLOTS:
     void postRequestFinished();
     void postError(QNetworkReply::NetworkError);
 
+    void onIgnoreSSLErros(QList<QSslError> error);
 private:
     bool _isAborting;
     QNetworkReply *_getReply;

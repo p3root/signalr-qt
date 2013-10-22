@@ -111,7 +111,7 @@ void HttpEventStream::run()
 
     while(!_isAborting)
     {
-        if(_sock->waitForReadyRead())
+        if(_sock->waitForReadyRead(5000))
         {
             if(!_sock->bytesAvailable())
                 continue;

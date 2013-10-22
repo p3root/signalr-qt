@@ -85,7 +85,8 @@ public:
     void onError(SignalException exp);
     virtual void onReceived(QVariant data);
 
-
+    void setGroupsToken(QString token) { _groupsToken = token; }
+    void setMessageId(QString messageId) { _messageId = messageId; }
     void setConnectionState(NegotiateResponse negotiateResponse);
     virtual QString onSending();
 

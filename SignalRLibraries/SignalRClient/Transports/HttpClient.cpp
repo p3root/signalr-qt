@@ -78,8 +78,9 @@ void HttpClient::get(QString url)
 
     QNetworkRequest req = QNetworkRequest(reqUrl);
     req.setRawHeader("User-Agent", "SignalR-Qt.Client");
-    _getReply = _man->get(req);
 
+    _getReply = _man->get(req);
+    connect(_getReply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(onIgnoreSSLErros(QList<QSslError>)));
     connect(_getReply, SIGNAL(finished()), this, SLOT(getRequestFinished()), Qt::AutoConnection);
     connect(_getReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(getError(QNetworkReply::NetworkError)), Qt::QueuedConnection);
 }
@@ -197,4 +198,9 @@ void HttpClient::postError(QNetworkReply::NetworkError)
         if(!_isAborting)
             Q_EMIT postRequestCompleted("", ex);
     }
+}
+
+void HttpClient::onIgnoreSSLErros(QList<QSslError> error)
+{
+   _getReply->ignoreSslErrors();
 }

@@ -51,13 +51,13 @@ Client::~Client()
 void Client::start()
 {
     qDebug() << "Client Thread: " << thread()->currentThreadId();
-    _connection = new HubConnection("http://localhost:7777/push/signalr");
+    _connection = new HubConnection("http://sentiint:9085/Services.Push/signalr");
     _monitor = new HeartbeatMonitor(_connection, 0);
 
     _client = new HttpClient();
     _transport = new LongPollingTransport(_client, _connection);
 
-    HubProxy* proxy = _connection->createHubProxy("chat");
+    HubProxy* proxy = _connection->createHubProxy("WriteHub");
 
     connect(proxy, SIGNAL(hubMessageReceived(QVariant)), this, SLOT(onHubMessageReceived(QVariant)));
 
@@ -75,6 +75,14 @@ void Client::stop()
 void Client::onHubMessageReceived(QVariant v)
 {
     qDebug() << v;
+
+    HubProxy* prox = _connection->getByName("WriteHub");
+    QMap<QString, QVariant> map = v.toMap();
+    HubCallback* callback = new HubCallback(0);
+    connect(callback, SIGNAL(messageReceived(HubCallback*,QVariant)), this, SLOT(answerReceived(HubCallback*,QVariant)));
+
+    prox->invoke("ConfigReceived",  map["A"].toStringList(), callback);
+
 }
 
 void Client::onError(SignalException error)
@@ -91,17 +99,16 @@ void Client::onStateChanged(Connection::State oldState, Connection::State newSta
         _monitor->start();
         HubCallback* callback = new HubCallback(0);
         connect(callback, SIGNAL(messageReceived(HubCallback*,QVariant)), this, SLOT(answerReceived(HubCallback*,QVariant)));
-        HubProxy* prox = _connection->getByName("chat");
-        prox->invoke("send", "test", callback);
+        HubProxy* prox = _connection->getByName("WriteHub");
+        prox->invoke("JoinGroup", "110.110", callback);
     }
 }
 
 void Client::answerReceived(HubCallback *c, QVariant v)
 {
     Q_UNUSED(v);
-
-
-    delete c; //VERY IMPORTANT, otherwise the callback will not be delete -> memory leak
+    qDebug() << "hubcallback received";
+    delete c; //VERY IMPORTANT, otherwise the callback will not be deleted -> memory leak
 }
 
 void Client::timerTick()
