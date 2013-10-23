@@ -55,7 +55,7 @@ void LongPollingTransport::start(QString)
     Q_EMIT transportStarted(0);
 
     _started = true;
-    _httpClient->get(_url);
+    _httpClient->get(_url, _connection->getUserCredentials().username, _connection->getUserCredentials().password, _connection->getUserCredentials().authorizationMethod);
 }
 
 void LongPollingTransport::abort()
@@ -79,7 +79,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
     bool timedOut = false, disconnected = false;
     SignalException *error = 0;
     if(ex)
-       error = (SignalException*)ex;
+        error = (SignalException*)ex;
 
     if(!error)
     {
@@ -87,32 +87,40 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
     }
     else
     {
-        if(_started)
+        if(error->getType() == SignalException::ServerRequiresAuthorization)
         {
-            Q_EMIT transportStarted(error);
+            _connection->onError(*error);
+            disconnected = true;
         }
         else
         {
-            if(error->getType() == SignalException::ConnectionRefusedError)
+            if(_started)
             {
-                _connection->changeState(Connection::Reconnecting, Connection::Connected);
-            }
-
-            if(_connection->ensureReconnecting())
-            {
-                qDebug() << "LongPollingTranpsort: lost connection...try to reconnect";
-                Helper::wait(2);
-                //_transport->run();
-            }
-            else if(_connection->getAutoReconnect())
-            {
-                qDebug() << "LongPollingTranpsort: (autoconnect=true) lost connection...try to reconnect";
-                Helper::wait(2);
-                //pollInfo->transport->run();
+                Q_EMIT transportStarted(error);
             }
             else
             {
-                _connection->onError(*error);
+                if(error->getType() == SignalException::ConnectionRefusedError)
+                {
+                    _connection->changeState(Connection::Reconnecting, Connection::Connected);
+                }
+
+                if(_connection->ensureReconnecting())
+                {
+                    qDebug() << "LongPollingTranpsort: lost connection...try to reconnect";
+                    Helper::wait(2);
+                    //_transport->run();
+                }
+                else if(_connection->getAutoReconnect())
+                {
+                    qDebug() << "LongPollingTranpsort: (autoconnect=true) lost connection...try to reconnect";
+                    Helper::wait(2);
+                    //pollInfo->transport->run();
+                }
+                else
+                {
+                    _connection->onError(*error);
+                }
             }
         }
 
@@ -127,7 +135,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
     {
         _url = _connection->getUrl() + "/poll";
         _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
-        _httpClient->get(_url);
+        _httpClient->get(_url, _connection->getUserCredentials().username, _connection->getUserCredentials().password, _connection->getUserCredentials().authorizationMethod);
     }
 
 }

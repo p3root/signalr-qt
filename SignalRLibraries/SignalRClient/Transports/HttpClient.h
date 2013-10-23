@@ -51,7 +51,7 @@ public:
     HttpClient();
     virtual ~HttpClient();
 
-    void get(QString url);
+    void get(QString url, QString username = "", QString password = "", QString authorizationMethod = "");
     void post(QString url, QMap<QString, QString> arguments);
 
     void abort();

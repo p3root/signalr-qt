@@ -68,7 +68,7 @@ void HttpBasedTransport::negotiate()
     //url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
     connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
-    _httpClient->get(url);
+    _httpClient->get(url, _connection->getUserCredentials().username, _connection->getUserCredentials().password, _connection->getUserCredentials().authorizationMethod);
 }
 
 void HttpBasedTransport::send(QString data)

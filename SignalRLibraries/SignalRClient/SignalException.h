@@ -45,6 +45,7 @@ public:
         CouldNotEstablishbConnection,
         ConnectionRefusedError,
         ServerClosedConnection,
+        ServerRequiresAuthorization,
         UnkownError
     };
 

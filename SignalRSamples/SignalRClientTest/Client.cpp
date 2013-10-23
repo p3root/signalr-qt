@@ -52,6 +52,13 @@ void Client::start()
 {
     qDebug() << "Client Thread: " << thread()->currentThreadId();
     _connection = new HubConnection("http://sentiint:9085/Services.Push/signalr");
+
+    Connection::UserCredentials uc;
+    uc.username = "alex2";
+    uc.password = "QTWqncG4QqZT3qhGkD3blb+4xaEMUEp/oW4QvDHR/fA="; //application specified
+    uc.authorizationMethod = "Basic";
+    _connection->setCredentials(uc);
+
     _monitor = new HeartbeatMonitor(_connection, 0);
 
     _client = new HttpClient();

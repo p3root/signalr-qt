@@ -47,6 +47,14 @@ class Connection : public QObject
 {
     Q_OBJECT
 public:
+
+    struct UserCredentials
+    {
+        QString username;
+        QString password;
+        QString authorizationMethod; //Basic or Digit
+    };
+
     enum State
     {
         Connecting,
@@ -90,6 +98,8 @@ public:
     void setConnectionState(NegotiateResponse negotiateResponse);
     virtual QString onSending();
 
+    void setCredentials(UserCredentials uc) { _userCredentials = uc; }
+    const UserCredentials& getUserCredentials() { return _userCredentials; }
     void negotiateCompleted(const NegotiateResponse *negotiateResponse, SignalException* error);
 
 Q_SIGNALS:
@@ -111,6 +121,7 @@ private:
     QString _groupsToken;
     QString _messageId;
     ClientTransport* _transport;
+    UserCredentials _userCredentials;
    // ConnectionHandler* _handler;
     quint64 _count;
     HttpClient *_httpClient;

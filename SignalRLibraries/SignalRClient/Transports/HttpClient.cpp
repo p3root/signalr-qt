@@ -31,11 +31,11 @@
 #include "HttpClient.h"
 
 #if defined(Q_OS_QNX)
-	#include <QtNetwork/qnetworkrequest.h>
-	#include <QtNetwork/qnetworkreply.h>
+#include <QtNetwork/qnetworkrequest.h>
+#include <QtNetwork/qnetworkreply.h>
 #else
-	#include <QNetworkRequest>
-	#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 #endif
 
 #include <QEventLoop>
@@ -56,7 +56,7 @@ HttpClient::~HttpClient()
     delete _postMutex;
 }
 
-void HttpClient::get(QString url)
+void HttpClient::get(QString url, QString username, QString password, QString authorizationMethod)
 {
     QMutexLocker l(_getMutex);
     Q_UNUSED(l);
@@ -77,7 +77,15 @@ void HttpClient::get(QString url)
 #endif
 
     QNetworkRequest req = QNetworkRequest(reqUrl);
+    QCryptographicHash::hash("data", QCryptographicHash::Sha1);
+
     req.setRawHeader("User-Agent", "SignalR-Qt.Client");
+    if(!username.isEmpty())
+    {
+        QString credentials = username+":"+password;
+        QByteArray base(credentials.toLocal8Bit().data());
+        req.setRawHeader("Authorization", base.toBase64().prepend(QByteArray(authorizationMethod.append(" ").toLocal8Bit().data())));
+    }
 
     _getReply = _man->get(req);
     connect(_getReply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(onIgnoreSSLErros(QList<QSslError>)));
@@ -154,12 +162,15 @@ void HttpClient::getError(QNetworkReply::NetworkError)
         SignalException* ex = 0;
         switch(error)
         {
-        case 1:
-            ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
-            break;
-        default:
-            ex = new SignalException(errorString, SignalException::UnkownError);
-            break;
+            case 1:
+                ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
+                break;
+            case 204:
+                ex = new SignalException(errorString, SignalException::ServerRequiresAuthorization);
+                break;
+            default:
+                ex = new SignalException(errorString, SignalException::UnkownError);
+                break;
         }
 
         if(!_isAborting)
@@ -187,12 +198,12 @@ void HttpClient::postError(QNetworkReply::NetworkError)
         SignalException* ex = 0;
         switch(error)
         {
-        case 1:
-            ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
-            break;
-        default:
-            ex = new SignalException(errorString, SignalException::UnkownError);
-            break;
+            case 1:
+                ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
+                break;
+            default:
+                ex = new SignalException(errorString, SignalException::UnkownError);
+                break;
         }
 
         if(!_isAborting)
@@ -202,5 +213,5 @@ void HttpClient::postError(QNetworkReply::NetworkError)
 
 void HttpClient::onIgnoreSSLErros(QList<QSslError> error)
 {
-   _getReply->ignoreSslErrors();
+    _getReply->ignoreSslErrors();
 }
