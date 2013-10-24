@@ -3,28 +3,24 @@ SignalR-QT
 
 This is an C++ implementation of Microsofts ASP.Net SignalR. (https://github.com/SignalR).
 
-The Client Library is finished. Maybe some unit tests will follow. I hope that I get some time to finish the server as well. 
-
 For questions please send me an email (patrik.pfaffenbauer@p3.co.at) or conatct me via skype (patrik.pfaffenbauer)
 
 The code is published under the BSD License.
 
 
-
 Client
 ======
 
-After some long time tests, and stress tests it should be done.
+After some long time tests, and stress tests it should be done. 
+
+ * SSE (ServerSentEvents) Transport has some problems at the moment. I will fix this in the next few days.
+ * LongPollings works as excepted.
+ * WebSockets will follow as well.
 
 Tested on:
  * Linux Qt 4.8.2 and QT 5.1 (x86_64)
  * Windows Qt 5.1 (x64)
 
-
-Server
-======
-
-Will need some time. CLOSED. Currently no need for it. Maybe I will continue it if I will need it.
 
 
 LICENSE
