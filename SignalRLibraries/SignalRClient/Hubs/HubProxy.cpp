@@ -30,7 +30,7 @@
 
 #include "HubProxy.h"
 #include "HubConnection.h"
-#include <QtExtJson.h>
+#include <QextJson.h>
 
 HubProxy::HubProxy(HubConnection* connection, QString hubName) : _connection(connection), _hubName(hubName)
 {
@@ -56,7 +56,7 @@ void HubProxy::invoke(QString method, QStringList params, HubCallback* callback)
     map.insert("I", QString::number(_connection->getCount()));
     map.insert("H", _hubName);
     map.insert("M", method);
-    _connection->send(QtExtJson::stringify(QVariant::fromValue(map)), QString::number(_connection->getCount()), callback);
+    _connection->send(QextJson::stringify(QVariant::fromValue(map)), QString::number(_connection->getCount()), callback);
 }
 
 void HubProxy::onReceive(QVariant var)

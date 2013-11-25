@@ -71,7 +71,7 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
 {
     connection->updateLastKeepAlive();
 
-    QVariant var = QtExtJson::parse(raw);
+    QVariant var = QextJson::parse(raw);
     if(var.convert(QVariant::Map))
     {
         QVariantMap map = var.value<QVariantMap>();
@@ -128,7 +128,7 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
 const NegotiateResponse* TransportHelper::parseNegotiateHttpResponse(const QString &httpResponse)
 {
     NegotiateResponse* response = new NegotiateResponse();
-    QVariant var = QtExtJson::parse(httpResponse);
+    QVariant var = QextJson::parse(httpResponse);
     if(var.convert(QVariant::Map))
     {
         QVariantMap map = var.value<QVariantMap>();

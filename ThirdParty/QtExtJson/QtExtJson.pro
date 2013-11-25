@@ -7,7 +7,7 @@ CONFIG += sharedlib
 
 
 SOURCES += \
-    QtExtJson.cpp
+    QextJson.cpp
 
 HEADERS += \
-    QtExtJson.h
+    QextJson.h

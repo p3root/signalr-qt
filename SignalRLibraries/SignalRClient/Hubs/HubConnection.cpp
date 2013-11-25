@@ -29,7 +29,7 @@
  */
 
 #include "HubConnection.h"
-#include <QtExtJson.h>
+#include <QextJson.h>
 
 HubConnection::HubConnection(QString url) : Connection(url)
 {
@@ -86,7 +86,7 @@ QString HubConnection::onSending()
     }
     
 
-    QString json = QtExtJson::stringify(QVariant::fromValue(lst));
+    QString json = QextJson::stringify(QVariant::fromValue(lst));
     return json;
 }
 

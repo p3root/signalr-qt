@@ -1,10 +1,10 @@
-#include "QtExtJson.h"
+#include "QextJson.h"
 #include <QVariant>
 #include <QDebug>
 #include <QTextStream>
 #include <QStringList>
 
-QString QtExtJson::stringify(QVariant v){
+QString QextJson::stringify(QVariant v){
     if (v.isNull()){
         return "null";
     }// QXT dev's: WTF????? mb just return empty string? with best regards, flareguner.
@@ -73,7 +73,7 @@ static QVariantList parseArray (QTextStream & s,bool & error);
 static QString parseString (QTextStream & s,bool & error);
 static QVariant parseLiteral (QTextStream & s,bool & error);
 
-QVariant QtExtJson::parse(QString string){
+QVariant QextJson::parse(QString string){
     QTextStream s(&string);
     bool error=false;
     QVariant v=parseValue(s,error);

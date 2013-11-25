@@ -29,7 +29,7 @@
 #include <QVariant>
 #include <QString>
 
-class  QtExtJson {
+class  QextJson {
 public:
     static QVariant parse     (QString string);
     static QString  stringify (QVariant v);

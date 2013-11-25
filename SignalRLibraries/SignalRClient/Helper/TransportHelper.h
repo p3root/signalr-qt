@@ -36,7 +36,7 @@
 #include "ClientTransport.h"
 #include "Connection.h"
 #include "SignalException.h"
-#include <QtExtJson.h>
+#include <QextJson.h>
 
 
 class TransportHelper : public QObject
