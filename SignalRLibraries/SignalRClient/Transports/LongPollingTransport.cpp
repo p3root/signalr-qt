@@ -47,7 +47,7 @@ void LongPollingTransport::start(QString)
     QString connectUrl = _connection->getUrl() + "/connect";
     connectUrl += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
-    _httpClient->post(connectUrl, QMap<QString, QString>());
+    _httpClient->post(connectUrl, QMap<QString, QString>(), _connection->getAdditionalHttpHeaders());
 
     _url = _connection->getUrl() + "/poll";
     _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
@@ -55,7 +55,7 @@ void LongPollingTransport::start(QString)
     Q_EMIT transportStarted(0);
 
     _started = true;
-    _httpClient->get(_url, _connection->getUserCredentials().username, _connection->getUserCredentials().password, _connection->getUserCredentials().authorizationMethod);
+    _httpClient->get(_url, _connection->getAdditionalHttpHeaders());
 }
 
 void LongPollingTransport::abort()
@@ -135,7 +135,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
     {
         _url = _connection->getUrl() + "/poll";
         _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
-        _httpClient->get(_url, _connection->getUserCredentials().username, _connection->getUserCredentials().password, _connection->getUserCredentials().authorizationMethod);
+        _httpClient->get(_url, _connection->getAdditionalHttpHeaders());
     }
 
 }

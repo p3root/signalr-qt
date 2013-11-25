@@ -68,7 +68,7 @@ void HttpBasedTransport::negotiate()
     //url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
     connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
-    _httpClient->get(url, _connection->getUserCredentials().username, _connection->getUserCredentials().password, _connection->getUserCredentials().authorizationMethod);
+    _httpClient->get(url,_connection->getAdditionalHttpHeaders());
 }
 
 void HttpBasedTransport::send(QString data)
@@ -92,7 +92,7 @@ void HttpBasedTransport::send(QString data)
     else
     {
         connect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
-        _httpClient->post(url, postData);
+        _httpClient->post(url, postData, _connection->getAdditionalHttpHeaders());
     }
 }
 
@@ -110,7 +110,7 @@ void HttpBasedTransport::tryDequeueNextWorkItem()
         _sendQueue.dequeue();
 
         connect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
-        _httpClient->post(workItem->url, workItem->postData);
+        _httpClient->post(workItem->url, workItem->postData, _connection->getAdditionalHttpHeaders());
 
         delete workItem;
     }

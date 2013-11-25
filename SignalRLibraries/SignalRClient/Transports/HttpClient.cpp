@@ -56,7 +56,7 @@ HttpClient::~HttpClient()
     delete _postMutex;
 }
 
-void HttpClient::get(QString url, QString username, QString password, QString authorizationMethod)
+void HttpClient::get(QString url, QList<QPair<QString, QString> > additionalHeaders)
 {
     QMutexLocker l(_getMutex);
     Q_UNUSED(l);
@@ -80,12 +80,12 @@ void HttpClient::get(QString url, QString username, QString password, QString au
     QCryptographicHash::hash("data", QCryptographicHash::Sha1);
 
     req.setRawHeader("User-Agent", "SignalR-Qt.Client");
-    if(!username.isEmpty())
+
+    for(int i = 0; i < additionalHeaders.size(); i++)
     {
-        QString credentials = username+":"+password;
-        QByteArray base(credentials.toLocal8Bit().data());
-        req.setRawHeader("Authorization", base.toBase64().prepend(QByteArray(authorizationMethod.append(" ").toLocal8Bit().data())));
+        req.setRawHeader(additionalHeaders.at(i).first.toAscii(), additionalHeaders.at(i).second.toAscii());
     }
+
 
     _getReply = _man->get(req);
     connect(_getReply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(onIgnoreSSLErros(QList<QSslError>)));
@@ -93,7 +93,7 @@ void HttpClient::get(QString url, QString username, QString password, QString au
     connect(_getReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(getError(QNetworkReply::NetworkError)), Qt::QueuedConnection);
 }
 
-void HttpClient::post(QString url, QMap<QString, QString> arguments)
+void HttpClient::post(QString url, QMap<QString, QString> arguments, QList<QPair<QString, QString> > additionalHeaders)
 {
     QMutexLocker l(_postMutex);
     Q_UNUSED(l);
@@ -125,6 +125,12 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
     QNetworkRequest req = QNetworkRequest(reqUrl);
     req.setRawHeader("User-Agent", "SignalR-Qt.Client");
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    for(int i = 0; i < additionalHeaders.size(); i++)
+    {
+        req.setRawHeader(additionalHeaders.at(i).first.toAscii(), additionalHeaders.at(i).second.toAscii());
+    }
+
     _postReply = _man->post(req, QByteArray().append(queryString));
 
     connect(_postReply, SIGNAL(finished()), this, SLOT(postRequestFinished()), Qt::AutoConnection);

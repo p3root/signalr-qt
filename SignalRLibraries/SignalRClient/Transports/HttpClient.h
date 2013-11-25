@@ -35,6 +35,7 @@
 #include <QMap>
 #include <QMutex>
 #include <QSslError>
+#include <QPair>
 
 #if defined(Q_OS_QNX)
 	#include <QtNetwork/qnetworkaccessmanager.h>
@@ -51,8 +52,8 @@ public:
     HttpClient();
     virtual ~HttpClient();
 
-    void get(QString url, QString username = "", QString password = "", QString authorizationMethod = "");
-    void post(QString url, QMap<QString, QString> arguments);
+    void get(QString url, QList<QPair<QString, QString> > additionalHeaders);
+    void post(QString url, QMap<QString, QString> arguments, QList<QPair<QString, QString> > additionalHeaders);
 
     void abort();
 
