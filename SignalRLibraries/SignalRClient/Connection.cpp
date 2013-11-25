@@ -187,7 +187,7 @@ void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, 
 {
     if(!error)
     {
-        if(negotiateResponse->protocolVersion != "1.2")
+        if( !(negotiateResponse->protocolVersion == "1.3" || negotiateResponse->protocolVersion == "1.2") )
         {
             onError(SignalException("Invalid protocol version", SignalException::InvalidProtocolVersion));
             stop();
