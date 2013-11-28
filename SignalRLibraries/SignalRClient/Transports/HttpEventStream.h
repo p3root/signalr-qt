@@ -44,13 +44,14 @@
 #include "HttpResponse.h"
 
 class ServerSentEventsTransport;
+class Connection;
 
 class HttpEventStream : public QThread
 {
     Q_OBJECT
 
 public:
-    HttpEventStream(QUrl url, bool logErrorsToQt);
+    HttpEventStream(QUrl url, bool logErrorsToQt, Connection* con);
 
     void close();
 
@@ -67,6 +68,7 @@ private Q_SLOTS:
     void onReadyRead();
 
 private:
+    Connection* _connection;
     bool _logErrorsToQt;
     QTcpSocket *_sock;
     bool _isFirstReponse;

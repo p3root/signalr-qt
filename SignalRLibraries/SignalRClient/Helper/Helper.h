@@ -32,13 +32,15 @@
 #define HELPER_H
 #include <QtCore>
 
+class Connection;
+
 class Helper
 {
 public:
     Helper();
 
     static QString encode(QString val);
-    static QString getEncodedQueryString(QUrl);
+    static QString getEncodedQueryString(QUrl, Connection *con);
 
     static void wait(int seconds);
     static void waitMs(int milliseconds);

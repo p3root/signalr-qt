@@ -38,9 +38,10 @@
 	#include <QHostInfo>
 #endif
 
-HttpEventStream::HttpEventStream(QUrl url, bool logErrorsToQt) : _sock(0), _isFirstReponse(true), _url(url)
+HttpEventStream::HttpEventStream(QUrl url, bool logErrorsToQt, Connection *con) : _sock(0), _isFirstReponse(true), _url(url)
 {
     _logErrorsToQt = logErrorsToQt;
+    _connection = con;
 }
 
 void HttpEventStream::open()
@@ -66,7 +67,7 @@ void HttpEventStream::open()
             {
                 _sock->setSocketOption(QAbstractSocket::KeepAliveOption,1);
 
-                QString getRequest = QString("%1 %2 %3").arg("GET", _url.path() +"?"+ Helper::getEncodedQueryString(_url), "HTTP/1.1\r\n");
+                QString getRequest = QString("%1 %2 %3").arg("GET", _url.path() +"?"+ Helper::getEncodedQueryString(_url, _connection), "HTTP/1.1\r\n");
 
                 //prepare http request
                 os << QByteArray().append(getRequest);

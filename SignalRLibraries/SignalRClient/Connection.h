@@ -93,6 +93,10 @@ public:
 
     QList< QPair<QString, QString> >& getAdditionalHttpHeaders() { return _additionalHeaders; }
     void setAdditionalHttpHeaders(QList<QPair<QString, QString> > lst);
+
+    QList< QPair<QString, QString> >& getAdditionalQueryString() { return _additionalQueryString; }
+    void setAdditionalQueryString(QList<QPair<QString, QString> > lst);
+
     void negotiateCompleted(const NegotiateResponse *negotiateResponse, SignalException* error);
 
     void setProxySettings(const QNetworkProxy proxy) { _proxySettings = proxy; }
@@ -121,6 +125,7 @@ private:
     QString _messageId;
     ClientTransport* _transport;
     QList<QPair<QString, QString> > _additionalHeaders;
+    QList<QPair<QString, QString> > _additionalQueryString;
    // ConnectionHandler* _handler;
     quint64 _count;
     HttpClient *_httpClient;

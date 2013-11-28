@@ -65,9 +65,9 @@ unix:!symbian {
     INSTALLS += target
 }
 
-unix:QMAKE_POST_LINK+= $$QMAKE_COPY -av $$OUT_PWD/*.so* $$OUT_PWD/../../SystemTera.out/lib
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/release/ -lQextJson
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/debug/ -lQextJson
+else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/ -lQextJson
 
-unix:!macx: LIBS += -L$$OUT_PWD/../../Qext/QextJson/ -lQextJson
-
-INCLUDEPATH += $$PWD/../../Qext/QextJson
-DEPENDPATH += $$PWD/../../Qext/QextJson
+INCLUDEPATH += $$PWD/../../ThirdParty/QtExtJson
+DEPENDPATH += $$PWD/../../ThirdParty/QtExtJson

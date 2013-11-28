@@ -51,7 +51,7 @@ void ServerSentEventsTransport::start(QString)
     if(_eventStream)
         delete _eventStream;
 
-    _eventStream = new HttpEventStream(qurl, _connection->getLogErrorsToQDebug());
+    _eventStream = new HttpEventStream(qurl, _connection->getLogErrorsToQDebug(), _connection);
 
     connect(_eventStream, SIGNAL(packetReady(QString,SignalException*)), this, SLOT(packetReceived(QString,SignalException*)));
     connect(_eventStream, SIGNAL(connected(SignalException*)), this, SLOT(connected(SignalException*)));

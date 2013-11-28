@@ -70,7 +70,7 @@ void HttpClient::get(QString url)
     }
 
     QUrl decodedUrl(url);
-    QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(decodedUrl.port()) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl);
+    QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(decodedUrl.port()) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl, _connection);
     QUrl reqUrl = QUrl();
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
@@ -86,7 +86,9 @@ void HttpClient::get(QString url)
 
     for(int i = 0; i < _connection->getAdditionalHttpHeaders().size(); i++)
     {
-        req.setRawHeader(_connection->getAdditionalHttpHeaders().at(i).first.toAscii(), _connection->getAdditionalHttpHeaders().at(i).second.toAscii());
+        QString first = QString(_connection->getAdditionalHttpHeaders().at(i).first);
+        QString second = QString(_connection->getAdditionalHttpHeaders().at(i).second);
+        req.setRawHeader(first.toAscii(), second.toAscii());
     }
 
 
@@ -116,7 +118,7 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
     queryString.remove(queryString.length()-1, 1);
 
     QUrl decodedUrl(url);
-    QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(decodedUrl.port()) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl);
+    QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(decodedUrl.port()) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl, _connection);
     QUrl reqUrl = QUrl();
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
@@ -131,7 +133,9 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
 
     for(int i = 0; i < _connection->getAdditionalHttpHeaders().size(); i++)
     {
-        req.setRawHeader(_connection->getAdditionalHttpHeaders().at(i).first.toAscii(), _connection->getAdditionalHttpHeaders().at(i).second.toAscii());
+        QString first = QString(_connection->getAdditionalHttpHeaders().at(i).first);
+        QString second = QString(_connection->getAdditionalHttpHeaders().at(i).second);
+        req.setRawHeader(first.toAscii(), second.toAscii());
     }
 
     _postReply = _man->post(req, QByteArray().append(queryString));

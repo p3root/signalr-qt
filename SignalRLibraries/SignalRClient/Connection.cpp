@@ -121,6 +121,11 @@ void Connection::setAdditionalHttpHeaders(QList<QPair<QString, QString> > lst)
     _additionalHeaders = lst;
 }
 
+void Connection::setAdditionalQueryString(QList<QPair<QString, QString> > lst)
+{
+    _additionalQueryString = lst;
+}
+
 void Connection::onError(SignalException error)
 {
     Q_EMIT errorOccured(error);
