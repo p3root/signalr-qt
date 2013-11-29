@@ -79,10 +79,10 @@ QString Helper::getEncodedQueryString(QUrl url, Connection *con)
 
     if(con)
     {
-        for(int i = 0; i < con->getAdditionalHttpHeaders().size(); i++)
+        for(int i = 0; i < con->getAdditionalQueryString().size(); i++)
         {
-            QString first =  con->getAdditionalHttpHeaders().at(i).first;
-            QString second =  con->getAdditionalHttpHeaders().at(i).second;
+            QString first =  con->getAdditionalQueryString().at(i).first;
+            QString second =  con->getAdditionalQueryString().at(i).second;
 
             retVal += QString("%1=%2&").arg(first, encode(second));
         }

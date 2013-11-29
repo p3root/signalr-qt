@@ -91,6 +91,7 @@ void HttpClient::get(QString url)
         req.setRawHeader(first.toAscii(), second.toAscii());
     }
 
+   // qDebug() << "Starting get Request: " << reqUrl;
 
     _getReply = _man->get(req);
     connect(_getReply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(onIgnoreSSLErros(QList<QSslError>)));
@@ -138,6 +139,8 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
         req.setRawHeader(first.toAscii(), second.toAscii());
     }
 
+    //qDebug() << "Starting post Request: " << reqUrl << " " << arguments;
+
     _postReply = _man->post(req, QByteArray().append(queryString));
 
     connect(_postReply, SIGNAL(finished()), this, SLOT(postRequestFinished()), Qt::AutoConnection);
@@ -157,6 +160,7 @@ void HttpClient::abort()
 
 void HttpClient::getRequestFinished()
 {
+   // qDebug() << "Get Request finished";
     QString data = QString(_getReply->readAll());
 
     if( _getReply->error() == QNetworkReply::NoError)
@@ -171,6 +175,7 @@ void HttpClient::getRequestFinished()
 
 void HttpClient::getError(QNetworkReply::NetworkError)
 {
+    //qDebug() << "Get Request error";
     int error = _getReply->error();
     QString errorString = _getReply->errorString();
 
@@ -208,6 +213,8 @@ void HttpClient::postRequestFinished()
 {
     QString data = QString(_postReply->readAll());
 
+    //qDebug() << "Post Request finished " << data;
+
     if( _postReply->error() == QNetworkReply::NoError)
     {
         Q_EMIT postRequestCompleted(data, 0);
@@ -220,6 +227,7 @@ void HttpClient::postRequestFinished()
 
 void HttpClient::postError(QNetworkReply::NetworkError)
 {
+    // qDebug() << "Post Request error";
     int error = _postReply->error();
     QString errorString = _postReply->errorString();
 

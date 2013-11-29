@@ -33,7 +33,7 @@
 
 LongPollingTransport::LongPollingTransport(HttpClient* httpClient, Connection *con) :HttpBasedTransport(httpClient, con)
 {
-
+    _started = false;
 }
 
 
@@ -44,18 +44,15 @@ LongPollingTransport::~LongPollingTransport(void)
 void LongPollingTransport::start(QString)
 {
     connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
-    QString connectUrl = _connection->getUrl() + "/connect";
+
+    QString conOrRecon = "connect";
+    if(_started)
+        conOrRecon = "reconnect";
+    QString connectUrl = _connection->getUrl() + "/" +conOrRecon;
     connectUrl += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
+    connect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), SLOT(onPostRequestCompleted(QString,SignalException*)));
     _httpClient->post(connectUrl, QMap<QString, QString>());
-
-    _url = _connection->getUrl() + "/poll";
-    _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
-
-    Q_EMIT transportStarted(0);
-
-    _started = true;
-    _httpClient->get(_url);
 }
 
 void LongPollingTransport::abort()
@@ -110,14 +107,14 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                     if(_connection->getLogErrorsToQDebug())
                         qDebug() << "LongPollingTranpsort: lost connection...try to reconnect";
                     Helper::wait(2);
-                    //_transport->run();
+                    start("");
                 }
                 else if(_connection->getAutoReconnect())
                 {
                     if(_connection->getLogErrorsToQDebug())
                         qDebug() << "LongPollingTranpsort: (autoconnect=true) lost connection...try to reconnect";
                     Helper::wait(2);
-                    //pollInfo->transport->run();
+                    start("");
                 }
                 else
                 {
@@ -140,4 +137,28 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
         _httpClient->get(_url);
     }
 
+}
+
+void LongPollingTransport::onPostRequestCompleted(const QString &httpResponse, SignalException *error)
+{
+    Q_UNUSED(httpResponse);
+
+    disconnect(this, SLOT(onPostRequestCompleted(QString,SignalException*)));
+    if(_started)
+        return;
+
+    if(!error)
+    {
+        _url = _connection->getUrl() + "/poll";
+        _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
+
+        _started = true;
+        _httpClient->get(_url);
+
+        Q_EMIT transportStarted(0);
+    }
+    else
+    {
+        Q_EMIT transportStarted(error);
+    }
 }

@@ -51,6 +51,7 @@ public:
 
 private Q_SLOTS:
     void onPollHttpResponse(const QString& httpResponse, SignalException *error);
+    void onPostRequestCompleted(const QString& httpResponse, SignalException *error);
 
 private:
     bool _started;

@@ -84,6 +84,11 @@ Connection::State Connection::getState()
     return _state;
 }
 
+const QString &Connection::getConnectionId()
+{
+    return _connectionId;
+}
+
 bool Connection::changeState(State oldState, State newState)
 {
     if(_state == oldState)
@@ -146,12 +151,12 @@ QString Connection::getUrl()
     return _host;
 }
 
-QString Connection::getConnectionToken()
+const QString &Connection::getConnectionToken()
 {
     return _connectionToken;
 }
 
-QString Connection::getGroupsToken()
+const QString &Connection::getGroupsToken()
 {
     return _groupsToken;
 }

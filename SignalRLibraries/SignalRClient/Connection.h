@@ -67,9 +67,9 @@ public:
     virtual void send(QString data);
     
     State getState();
-    QString getConnectionId();
-    QString getConnectionToken();
-    QString getGroupsToken();
+    const QString &getConnectionId();
+    const QString &getConnectionToken();
+    const QString &getGroupsToken();
     ClientTransport* getTransport();
     QString getUrl();
     QString getMessageId();
