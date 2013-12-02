@@ -49,6 +49,7 @@ public:
         SocketOperationTimedOut,
         RemoteHostClosedConnection,
         HostNotFoundError,
+        UnkownNetworkError,
         UnkownError
     };
 

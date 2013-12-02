@@ -43,13 +43,16 @@
 #include <unistd.h>
 #include <Connection.h>
 
-HttpClient::HttpClient(Connection *con) : _isAborting(false), _getReply(0), _postReply(0), _man(0)
+HttpClient::HttpClient(Connection *con) : _isAborting(false), _man(0)
 {
     _connection = con;
     _man = new QNetworkAccessManager();
     _man->setProxy(_connection->getProxySettings());
     _getMutex = new QMutex(QMutex::Recursive);
     _postMutex = new QMutex(QMutex::Recursive);
+
+    connect(_man, SIGNAL(finished(QNetworkReply*)), SLOT(requestFinished(QNetworkReply*)));
+    connect(_man, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), SLOT(onIgnoreSSLErros(QNetworkReply*,QList<QSslError>)));
 }
 
 HttpClient::~HttpClient()
@@ -63,11 +66,6 @@ void HttpClient::get(QString url)
 {
     QMutexLocker l(_getMutex);
     Q_UNUSED(l);
-    if(_getReply)
-    {
-        _getReply->deleteLater();
-        _getReply = 0;
-    }
 
     QUrl decodedUrl(url);
     QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(decodedUrl.port()) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl, _connection);
@@ -91,23 +89,17 @@ void HttpClient::get(QString url)
         req.setRawHeader(first.toAscii(), second.toAscii());
     }
 
-   // qDebug() << "Starting get Request: " << reqUrl;
 
-    _getReply = _man->get(req);
-    connect(_getReply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(onIgnoreSSLErros(QList<QSslError>)));
-    connect(_getReply, SIGNAL(finished()), this, SLOT(getRequestFinished()), Qt::AutoConnection);
-    connect(_getReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(getError(QNetworkReply::NetworkError)), Qt::QueuedConnection);
+     _connection->emitLogMessage("starting get request", Connection::Debug);
+    QNetworkReply *getReply = _man->get(req);
+
+    _currentConnections.append(getReply);
 }
 
 void HttpClient::post(QString url, QMap<QString, QString> arguments)
 {
     QMutexLocker l(_postMutex);
     Q_UNUSED(l);
-    if(_postReply)
-    {
-        _postReply->deleteLater();
-        _postReply = 0;
-    }
 
     QString queryString;
     QMap<QString, QString>::iterator it = arguments.begin();
@@ -139,49 +131,83 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
         req.setRawHeader(first.toAscii(), second.toAscii());
     }
 
-    //qDebug() << "Starting post Request: " << reqUrl << " " << arguments;
+    _connection->emitLogMessage("starting post request", Connection::Debug);
 
-    _postReply = _man->post(req, QByteArray().append(queryString));
+    QNetworkReply *postReply = _man->post(req, QByteArray().append(queryString));
 
-    connect(_postReply, SIGNAL(finished()), this, SLOT(postRequestFinished()), Qt::AutoConnection);
-    connect(_postReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(postError(QNetworkReply::NetworkError)), Qt::QueuedConnection);
+    _currentConnections.append(postReply);
 }
 
 void HttpClient::abort()
 {
     _isAborting = true;
 
-    if(_getReply)
-        _getReply->abort();
-    if(_postReply)
-        _postReply->abort();
+    foreach(QNetworkReply *reply, _currentConnections)
+    {
+        reply->abort();
+    }
 }
 
-
-void HttpClient::getRequestFinished()
+void HttpClient::requestFinished(QNetworkReply *reply)
 {
-   // qDebug() << "Get Request finished";
-    QString data = QString(_getReply->readAll());
+    QNetworkReply::NetworkError error = reply->error();
+    QNetworkAccessManager::Operation operation = reply->operation();
 
-    if( _getReply->error() == QNetworkReply::NoError)
+    if(error == QNetworkReply::OperationCanceledError)
+    {
+        _currentConnections.removeOne(reply);
+        reply->deleteLater();
+        return;
+    }
+
+    if(operation == QNetworkAccessManager::GetOperation)
+    {
+        if(error == QNetworkReply::NoError)
+            getRequestFinished(reply);
+        else
+            replyError(error, reply);
+    }
+    else if(operation == QNetworkAccessManager::PostOperation)
+    {
+        if(error == QNetworkReply::NoError)
+            postRequestFinished(reply);
+        else
+            replyError(error, reply);
+    }
+}
+
+void HttpClient::getRequestFinished(QNetworkReply *reply)
+{
+    if(!reply)
+        return;
+
+    _connection->emitLogMessage("get request finished", Connection::Debug);
+
+    QString data = QString(reply->readAll());
+
+    if(reply->error() == QNetworkReply::NoError)
     {
         Q_EMIT getRequestCompleted(data, 0);
-    }
-    else
-    {
-        getError(_getReply->error());
+
+        _currentConnections.removeOne(reply);
+        reply->deleteLater();
     }
 }
 
-void HttpClient::getError(QNetworkReply::NetworkError)
+void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *reply)
 {
-    //qDebug() << "Get Request error";
-    int error = _getReply->error();
-    QString errorString = _getReply->errorString();
+    if(!reply)
+        return;
+
+    int error = (int)err;
+    QString errorString = reply->errorString();
+
+    _connection->emitLogMessage("request error " + errorString, Connection::Error);
 
     if(error != QNetworkReply::NoError)
     {
         SignalException* ex = 0;
+
         switch(error)
         {
             case 1:
@@ -196,6 +222,11 @@ void HttpClient::getError(QNetworkReply::NetworkError)
             case 4:
                 ex = new SignalException(errorString, SignalException::SocketOperationTimedOut);
                 break;
+            case 5:
+                return;
+            case 99:
+                ex = new SignalException(errorString, SignalException::UnkownNetworkError);
+                break;
             case 204:
                 ex = new SignalException(errorString, SignalException::ServerRequiresAuthorization);
                 break;
@@ -205,52 +236,33 @@ void HttpClient::getError(QNetworkReply::NetworkError)
         }
 
         if(!_isAborting)
+        {
             Q_EMIT getRequestCompleted("", ex);
+            _currentConnections.removeOne(reply);
+            reply->deleteLater();
+        }
     }
 }
 
-void HttpClient::postRequestFinished()
+void HttpClient::postRequestFinished(QNetworkReply *reply)
 {
-    QString data = QString(_postReply->readAll());
+    if(!reply)
+        return;
 
-    //qDebug() << "Post Request finished " << data;
+    _connection->emitLogMessage("post request finished", Connection::Debug);
 
-    if( _postReply->error() == QNetworkReply::NoError)
+    QString data = QString(reply->readAll());
+
+    if( reply->error() == QNetworkReply::NoError)
     {
         Q_EMIT postRequestCompleted(data, 0);
-    }
-    else
-    {
-        postError(_postReply->error());
+        _currentConnections.removeOne(reply);
+        reply->deleteLater();
     }
 }
 
-void HttpClient::postError(QNetworkReply::NetworkError)
-{
-    // qDebug() << "Post Request error";
-    int error = _postReply->error();
-    QString errorString = _postReply->errorString();
-
-    if(error != QNetworkReply::NoError)
-    {
-        SignalException* ex = 0;
-        switch(error)
-        {
-            case 1:
-                ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
-                break;
-            default:
-                ex = new SignalException(errorString, SignalException::UnkownError);
-                break;
-        }
-
-        if(!_isAborting)
-            Q_EMIT postRequestCompleted("", ex);
-    }
-}
-
-void HttpClient::onIgnoreSSLErros(QList<QSslError> error)
+void HttpClient::onIgnoreSSLErros(QNetworkReply *reply, QList<QSslError> error)
 {
     Q_UNUSED(error);
-    _getReply->ignoreSslErrors();
+    reply->ignoreSslErrors(error);
 }

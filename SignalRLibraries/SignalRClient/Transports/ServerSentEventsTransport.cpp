@@ -108,19 +108,18 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
         {
             if(_connection->getLogErrorsToQDebug())
                 qDebug() << "ServerSentEventsTransport: Lost connection...try to reconnect";
+            _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
 
-            //wait to seconds before reconnecting
-            Helper::wait(2);
+            Helper::wait(_connection->getReconnectWaitTime());
             reconnect();
         }
         else if(_connection->getAutoReconnect())
         {
             if(_connection->getLogErrorsToQDebug())
                 qDebug() << "ServerSentEventsTransport: (autoconnect=true)  Lost connection...try to reconnect";
+            _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
 
-
-            //wait to seconds before reconnecting
-            Helper::wait(2);
+            Helper::wait(_connection->getReconnectWaitTime());
             reconnect();
         }
         else

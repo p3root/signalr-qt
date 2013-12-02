@@ -41,6 +41,7 @@ Connection::Connection(const QString host) : _count(0), _keepAliveData(0)
 
     qRegisterMetaType<SignalException>("SignalException");
     _logErrorsToQDebug = false;
+    _reconnectWaitTime = 5;
 }
 
 Connection::~Connection()
@@ -222,12 +223,15 @@ void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, 
     }
     else
     {
-        if(getAutoReconnect())
+        if(_autoReconnect)
         {
             onError(*error);
             if(_logErrorsToQDebug)
-                qDebug() << "Negotation failed, will try it again";
-            Helper::wait(2);
+            {
+                qDebug() << "Negotiation failed, will try it again";
+            }
+            emitLogMessage("Negotiation failed, will try it again", Connection::Error);
+            Helper::wait(_reconnectWaitTime);
             getTransport()->negotiate();
         }
         else
@@ -236,6 +240,11 @@ void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, 
             stop();
         }
     }
+}
+
+void Connection::emitLogMessage(QString msg, Connection::LogSeverity severity)
+{
+    Q_EMIT logMessage(msg, severity);
 }
 
 void Connection::transportStarted(SignalException* error)

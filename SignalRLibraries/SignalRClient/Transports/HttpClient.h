@@ -64,21 +64,25 @@ Q_SIGNALS:
     void postRequestCompleted(const QString& httpResponse, SignalException* error);
 
 private Q_SLOTS:
-    void getRequestFinished();
-    void getError(QNetworkReply::NetworkError);
+    void requestFinished(QNetworkReply* reply);
 
-    void postRequestFinished();
-    void postError(QNetworkReply::NetworkError);
+    void onIgnoreSSLErros(QNetworkReply *reply, QList<QSslError> error);
 
-    void onIgnoreSSLErros(QList<QSslError> error);
+private:
+    void getRequestFinished(QNetworkReply *reply);
+    void replyError(QNetworkReply::NetworkError, QNetworkReply *reply);
+
+    void postRequestFinished(QNetworkReply *reply);
+
+
 private:
     bool _isAborting;
-    QNetworkReply *_getReply;
-    QNetworkReply *_postReply;
-    QNetworkAccessManager* _man;
+    QNetworkAccessManager *_man;
     QMutex *_getMutex;
     QMutex *_postMutex;
     Connection *_connection;
+
+    QList<QNetworkReply*> _currentConnections;
 };
 
 #endif // HTTPCLIENT_H

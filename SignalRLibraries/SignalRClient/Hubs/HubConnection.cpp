@@ -62,7 +62,11 @@ HubProxy *HubConnection::createHubProxy(QString name)
     if(_state != Disconnected)
     {
         if(getLogErrorsToQDebug())
+        {
             qCritical() << "A HubProxy cannot be added after the connection has been started.";
+        }
+
+        emitLogMessage("A HubProxy cannot be added after the connection has been started", Connection::Error);
         return 0;
     }
 
@@ -132,6 +136,8 @@ HubProxy *HubConnection::getByName(const QString &name)
     {
         if(getLogErrorsToQDebug())
             qCritical() << "could not find proxy with name " << name;
+
+        emitLogMessage("Cloud not find proxy with name " + name, Connection::Error);
     }
     return _hubs[name];
 }

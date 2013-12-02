@@ -106,14 +106,17 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                 {
                     if(_connection->getLogErrorsToQDebug())
                         qDebug() << "LongPollingTranpsort: lost connection...try to reconnect";
-                    Helper::wait(2);
+
+                    _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
+                    Helper::wait(_connection->getReconnectWaitTime());
                     start("");
                 }
                 else if(_connection->getAutoReconnect())
                 {
                     if(_connection->getLogErrorsToQDebug())
                         qDebug() << "LongPollingTranpsort: (autoconnect=true) lost connection...try to reconnect";
-                    Helper::wait(2);
+                    _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
+                    Helper::wait(_connection->getReconnectWaitTime());
                     start("");
                 }
                 else

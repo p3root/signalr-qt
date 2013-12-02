@@ -57,6 +57,14 @@ public:
         Disconnected
     };
 
+    enum LogSeverity
+    {
+        Debug,
+        Info,
+        Warning,
+        Error
+    };
+
     Connection(QString url);
     virtual ~Connection(void);
 
@@ -104,11 +112,18 @@ public:
 
     void setLogErrorsToQDebug(bool val)  { _logErrorsToQDebug = val; }
     bool getLogErrorsToQDebug() { return _logErrorsToQDebug; }
+
+    int getReconnectWaitTime() { return _reconnectWaitTime; }
+    void setReconnectWaitTime(int timeInSeconds) { _reconnectWaitTime = timeInSeconds; }
+
+    void emitLogMessage(QString, LogSeverity severity);
+
 Q_SIGNALS:
     void stateChanged(Connection::State old_state, Connection::State new_state);
     void errorOccured(SignalException error);
     void messageReceived(QVariant data);
     void onConnectionSlow();
+    void logMessage(QString, Connection::LogSeverity severity);
 
 protected:
      State _state;
@@ -132,6 +147,7 @@ private:
     bool _autoReconnect;
     KeepAliveData *_keepAliveData;
     QNetworkProxy _proxySettings;
+    int _reconnectWaitTime;
 };
 
 #endif

@@ -99,7 +99,6 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
 
         if(map.contains("G"))
         {
-            qDebug() << "groupid " << map["G"].toString();
             connection->setGroupsToken(map["G"].toString());
         }
 
