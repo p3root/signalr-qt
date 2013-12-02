@@ -44,9 +44,9 @@ HttpBasedTransport::~HttpBasedTransport(void)
 
 void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
 {
+    disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
     if(!ex)
     {
-        disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
         const NegotiateResponse* res = TransportHelper::parseNegotiateHttpResponse(data);
 
         if(res)
@@ -57,7 +57,7 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
     }
     else
     {
-         _connection->negotiateCompleted(0, ex);
+        _connection->negotiateCompleted(0, ex);
     }
 
 }
