@@ -162,6 +162,8 @@ void HttpClient::requestFinished(QNetworkReply *reply)
 
     if(operation == QNetworkAccessManager::GetOperation)
     {
+        _connection->emitLogMessage("get request finished", Connection::Debug);
+
         if(error == QNetworkReply::NoError)
             getRequestFinished(reply);
         else
@@ -169,6 +171,8 @@ void HttpClient::requestFinished(QNetworkReply *reply)
     }
     else if(operation == QNetworkAccessManager::PostOperation)
     {
+        _connection->emitLogMessage("post request finished", Connection::Debug);
+
         if(error == QNetworkReply::NoError)
             postRequestFinished(reply);
         else
@@ -180,8 +184,6 @@ void HttpClient::getRequestFinished(QNetworkReply *reply)
 {
     if(!reply)
         return;
-
-    _connection->emitLogMessage("get request finished", Connection::Debug);
 
     QString data = QString(reply->readAll());
 
@@ -248,8 +250,6 @@ void HttpClient::postRequestFinished(QNetworkReply *reply)
 {
     if(!reply)
         return;
-
-    _connection->emitLogMessage("post request finished", Connection::Debug);
 
     QString data = QString(reply->readAll());
 

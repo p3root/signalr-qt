@@ -30,9 +30,10 @@
 
 #include "HubCallback.h"
 
-HubCallback::HubCallback(void* state) : QObject()
+HubCallback::HubCallback(void* state, const QString name) : QObject()
 {
     _state = state;
+    _name = name;
 }
 
 void *HubCallback::getState()

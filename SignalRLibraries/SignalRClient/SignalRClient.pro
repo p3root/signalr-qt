@@ -4,16 +4,16 @@
 #
 #-------------------------------------------------
 
-QT       += network
+QT += network
 
-QT       -= gui
+QT -= gui
 
 TARGET = SignalRClient
 TEMPLATE = lib
 
 DEFINES += SIGNALR_LIBRARY
 
-SOURCES +=  \
+SOURCES += \
             Transports/HttpBasedTransport.cpp\
             Transports/LongPollingTransport.cpp\
             Transports/ServerSentEventsTransport.cpp\
@@ -34,7 +34,7 @@ SOURCES +=  \
 
 
 
-HEADERS +=  \
+HEADERS += \
             Transports/HttpBasedTransport.h \
             Transports/LongPollingTransport.h \
             Transports/ServerSentEventsTransport.h \

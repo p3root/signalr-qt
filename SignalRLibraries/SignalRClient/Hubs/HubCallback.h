@@ -38,16 +38,19 @@ class HubCallback : public QObject
 {
     Q_OBJECT
 public:
-    HubCallback(void* state);
+    HubCallback(void* state, const QString name = "");
 
     void* getState();
     void raiseMessageReceived(QVariant);
+
+    const QString &getName() { return _name; }
 
 Q_SIGNALS:
     void messageReceived(HubCallback*, QVariant);
 
 private:
     void* _state;
+    QString _name;
 };
 
 #endif // HUBCALLBACK_H

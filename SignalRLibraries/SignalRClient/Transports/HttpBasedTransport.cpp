@@ -45,6 +45,7 @@ HttpBasedTransport::~HttpBasedTransport(void)
 void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
 {
     disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
+
     if(!ex)
     {
         const NegotiateResponse* res = TransportHelper::parseNegotiateHttpResponse(data);
@@ -57,7 +58,7 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
     }
     else
     {
-        _connection->negotiateCompleted(0, ex);
+         _connection->negotiateCompleted(0, ex);
     }
 
 }
@@ -91,6 +92,7 @@ void HttpBasedTransport::send(QString data)
     }
     else
     {
+        _sending = true;
         connect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
         _httpClient->post(url, postData);
     }

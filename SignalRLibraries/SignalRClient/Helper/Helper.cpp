@@ -88,7 +88,8 @@ QString Helper::getEncodedQueryString(QUrl url, Connection *con)
         }
     }
 
-    retVal.remove(retVal.length()-1, 1);
+    retVal += "timestamp=" + QString::number(QDateTime::currentDateTimeUtc().toTime_t());
+    //retVal.remove(retVal.length()-1, 1);
 
     return retVal;
 }

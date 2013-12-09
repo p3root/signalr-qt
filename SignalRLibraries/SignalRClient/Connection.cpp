@@ -230,7 +230,7 @@ void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, 
             {
                 qDebug() << "Negotiation failed, will try it again";
             }
-            emitLogMessage("Negotiation failed, will try it again", Connection::Error);
+            emitLogMessage(QString("Negotiation failed, will try it again after %1s").arg(_reconnectWaitTime), Connection::Error);
             Helper::wait(_reconnectWaitTime);
             getTransport()->negotiate();
         }

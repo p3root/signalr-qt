@@ -123,7 +123,7 @@ Q_SIGNALS:
     void errorOccured(SignalException error);
     void messageReceived(QVariant data);
     void onConnectionSlow();
-    void logMessage(QString, Connection::LogSeverity severity);
+    void logMessage(QString, int severity);
 
 protected:
      State _state;

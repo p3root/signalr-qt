@@ -101,6 +101,10 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                 {
                     _connection->changeState(Connection::Reconnecting, Connection::Connected);
                 }
+                else if(error->getType() == SignalException::ServerRequiresAuthorization)
+                {
+                     _connection->changeState(Connection::Connected, Connection::Reconnecting);
+                }
 
                 if(_connection->ensureReconnecting())
                 {

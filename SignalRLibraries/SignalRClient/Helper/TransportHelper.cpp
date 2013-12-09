@@ -92,11 +92,6 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
             }
         }
 
-        if(map.contains("I"))
-        {
-            connection->onReceived(var);
-        }
-
         if(map.contains("G"))
         {
             connection->setGroupsToken(map["G"].toString());
@@ -105,6 +100,11 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
         if(map.contains("C"))
         {
             connection->setMessageId(map["C"].toString());
+        }
+
+        if(map.contains("I"))
+        {
+            connection->onReceived(var);
         }
 
         if(*disconnected)
