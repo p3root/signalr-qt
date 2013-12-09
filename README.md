@@ -5,8 +5,6 @@ This is an C++ implementation of Microsofts ASP.Net SignalR. (https://github.com
 
 For questions please send me an email (patrik.pfaffenbauer@p3.co.at) or conatct me via skype (patrik.pfaffenbauer)
 
-The code is published under the BSD License.
-
 
 Client
 ======
