@@ -68,7 +68,14 @@ void HttpClient::get(QString url)
     Q_UNUSED(l);
 
     QUrl decodedUrl(url);
-    QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(decodedUrl.port()) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl, _connection);
+    int port = decodedUrl.port();
+
+    if(port < 0 && decodedUrl.scheme().toLower() == "http")
+        port = 80;
+    else if(port < 0 && decodedUrl.scheme().toLower() == "https")
+        port = 443;
+
+    QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(port) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl, _connection);
     QUrl reqUrl = QUrl();
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
@@ -111,7 +118,14 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
     queryString.remove(queryString.length()-1, 1);
 
     QUrl decodedUrl(url);
-    QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(decodedUrl.port()) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl, _connection);
+    int port = decodedUrl.port();
+
+    if(port < 0 && decodedUrl.scheme().toLower() == "http")
+        port = 80;
+    else if(port < 0 && decodedUrl.scheme().toLower() == "https")
+        port = 443;
+
+    QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(port) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl, _connection);
     QUrl reqUrl = QUrl();
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
