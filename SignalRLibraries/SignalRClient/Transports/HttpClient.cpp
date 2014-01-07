@@ -97,7 +97,7 @@ void HttpClient::get(QString url)
     }
 
 
-     _connection->emitLogMessage("starting get request", Connection::Debug);
+    _connection->emitLogMessage("starting get request (" + _connection->getConnectionId() +")" , Connection::Debug);
     QNetworkReply *getReply = _man->get(req);
 
     _currentConnections.append(getReply);
@@ -145,7 +145,7 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
         req.setRawHeader(first.toAscii(), second.toAscii());
     }
 
-    _connection->emitLogMessage("starting post request", Connection::Debug);
+    _connection->emitLogMessage("starting post request (" + _connection->getConnectionId() +")", Connection::Debug);
 
     QNetworkReply *postReply = _man->post(req, QByteArray().append(queryString));
 
@@ -203,10 +203,9 @@ void HttpClient::getRequestFinished(QNetworkReply *reply)
 
     if(reply->error() == QNetworkReply::NoError)
     {
-        Q_EMIT getRequestCompleted(data, 0);
-
         _currentConnections.removeOne(reply);
         reply->deleteLater();
+        Q_EMIT getRequestCompleted(data, 0);
     }
 }
 
@@ -243,6 +242,9 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
             case 99:
                 ex = new SignalException(errorString, SignalException::UnkownNetworkError);
                 break;
+            case 203:
+                ex = new SignalException(errorString, SignalException::ContentNotFoundError);
+                break;
             case 204:
                 ex = new SignalException(errorString, SignalException::ServerRequiresAuthorization);
                 break;
@@ -253,9 +255,9 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
 
         if(!_isAborting)
         {
-            Q_EMIT getRequestCompleted("", ex);
             _currentConnections.removeOne(reply);
             reply->deleteLater();
+            Q_EMIT getRequestCompleted("", ex);
         }
     }
 }
@@ -269,9 +271,9 @@ void HttpClient::postRequestFinished(QNetworkReply *reply)
 
     if( reply->error() == QNetworkReply::NoError)
     {
-        Q_EMIT postRequestCompleted(data, 0);
         _currentConnections.removeOne(reply);
         reply->deleteLater();
+        Q_EMIT postRequestCompleted(data, 0);
     }
 }
 

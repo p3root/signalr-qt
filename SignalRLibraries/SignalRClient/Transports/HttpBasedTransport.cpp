@@ -65,9 +65,11 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
 
 void HttpBasedTransport::negotiate()
 {
+    qDebug() << "start negotiate";
     QString url = _connection->getUrl() + "/negotiate?clientProtocol=1.3&connectionData=" + _connection->onSending();
     //url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
+    disconnect(this, SLOT(negotiateCompleted(QString,SignalException*)));
     connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
     _httpClient->get(url);
 }

@@ -96,6 +96,12 @@ bool Connection::changeState(State oldState, State newState)
     {
         _state = newState;
 
+        if(newState == Disconnected)
+        {
+            _connectionId = "";
+            _connectionToken = "";
+        }
+
         Q_EMIT stateChanged(oldState, newState);
 
         return true;
@@ -217,7 +223,8 @@ void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, 
                 _keepAliveData = new KeepAliveData(negotiateResponse->keepAliveTimeout);
             }
             setConnectionState(*negotiateResponse);
-            connect(_transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(transportStarted(SignalException*)));
+           // disconnect(this, SLOT(transportStarted(SignalException*)));
+            connect(_transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(transportStarted(SignalException*)), Qt::UniqueConnection);
             getTransport()->start("");
         }
     }
@@ -225,7 +232,7 @@ void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, 
     {
         if(_autoReconnect)
         {
-            onError(*error);
+            //onError(*error);
             if(_logErrorsToQDebug)
             {
                 qDebug() << "Negotiation failed, will try it again";
@@ -260,6 +267,14 @@ void Connection::transportStarted(SignalException* error)
             if(changeState(Disconnected, Connecting))
             {
                 _transport->negotiate();
+            }
+            else if(changeState(Connected, Reconnecting))
+            {
+                _transport->start("");
+            }
+            else if(changeState(Reconnecting, Connecting))
+            {
+                _transport->start("");
             }
         }
         else

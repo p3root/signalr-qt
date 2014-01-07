@@ -48,6 +48,7 @@ public:
         ServerRequiresAuthorization,
         SocketOperationTimedOut,
         RemoteHostClosedConnection,
+        ContentNotFoundError,
         HostNotFoundError,
         UnkownNetworkError,
         UnkownError

@@ -51,19 +51,21 @@ Client::~Client()
 void Client::start()
 {
     qDebug() << "Client Thread: " << thread()->currentThreadId();
-    _connection = new HubConnection("http://sentiint:9085/Services.Push/signalr");
-
+    _connection = new HubConnection("http://192.168.1.137:8080/signalr");
+    _connection->setLogErrorsToQDebug(false);
+    _connection->setReconnectWaitTime(3);
     _monitor = new HeartbeatMonitor(_connection, 0);
 
     _client = new HttpClient(_connection);
     _transport = new LongPollingTransport(_client, _connection);
 
-    HubProxy* proxy = _connection->createHubProxy("WriteHub");
+    HubProxy* proxy = _connection->createHubProxy("Chat");
 
     connect(proxy, SIGNAL(hubMessageReceived(QVariant)), this, SLOT(onHubMessageReceived(QVariant)));
 
     connect(_connection, SIGNAL(errorOccured(SignalException)), this, SLOT(onError(SignalException)));
     connect(_connection, SIGNAL(stateChanged(Connection::State,Connection::State)), this, SLOT(onStateChanged(Connection::State,Connection::State)));
+    connect(_connection, SIGNAL(logMessage(QString,int)), this, SLOT(onLogMessage(QString,int)));
 
     _connection->start(_transport, true);
 }
@@ -76,14 +78,6 @@ void Client::stop()
 void Client::onHubMessageReceived(QVariant v)
 {
     qDebug() << v;
-
-    HubProxy* prox = _connection->getByName("WriteHub");
-    QMap<QString, QVariant> map = v.toMap();
-    HubCallback* callback = new HubCallback(0);
-    connect(callback, SIGNAL(messageReceived(HubCallback*,QVariant)), this, SLOT(answerReceived(HubCallback*,QVariant)));
-
-    prox->invoke("ConfigReceived",  map["A"].toStringList(), callback);
-
 }
 
 void Client::onError(SignalException error)
@@ -93,15 +87,20 @@ void Client::onError(SignalException error)
 
 void Client::onStateChanged(Connection::State oldState, Connection::State newState)
 {
-    qDebug()  << "state changed: " << oldState << " -> " << newState;
+    qDebug()  << "state changed: " << oldState << " -> " << newState << " << " << _connection->getConnectionId();
 
     if(newState == Connection::Connected)
     {
         _monitor->start();
         HubCallback* callback = new HubCallback(0);
         connect(callback, SIGNAL(messageReceived(HubCallback*,QVariant)), this, SLOT(answerReceived(HubCallback*,QVariant)));
-        HubProxy* prox = _connection->getByName("WriteHub");
-        prox->invoke("JoinGroup", "110.110", callback);
+        HubProxy* prox = _connection->getByName("Chat");
+        prox->invoke("Send", "message", callback);
+    }
+    else if(newState == Connection::Disconnected)
+    {
+        _monitor->stop();
+        disconnect(this, SLOT(answerReceived(HubCallback*,QVariant)));
     }
 }
 
@@ -110,6 +109,12 @@ void Client::answerReceived(HubCallback *c, QVariant v)
     Q_UNUSED(v);
     qDebug() << "hubcallback received";
     delete c; //VERY IMPORTANT, otherwise the callback will not be deleted -> memory leak
+}
+
+void Client::onLogMessage(QString msg, int severity)
+{
+    Q_UNUSED(severity);
+    qDebug() << msg;
 }
 
 void Client::timerTick()
