@@ -41,15 +41,12 @@ HubProxy::~HubProxy()
 {
 }
 
-void HubProxy::invoke(QString method, QString param, HubCallback* callback)
+void HubProxy::invoke(QString method, QVariant param, HubCallback* callback)
 {
-    QStringList params;
-    params.append(param);
-    invoke(method, params, callback);
-
+    invoke(method, QVariantList() << param, callback);
 }
 
-void HubProxy::invoke(QString method, QStringList params, HubCallback* callback)
+void HubProxy::invoke(QString method, QVariantList params, HubCallback* callback)
 {
     QVariantMap map;
     map.insert("A", params);
