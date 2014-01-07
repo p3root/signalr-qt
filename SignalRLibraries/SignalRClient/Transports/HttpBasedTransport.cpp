@@ -65,7 +65,6 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
 
 void HttpBasedTransport::negotiate()
 {
-    qDebug() << "start negotiate";
     QString url = _connection->getUrl() + "/negotiate?clientProtocol=1.3&connectionData=" + _connection->onSending();
     //url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
@@ -121,7 +120,7 @@ void HttpBasedTransport::tryDequeueNextWorkItem()
 }
 
 void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalException* error)
-{    
+{
     Q_UNUSED(httpResponse);
     Q_UNUSED(error);
     bool timedOut, disconnected;

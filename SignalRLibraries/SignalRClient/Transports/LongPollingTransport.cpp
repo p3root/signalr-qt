@@ -46,8 +46,8 @@ void LongPollingTransport::start(QString)
     connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
 
     QString conOrRecon = "connect";
-  //  if(_started)
-  //      conOrRecon = "reconnect";
+    if(_started)
+        conOrRecon = "reconnect";
     QString connectUrl = _connection->getUrl() + "/" +conOrRecon;
     connectUrl += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
@@ -72,7 +72,7 @@ const QString &LongPollingTransport::getTransportType()
 }
 
 void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, SignalException *ex)
-{ 
+{
     disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
     bool timedOut = false, disconnected = false, serverError = false;
     SignalException *error = 0;
@@ -96,9 +96,9 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
 
             if(_started)
             {
-                if(error->getType() == SignalException::ContentNotFoundError)
-                {
-                  //  _connection->onError(*error);
+                if(error->getType() == SignalException::ContentNotFoundError
+                || error->getType() == SignalException::ConnectionRefusedError) {
+
                     _started = false;
                     _connection->changeState(Connection::Connected, Connection::Disconnected);
 
@@ -108,6 +108,11 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                     _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
                     Helper::wait(_connection->getReconnectWaitTime());
                 }
+                else
+                {
+                    _connection->emitLogMessage("unkown error (" + error->getMessage() + ")", Connection::Error);
+                }
+
                 Q_EMIT transportStarted(ex);
             }
             else
@@ -122,6 +127,10 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                    error->getType() == SignalException::ServerRequiresAuthorization)
                 {
                     _connection->changeState(_connection->getState(), state);
+                }
+                else
+                {
+                    _connection->emitLogMessage("unkown error (" + error->getMessage() + ")", Connection::Error);
                 }
 
                 if(_connection->ensureReconnecting())
@@ -173,10 +182,6 @@ void LongPollingTransport::onPostRequestCompleted(const QString &httpResponse, S
     Q_UNUSED(httpResponse);
 
     disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)),this, SLOT(onPostRequestCompleted(QString,SignalException*)));
-
-    //just to be sure
-    if(_started)
-        return;
 
     if(!error && !_connection->getConnectionToken().isEmpty())
     {
