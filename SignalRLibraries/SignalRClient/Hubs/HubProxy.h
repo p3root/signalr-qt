@@ -45,12 +45,11 @@ public:
     HubProxy(HubConnection* connection, QString hubName);
     ~HubProxy();
 
+    void invoke(QString method, QString param, HubCallback* callback = 0);
+    void invoke(QString method, QStringList params, HubCallback* callback = 0);
     void invoke(QString method, QVariant param, HubCallback* callback = 0);
     void invoke(QString method, QVariantList params, HubCallback* callback = 0);
-    void invoke(QString method, HubCallback* callback = 0)
-    {
-        invoke(method, QVariantList(), callback);
-    }
+    void invoke(QString method, HubCallback* callback = 0);
 
     void onReceive(QVariant var);
 

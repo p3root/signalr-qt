@@ -41,6 +41,28 @@ HubProxy::~HubProxy()
 {
 }
 
+void HubProxy::invoke(QString method, QString param, HubCallback *callback)
+{
+    invoke(method, QStringList() << param, callback);
+}
+
+void HubProxy::invoke(QString method, QStringList params, HubCallback *callback)
+{
+    QVariantList variant;
+
+    foreach(QString str, params)
+    {
+        variant << str;
+    }
+
+    invoke(method, variant, callback);
+}
+
+void HubProxy::invoke(QString method, HubCallback *callback)
+{
+    invoke(method, QVariantList(), callback);
+}
+
 void HubProxy::invoke(QString method, QVariant param, HubCallback* callback)
 {
     invoke(method, QVariantList() << param, callback);
