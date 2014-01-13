@@ -40,6 +40,8 @@ Connection::Connection(const QString host) : _count(0), _keepAliveData(0)
     _state = Disconnected;
 
     qRegisterMetaType<SignalException>("SignalException");
+    qRegisterMetaType<State>("State");
+    qRegisterMetaType<Connection::State>("Connection::State");
     _logErrorsToQDebug = false;
     _reconnectWaitTime = 5;
 }

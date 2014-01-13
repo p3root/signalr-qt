@@ -95,7 +95,7 @@ void Client::onStateChanged(Connection::State oldState, Connection::State newSta
         HubCallback* callback = new HubCallback(0);
         connect(callback, SIGNAL(messageReceived(HubCallback*,QVariant)), this, SLOT(answerReceived(HubCallback*,QVariant)));
         HubProxy* prox = _connection->getByName("Chat");
-        prox->invoke("Send", "message", callback);
+        prox->invoke("Send", QString("message"), callback);
     }
     else if(newState == Connection::Disconnected)
     {

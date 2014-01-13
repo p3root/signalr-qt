@@ -99,10 +99,10 @@ public:
     void setConnectionState(NegotiateResponse negotiateResponse);
     virtual QString onSending();
 
-    QList< QPair<QString, QString> >& getAdditionalHttpHeaders() { return _additionalHeaders; }
+    const QList< QPair<QString, QString> >& getAdditionalHttpHeaders() { return _additionalHeaders; }
     void setAdditionalHttpHeaders(QList<QPair<QString, QString> > lst);
 
-    QList< QPair<QString, QString> >& getAdditionalQueryString() { return _additionalQueryString; }
+    const QList< QPair<QString, QString> >& getAdditionalQueryString() { return _additionalQueryString; }
     void setAdditionalQueryString(QList<QPair<QString, QString> > lst);
 
     void negotiateCompleted(const NegotiateResponse *negotiateResponse, SignalException* error);
