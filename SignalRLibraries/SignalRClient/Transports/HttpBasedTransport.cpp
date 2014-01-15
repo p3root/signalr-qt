@@ -120,7 +120,7 @@ void HttpBasedTransport::tryDequeueNextWorkItem()
 }
 
 void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalException* error)
-{
+{    
     Q_UNUSED(httpResponse);
     Q_UNUSED(error);
     bool timedOut, disconnected;

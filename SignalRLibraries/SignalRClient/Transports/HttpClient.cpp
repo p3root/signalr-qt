@@ -152,9 +152,9 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
     _currentConnections.append(postReply);
 }
 
-void HttpClient::abort()
+void HttpClient::abort(bool dontEmitSignal)
 {
-    _isAborting = true;
+    _isAborting = dontEmitSignal;
 
     foreach(QNetworkReply *reply, _currentConnections)
     {
@@ -167,7 +167,7 @@ void HttpClient::requestFinished(QNetworkReply *reply)
     QNetworkReply::NetworkError error = reply->error();
     QNetworkAccessManager::Operation operation = reply->operation();
 
-    if(error == QNetworkReply::OperationCanceledError)
+    if(error == QNetworkReply::OperationCanceledError && _isAborting)
     {
         _currentConnections.removeOne(reply);
         reply->deleteLater();
@@ -217,7 +217,7 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
     int error = (int)err;
     QString errorString = reply->errorString();
 
-    _connection->emitLogMessage("request error " + errorString, Connection::Error);
+    _connection->emitLogMessage("request error " + errorString + " " + QString::number(error), Connection::Error);
 
     if(error != QNetworkReply::NoError)
     {
@@ -238,7 +238,8 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
                 ex = new SignalException(errorString, SignalException::SocketOperationTimedOut);
                 break;
             case 5:
-                return;
+                ex = new SignalException(errorString, SignalException::OperationCanceled);
+                break;
             case 99:
                 ex = new SignalException(errorString, SignalException::UnkownNetworkError);
                 break;

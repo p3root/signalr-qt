@@ -33,9 +33,9 @@
 #include "Transports/ServerSentEventsTransport.h"
 
 #if defined(Q_OS_QNX)
-	#include <QtNetwork/qhostinfo.h>
+#include <QtNetwork/qhostinfo.h>
 #else
-	#include <QHostInfo>
+#include <QHostInfo>
 #endif
 
 HttpEventStream::HttpEventStream(QUrl url, bool logErrorsToQt, Connection *con) : _sock(0), _isFirstReponse(true), _url(url)
@@ -47,6 +47,7 @@ HttpEventStream::HttpEventStream(QUrl url, bool logErrorsToQt, Connection *con) 
 void HttpEventStream::open()
 {
     _isAborting = false;
+    _isFirstReponse = true;
     _sock = new QTcpSocket();
     QTextStream os(_sock);
 
@@ -74,6 +75,17 @@ void HttpEventStream::open()
                 os << "Host: " << host << ":" << _url.port() << "\r\n";
                 os << "User-Agent: SignalR.Client\r\n";
                 os << "Accept: text/event-stream\r\n";
+
+                for(int i = 0; i < _connection->getAdditionalHttpHeaders().size(); i++)
+                {
+                    QString first = QString(_connection->getAdditionalHttpHeaders().at(i).first);
+                    QString second = QString(_connection->getAdditionalHttpHeaders().at(i).second);
+                    os << first;
+                    os << ": ";
+                    os << second;
+                    os << "\r\n";
+                }
+
                 os << "\r\n";
                 os.flush();
 
@@ -101,11 +113,6 @@ void HttpEventStream::open()
 void HttpEventStream::close()
 {
     _isAborting = true;
-
-    QEventLoop loop;
-    connect(this, SIGNAL(finished()), &loop, SLOT(quit()));
-
-    loop.exec();
 }
 
 void HttpEventStream::run()
@@ -114,7 +121,7 @@ void HttpEventStream::run()
 
     while(!_isAborting)
     {
-        if(_sock->waitForReadyRead(5000))
+        if(_sock->waitForReadyRead(_connection->getKeepAliveData().getTimeout()*1000))
         {
             if(!_sock->bytesAvailable())
                 continue;
@@ -133,7 +140,10 @@ void HttpEventStream::run()
                 }
 
                 QString pack = readPackage("");
-                Q_EMIT packetReady(pack, 0);
+                if(!pack.isEmpty())
+                {
+                    Q_EMIT packetReady(pack, 0);
+                }
             }
             else
             {
@@ -151,7 +161,22 @@ void HttpEventStream::run()
         {
             if(!_isAborting)
             {
-                Q_EMIT packetReady("", new SignalException(_sock->errorString(), SignalException::EventStreamSocketLost));
+                QAbstractSocket::SocketError socketError = _sock->error();
+                SignalException *ex = 0;
+                switch(socketError)
+                {
+                    case QAbstractSocket::SocketTimeoutError:
+                    case QAbstractSocket::RemoteHostClosedError:
+                        ex = new SignalException(_sock->errorString(), SignalException::RemoteHostClosedConnection);
+                        _isAborting = true;
+                        break;
+                    default:
+                        ex = new SignalException(_sock->errorString(), SignalException::EventStreamSocketLost);
+                        break;
+
+                }
+
+                Q_EMIT packetReady("", ex);
             }
             else
             {
@@ -160,6 +185,8 @@ void HttpEventStream::run()
         }
     }
 
+    if(_sock->isOpen())
+        _sock->close();
     delete _sock;
 }
 

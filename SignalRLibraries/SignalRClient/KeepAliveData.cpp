@@ -37,6 +37,7 @@ KeepAliveData::KeepAliveData(double timeout)
     _timeout = timeout;
     _timeoutWarning = timeout * _keepAliveWarnAt;
     _checkInterval = (timeout - _timeoutWarning) / 3;
+    _connectionTimeout = 120.0;
 }
 
 KeepAliveData::KeepAliveData(QDateTime lastKeepAlive, double timeout, double timeoutWarning, double checkInterval)
@@ -45,11 +46,17 @@ KeepAliveData::KeepAliveData(QDateTime lastKeepAlive, double timeout, double tim
     _timeout = timeout;
     _timeoutWarning = timeoutWarning;
     _checkInterval = checkInterval;
+    _connectionTimeout = 120.0;
 }
 
 void KeepAliveData::setLastKeepAlive(QDateTime dt)
 {
     _lastKeepAlive = dt;
+}
+
+void KeepAliveData::setConnectionTimeout(double conTimeout)
+{
+    _connectionTimeout = conTimeout;
 }
 
 const QDateTime &KeepAliveData::getLastKeepAlive()
@@ -71,4 +78,9 @@ const double &KeepAliveData::getTimeoutWarning()
 const double &KeepAliveData::getCheckInterval()
 {
     return _checkInterval;
+}
+
+const double &KeepAliveData::getConnectionTimeout()
+{
+    return _connectionTimeout;
 }

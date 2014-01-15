@@ -34,6 +34,8 @@
 LongPollingTransport::LongPollingTransport(HttpClient* httpClient, Connection *con) :HttpBasedTransport(httpClient, con)
 {
     _started = false;
+
+    connect(&_keepAliveTimer, SIGNAL(timeout()), this, SLOT(keepAliveTimerTimeout()));
 }
 
 
@@ -44,6 +46,9 @@ LongPollingTransport::~LongPollingTransport(void)
 void LongPollingTransport::start(QString)
 {
     connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
+
+    _keepAliveTimer.setInterval(_connection->getKeepAliveData().getConnectionTimeout()*1000); //default on the signalr server is 110 sec, just to ensure not to run in a socket timeout
+    _keepAliveTimer.start();
 
     QString conOrRecon = "connect";
     if(_started)
@@ -73,6 +78,8 @@ const QString &LongPollingTransport::getTransportType()
 
 void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, SignalException *ex)
 {
+    if(_keepAliveTimer.isActive())
+        _keepAliveTimer.stop();
     disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
     bool timedOut = false, disconnected = false, serverError = false;
     SignalException *error = 0;
@@ -108,17 +115,27 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                     _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
                     Helper::wait(_connection->getReconnectWaitTime());
                 }
+                else if(error->getType() == SignalException::OperationCanceled || error->getType() == SignalException::UnkownNetworkError)
+                {
+                    serverError = false;
+                    _connection->emitLogMessage("connection was closed due a client timeout", Connection::Warning);
+                }
                 else
                 {
                     _connection->emitLogMessage("unkown error (" + error->getMessage() + ")", Connection::Error);
                 }
 
-                Q_EMIT transportStarted(ex);
+                if(serverError)
+                {
+                    Q_EMIT transportStarted(ex);
+                    _keepAliveTimer.start();
+                }
             }
             else
             {
 
                 Connection::State state = Connection::Disconnected;
+                _connection->updateLastKeepAlive();
 
                 if(!_connection->getConnectionId().isEmpty())
                     state = Connection::Disconnected;
@@ -141,6 +158,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                     _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
 
                     Helper::wait(_connection->getReconnectWaitTime());
+                    _keepAliveTimer.start();
                     Q_EMIT transportStarted(ex);
                 }
                 else if(_connection->getAutoReconnect())
@@ -150,6 +168,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                     _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
 
                     Helper::wait(_connection->getReconnectWaitTime());
+                    _keepAliveTimer.start();
                     Q_EMIT transportStarted(ex);
                 }
                 else
@@ -173,6 +192,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
         _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
         connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
         _httpClient->get(_url);
+        _keepAliveTimer.start();
     }
 
 }
@@ -197,4 +217,10 @@ void LongPollingTransport::onPostRequestCompleted(const QString &httpResponse, S
     {
         Q_EMIT transportStarted(error);
     }
+}
+
+void LongPollingTransport::keepAliveTimerTimeout()
+{
+    _keepAliveTimer.stop();
+    _httpClient->abort(false);
 }

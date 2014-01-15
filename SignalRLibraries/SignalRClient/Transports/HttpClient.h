@@ -57,7 +57,7 @@ public:
     void get(QString url);
     void post(QString url, QMap<QString, QString> arguments);
 
-    void abort();
+    void abort(bool abort = true);
 
 Q_SIGNALS:
     void getRequestCompleted(const QString& httpResponse, SignalException* error);

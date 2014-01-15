@@ -69,8 +69,6 @@ QString TransportHelper::getReceiveQueryString(Connection* connection, QString d
 
 void TransportHelper::processMessages(Connection* connection, QString raw, bool* timedOut, bool* disconnected)
 {
-    connection->updateLastKeepAlive();
-
     QVariant var = QextJson::parse(raw);
     if(var.convert(QVariant::Map))
     {

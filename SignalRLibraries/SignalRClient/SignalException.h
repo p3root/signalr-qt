@@ -50,6 +50,7 @@ public:
         RemoteHostClosedConnection,
         ContentNotFoundError,
         HostNotFoundError,
+        OperationCanceled,
         UnkownNetworkError,
         UnkownError
     };

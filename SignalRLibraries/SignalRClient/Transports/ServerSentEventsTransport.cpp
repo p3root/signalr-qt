@@ -43,7 +43,11 @@ ServerSentEventsTransport::~ServerSentEventsTransport(void)
 
 void ServerSentEventsTransport::start(QString)
 {
-    _url = _connection->getUrl() + "/connect";
+    QString urlAppend = "connect";
+    if(_started)
+        urlAppend = "reconnect";
+    _url = _connection->getUrl() + "/"+urlAppend;
+
     _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
     QUrl qurl = QUrl(_url);
@@ -119,6 +123,7 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
                 qDebug() << "ServerSentEventsTransport: (autoconnect=true)  Lost connection...try to reconnect";
             _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
 
+              _connection->changeState(Connection::Connected, Connection::Reconnecting);
             Helper::wait(_connection->getReconnectWaitTime());
             reconnect();
         }
@@ -149,6 +154,7 @@ void ServerSentEventsTransport::connected(SignalException *error)
 
 void ServerSentEventsTransport::reconnect()
 {
-    _eventStream->close();
+    if(_eventStream->isRunning())
+        _eventStream->close();
     _eventStream->start();
 }

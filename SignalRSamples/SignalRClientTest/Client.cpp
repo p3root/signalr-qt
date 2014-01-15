@@ -57,7 +57,7 @@ void Client::start()
     _monitor = new HeartbeatMonitor(_connection, 0);
 
     _client = new HttpClient(_connection);
-    _transport = new LongPollingTransport(_client, _connection);
+    _transport = new ServerSentEventsTransport(_client, _connection);
 
     HubProxy* proxy = _connection->createHubProxy("Chat");
 

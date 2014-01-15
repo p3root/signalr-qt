@@ -35,6 +35,7 @@
 #include "Connection.h"
 #include "SignalException.h"
 #include <QThread>
+#include <QTimer>
 
 class LongPollingTransport : public HttpBasedTransport
 {
@@ -53,9 +54,12 @@ private Q_SLOTS:
     void onPollHttpResponse(const QString& httpResponse, SignalException *error);
     void onPostRequestCompleted(const QString& httpResponse, SignalException *error);
 
+    void keepAliveTimerTimeout();
+
 private:
     bool _started;
     QString _url;
+    QTimer _keepAliveTimer;
 };
 
 #endif

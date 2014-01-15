@@ -40,11 +40,13 @@ public:
     KeepAliveData(QDateTime lastKeepAlive, double timeout, double timeoutWarning, double checkInterval);
 
     void setLastKeepAlive(QDateTime);
+    void setConnectionTimeout(double conTimeout);
 
     const QDateTime &getLastKeepAlive();
     const double &getTimeout();
     const double &getTimeoutWarning();
     const double &getCheckInterval();
+    const double &getConnectionTimeout();
 
 
 private:
@@ -52,6 +54,7 @@ private:
     double _timeout;
     double _timeoutWarning;
     double _checkInterval;
+    double _connectionTimeout;
 };
 
 #endif // KEEPALIVEDATA_H
