@@ -125,12 +125,13 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
 
 const NegotiateResponse* TransportHelper::parseNegotiateHttpResponse(const QString &httpResponse)
 {
-    NegotiateResponse* response = new NegotiateResponse();
+    NegotiateResponse* response = 0;
     QVariant var = QextJson::parse(httpResponse);
     if(var.convert(QVariant::Map))
     {
         QVariantMap map = var.value<QVariantMap>();
 
+        response = new NegotiateResponse();
         response->connectionId = map.value("ConnectionId").toString();
         response->connectionToken = map.value("ConnectionToken").toString();
         response->protocolVersion = map.value("ProtocolVersion").toString();
@@ -144,10 +145,6 @@ const NegotiateResponse* TransportHelper::parseNegotiateHttpResponse(const QStri
             response->disconnectTimeout = map.value("DisconnectTimeout").toDouble();
         else
             response->disconnectTimeout = -1;
-    }
-    else
-    {
-        return 0;
     }
     return response;
 }
