@@ -11,8 +11,8 @@ Client
 
 After some long time tests, and stress tests it should be done. 
 
- * SSE (ServerSentEvents) Transport has some problems at the moment. I will fix this in the next few days.
- * LongPollings works as excepted.
+ * SSE (ServerSentEvents) works.
+ * LongPollings works (added Client-side timeout handling, default is 120s, SignalRServer closes each LP connection after 110s).
  * WebSockets will follow as well.
 
 Tested on:
