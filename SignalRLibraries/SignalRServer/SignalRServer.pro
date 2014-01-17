@@ -18,7 +18,13 @@ SOURCES += SignalRServer.cpp \
     Configuration/ConfigurationManager.cpp \
     Infrastructure/Purpose.cpp \
     Transport/TransportManager.cpp \
-    Transport/ITransport.cpp
+    Transport/LongPollingTransport.cpp \
+    Infrastructure/ServerRequest.cpp \
+    Infrastructure/Principal.cpp \
+    Infrastructure/ServerResponse.cpp \
+    Infrastructure/HostContext.cpp \
+    Infrastructure/PrefixHelper.cpp \
+    Transport/TransportBase.cpp
 
 HEADERS += SignalRServer.h\
         signalrserver_global.h \
@@ -28,7 +34,13 @@ HEADERS += SignalRServer.h\
     Infrastructure/IProtectedData.h \
     Configuration/ConfigurationManager.h \
     Transport/TransportManager.h \
-    Transport/ITransport.h
+    Transport/LongPollingTransport.h \
+    Transport/TransportBase.h \
+    Infrastructure/ServerRequest.h \
+    Infrastructure/Principal.h \
+    Infrastructure/ServerResponse.h \
+    Infrastructure/HostContext.h \
+    Infrastructure/PrefixHelper.h
 
 unix:!symbian {
     maemo5 {
