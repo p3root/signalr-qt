@@ -119,6 +119,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                 {
                     serverError = false;
                     _connection->emitLogMessage("connection was closed due a client timeout", Connection::Warning);
+                     Helper::wait(_connection->getReconnectWaitTime());
                 }
                 else
                 {

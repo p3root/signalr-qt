@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core network qhttpserver
+QT       += core network
 QT       -= gui
 
 TARGET = SignalRServer
