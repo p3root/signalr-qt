@@ -65,25 +65,25 @@ public:
         Error
     };
 
-    Connection(QString url);
+    Connection(const QString &url);
     virtual ~Connection(void);
 
     void start(bool autoReconnect = false);
     void start(ClientTransport* tranport, bool autoReconnect = false);
     void start(HttpClient* client, bool autoReconnect = false);
     virtual void stop();
-    virtual void send(QString data);
+    virtual void send(const QString &data);
     
     State getState();
-    const QString &getConnectionId();
-    const QString &getConnectionToken();
-    const QString &getGroupsToken();
+    const QString &getConnectionId() const;
+    const QString &getConnectionToken() const;
+    const QString &getGroupsToken() const;
     ClientTransport* getTransport();
-    QString getUrl();
-    QString getMessageId();
+    const QString &getUrl() const;
+    const QString &getMessageId() const;
     int getPort();
-    quint64 getCount();
-    bool getAutoReconnect();
+    quint64 getCount() const;
+    bool getAutoReconnect() const;
 
     KeepAliveData& getKeepAliveData();
     void updateLastKeepAlive();
@@ -94,8 +94,8 @@ public:
     void onError(SignalException exp);
     virtual void onReceived(QVariant data);
 
-    void setGroupsToken(QString token) { _groupsToken = token; }
-    void setMessageId(QString messageId) { _messageId = messageId; }
+    void setGroupsToken(const QString &token) { _groupsToken = token; }
+    void setMessageId(const QString &messageId) { _messageId = messageId; }
     void setConnectionState(NegotiateResponse negotiateResponse);
     virtual QString onSending();
 

@@ -46,7 +46,7 @@ HubConnection::~HubConnection()
     }
 }
 
-void HubConnection::send(QString data, QString id, HubCallback *c)
+void HubConnection::send(const QString &data, const QString &id, HubCallback *c)
 {
     _callbacks.insert(id, c);
     Connection::send(data);

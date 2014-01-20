@@ -51,6 +51,8 @@ public:
     int getLongPollDelay() { return _longPollDelay; }
     void setLongPollDelay(int longPollDelay) { _longPollDelay = longPollDelay; }
 
+    int getHeartBeatInterval();
+
 private:
     int _keepAlive;
     int _transportConnectTimeout;

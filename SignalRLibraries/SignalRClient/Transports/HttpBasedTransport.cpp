@@ -39,7 +39,7 @@ HttpBasedTransport::HttpBasedTransport(HttpClient* httpClient, Connection *con) 
 
 HttpBasedTransport::~HttpBasedTransport(void)
 {
-
+    delete _httpClient;
 }
 
 void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)

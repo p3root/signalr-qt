@@ -31,7 +31,8 @@
 #ifndef ITRANSPORT_H
 #define ITRANSPORT_H
 
-#include "../Infrastructure/HostContext.h"
+#include "Infrastructure/HostContext.h"
+#include "Infrastructure/Connection.h"
 
 class TransportBase : public QObject
 {
@@ -43,6 +44,14 @@ public:
     void setConnectionId(QString connectionId) { _connectionId = connectionId; }
     const QString &getConnectionId() { return _connectionId; }
 
+    void processRequest(Connection *con);
+
+Q_SIGNALS:
+    void transportConnected(const QString &connectionId);
+    void connected(const ServerRequest &request, const QString &connectionId);
+    void reconnected(const ServerRequest &request, const QString &connectionId);
+    void received(const ServerRequest &request, const QString &conectionId, const QString &data);
+    void disconnected(const ServerRequest &request, const QString &connectionId);
 
 private:
     HostContext &_context;

@@ -51,7 +51,7 @@ Client::~Client()
 void Client::start()
 {
     qDebug() << "Client Thread: " << thread()->currentThreadId();
-    _connection = new HubConnection("http://127.0.0.1:8080/signalr");
+    _connection = new HubConnection("http://192.168.1.137:8080/raw-connection");
     _connection->setLogErrorsToQDebug(false);
     _connection->setReconnectWaitTime(3);
     _monitor = new HeartbeatMonitor(_connection, 0);

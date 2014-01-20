@@ -43,7 +43,7 @@ public:
     HubConnection(QString url);
     ~HubConnection();
 
-    void send(QString data, QString id, HubCallback*);
+    void send(const QString &data, const QString &id, HubCallback*);
     void stop();
 
     HubProxy* createHubProxy(QString name);

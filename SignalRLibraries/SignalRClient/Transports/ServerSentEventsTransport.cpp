@@ -50,12 +50,13 @@ void ServerSentEventsTransport::start(QString)
 
     _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
-    QUrl qurl = QUrl(_url);
-
     if(_eventStream)
-        delete _eventStream;
+    {
+        _eventStream->deleteLater();
+        _eventStream = 0;
+    }
 
-    _eventStream = new HttpEventStream(qurl, _connection->getLogErrorsToQDebug(), _connection);
+    _eventStream = new HttpEventStream(_url, _connection->getLogErrorsToQDebug(), _connection);
 
     connect(_eventStream, SIGNAL(packetReady(QString,SignalException*)), this, SLOT(packetReceived(QString,SignalException*)));
     connect(_eventStream, SIGNAL(connected(SignalException*)), this, SLOT(connected(SignalException*)));
@@ -68,6 +69,7 @@ void ServerSentEventsTransport::abort()
 {
     _eventStream->close();
     _eventStream->deleteLater();
+    _eventStream = 0;
 }
 
 void ServerSentEventsTransport::stop()

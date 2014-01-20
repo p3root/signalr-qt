@@ -34,7 +34,7 @@
 #include "Helper/Helper.h"
 #include "Transports/LongPollingTransport.h"
 
-Connection::Connection(const QString host) : _count(0), _keepAliveData(0)
+Connection::Connection(const QString &host) : _transport(0), _count(0), _keepAliveData(0)
 {
     _host = host;
     _state = Disconnected;
@@ -48,10 +48,9 @@ Connection::Connection(const QString host) : _count(0), _keepAliveData(0)
 
 Connection::~Connection()
 {
-    if(_keepAliveData)
-        delete _keepAliveData;
+    delete _transport;
+    delete _keepAliveData;
 }
-
 
 void Connection::start(bool autoReconnect)
 {
@@ -74,10 +73,8 @@ void Connection::start(ClientTransport* transport, bool autoReconnect)
     }
 }
 
-void Connection::send(QString data)
+void Connection::send(const QString &data)
 {
-    if(_count == sizeof(quint64))
-        _count = 0;
     _count++;
     _transport->send(data);
 }
@@ -87,7 +84,7 @@ Connection::State Connection::getState()
     return _state;
 }
 
-const QString &Connection::getConnectionId()
+const QString &Connection::getConnectionId() const
 {
     return _connectionId;
 }
@@ -155,32 +152,32 @@ ClientTransport* Connection::getTransport()
     return _transport;
 }
 
-QString Connection::getUrl()
+const QString &Connection::getUrl() const
 {
     return _host;
 }
 
-const QString &Connection::getConnectionToken()
+const QString &Connection::getConnectionToken() const
 {
     return _connectionToken;
 }
 
-const QString &Connection::getGroupsToken()
+const QString &Connection::getGroupsToken() const
 {
     return _groupsToken;
 }
 
-QString Connection::getMessageId()
+const QString &Connection::getMessageId() const
 {
     return _messageId;
 }
 
-quint64 Connection::getCount()
+quint64 Connection::getCount() const
 {
     return _count;
 }
 
-bool Connection::getAutoReconnect()
+bool Connection::getAutoReconnect() const
 {
     return _autoReconnect;
 }

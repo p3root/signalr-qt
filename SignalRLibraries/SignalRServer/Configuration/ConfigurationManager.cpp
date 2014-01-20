@@ -31,6 +31,7 @@
 #include "ConfigurationManager.h"
 
 const int missedTimeoutsBeforeClientReconnect = 2;
+const int heartBeatsPerKeepAlive = 2;
 
 ConfigurationManager::ConfigurationManager()
 {
@@ -44,4 +45,9 @@ ConfigurationManager::ConfigurationManager()
 int ConfigurationManager::getKeepAliveTimeout()
 {
     return _keepAlive * missedTimeoutsBeforeClientReconnect;
+}
+
+int ConfigurationManager::getHeartBeatInterval()
+{
+    return _keepAlive / heartBeatsPerKeepAlive;
 }
