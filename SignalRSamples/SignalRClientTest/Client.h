@@ -38,6 +38,7 @@
 #include <Transports/HttpClient.h>
 #include <Transports/LongPollingTransport.h>
 #include <Helper/Helper.h>
+#include <Transports/WebSocketTransport.h>
 #include <Transports/ServerSentEventsTransport.h>
 #include <HeartbeatMonitor.h>
 

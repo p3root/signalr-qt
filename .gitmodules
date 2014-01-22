@@ -1,0 +1,3 @@
+[submodule "ThirdParty/QtWebSockets"]
+	path = ThirdParty/QtWebSockets
+	url = https://github.com/p3root/QtWebSocket

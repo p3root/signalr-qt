@@ -48,7 +48,7 @@ void LongPollingTransport::start(QString)
     connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
 
     _keepAliveTimer.setInterval(_connection->getKeepAliveData().getConnectionTimeout()*1000); //default on the signalr server is 110 sec, just to ensure not to run in a socket timeout
-    _keepAliveTimer.start();
+    _keepAliveTimer.singleShot(_connection->getKeepAliveData().getConnectionTimeout()*1000, this, SLOT(keepAliveTimerTimeout()));
 
     QString conOrRecon = "connect";
     if(_started)
@@ -78,8 +78,6 @@ const QString &LongPollingTransport::getTransportType()
 
 void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, SignalException *ex)
 {
-    if(_keepAliveTimer.isActive())
-        _keepAliveTimer.stop();
     disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
     bool timedOut = false, disconnected = false, serverError = false;
     SignalException *error = 0;
@@ -103,8 +101,9 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
 
             if(_started)
             {
+                _connection->onError(*error);
                 if(error->getType() == SignalException::ContentNotFoundError
-                || error->getType() == SignalException::ConnectionRefusedError) {
+                        || error->getType() == SignalException::ConnectionRefusedError) {
 
                     _started = false;
                     _connection->changeState(Connection::Connected, Connection::Disconnected);
@@ -119,7 +118,11 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                 {
                     serverError = false;
                     _connection->emitLogMessage("connection was closed due a client timeout", Connection::Warning);
-                     Helper::wait(_connection->getReconnectWaitTime());
+                }
+                else if(error->getType() == SignalException::UnkownNetworkError)
+                {
+                    serverError = false;
+                    _connection->emitLogMessage("connection was closed dua a unkown network error", Connection::Error);
                 }
                 else
                 {
@@ -129,7 +132,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                 if(serverError)
                 {
                     Q_EMIT transportStarted(ex);
-                    _keepAliveTimer.start();
+                    _keepAliveTimer.singleShot(_connection->getKeepAliveData().getConnectionTimeout()*1000, this, SLOT(keepAliveTimerTimeout()));
                 }
             }
             else
@@ -142,7 +145,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                     state = Connection::Disconnected;
 
                 if(error->getType() == SignalException::ConnectionRefusedError ||
-                   error->getType() == SignalException::ServerRequiresAuthorization)
+                        error->getType() == SignalException::ServerRequiresAuthorization)
                 {
                     _connection->changeState(_connection->getState(), state);
                 }
@@ -159,7 +162,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                     _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
 
                     Helper::wait(_connection->getReconnectWaitTime());
-                    _keepAliveTimer.start();
+                    _keepAliveTimer.singleShot(_connection->getKeepAliveData().getConnectionTimeout()*1000, this, SLOT(keepAliveTimerTimeout()));
                     Q_EMIT transportStarted(ex);
                 }
                 else if(_connection->getAutoReconnect())
@@ -169,7 +172,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                     _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
 
                     Helper::wait(_connection->getReconnectWaitTime());
-                    _keepAliveTimer.start();
+                    _keepAliveTimer.singleShot(_connection->getKeepAliveData().getConnectionTimeout()*1000, this, SLOT(keepAliveTimerTimeout()));
                     Q_EMIT transportStarted(ex);
                 }
                 else
@@ -193,7 +196,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
         _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
         connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
         _httpClient->get(_url);
-        _keepAliveTimer.start();
+        _keepAliveTimer.singleShot(_connection->getKeepAliveData().getConnectionTimeout()*1000, this, SLOT(keepAliveTimerTimeout()));
     }
 
 }
@@ -222,6 +225,5 @@ void LongPollingTransport::onPostRequestCompleted(const QString &httpResponse, S
 
 void LongPollingTransport::keepAliveTimerTimeout()
 {
-    _keepAliveTimer.stop();
     _httpClient->abort(false);
 }
