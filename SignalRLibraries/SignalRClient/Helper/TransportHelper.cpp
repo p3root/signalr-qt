@@ -44,10 +44,12 @@ TransportHelper::~TransportHelper(void)
 
 QString TransportHelper::getReceiveQueryString(Connection* connection, QString data, QString transport)
 {
-    QString qs = "?transport=" + transport + "&connectionToken=" + connection->getConnectionToken();
+    QString connectionTokenKey = "connectionToken";
+    QString conData = "&" + connectionTokenKey + "=" + QString(connection->getConnectionToken());
+    QString qs = "?transport=" + transport + conData;
 
     QString messageId = connection->getMessageId();
-    QString groupsToken = connection->getGroupsToken();
+    QString groupsToken =  connection->getGroupsToken();
     
     if(!messageId.isEmpty())
     {
@@ -145,6 +147,17 @@ const NegotiateResponse* TransportHelper::parseNegotiateHttpResponse(const QStri
             response->disconnectTimeout = map.value("DisconnectTimeout").toDouble();
         else
             response->disconnectTimeout = -1;
+
+        if(map.contains("TryWebSockets") && map.value("TryWebSockets").toBool())
+        {
+            response->tryWebSockets = true;
+            response->webSocketsUrl = map.value("WebSocketServerUrl").toString();
+        }
+        else
+        {
+            response->tryWebSockets = false;
+            response->webSocketsUrl ="";
+        }
     }
     return response;
 }

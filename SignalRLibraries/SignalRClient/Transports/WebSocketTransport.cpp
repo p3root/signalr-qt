@@ -5,9 +5,12 @@ WebSocketTransport::WebSocketTransport(HttpClient *c, Connection* con) : HttpBas
     _webSocket = new QWebSocket();
     _started = false;
 
-    connect(_webSocket, SIGNAL(connected()), this, SLOT(onDisconnected()));
+    connect(_webSocket, SIGNAL(connected()), this, SLOT(onConnected()));
     connect(_webSocket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
     connect(_webSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
+
+    connect(_webSocket, SIGNAL(textMessageReceived(QString)), this, SLOT(onTextMessageReceived(QString)));
+    connect(_webSocket, SIGNAL(pong(quint64,QByteArray)), this, SLOT(onPong(quint64,QByteArray)));
 
 }
 
@@ -16,7 +19,7 @@ void WebSocketTransport::start(QString)
     QString conOrRecon = "connect";
     if(_started)
         conOrRecon = "reconnect";
-    QString connectUrl = _connection->getUrl() + "/" +conOrRecon;
+    QString connectUrl = _connection->getWebSocketsUrl() + "/" +conOrRecon;
     connectUrl += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
     QUrl url = QUrl(connectUrl);
 
@@ -68,4 +71,14 @@ void WebSocketTransport::onDisconnected()
 void WebSocketTransport::onError(QAbstractSocket::SocketError)
 {
     _connection->emitLogMessage(_webSocket->errorString(), Connection::Warning);
+}
+
+void WebSocketTransport::onTextMessageReceived(QString str)
+{
+    _connection->emitLogMessage("text message received (" + str +")", Connection::Debug);
+}
+
+void WebSocketTransport::onPong(quint64, QByteArray)
+{
+    _connection->emitLogMessage("on pong", Connection::Debug);
 }

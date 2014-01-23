@@ -202,7 +202,7 @@ void Connection::stop()
 {
     changeState(_state, Disconnected);
     _transport->stop();
-    delete _transport;
+    _transport->deleteLater();
     _transport = 0;
 }
 
@@ -210,7 +210,7 @@ void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, 
 {
     if(!error)
     {
-        if( !(negotiateResponse->protocolVersion == "1.3" || negotiateResponse->protocolVersion == "1.2") )
+        if( !(negotiateResponse->protocolVersion == "1.3" || negotiateResponse->protocolVersion == "1.2"))
         {
             onError(SignalException("Invalid protocol version", SignalException::InvalidProtocolVersion));
             stop();
@@ -222,6 +222,9 @@ void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, 
                 _keepAliveData = new KeepAliveData(negotiateResponse->keepAliveTimeout);
             }
             setConnectionState(*negotiateResponse);
+            _tryWebSockets = negotiateResponse->tryWebSockets;
+            _webSocketsUrl = negotiateResponse->webSocketsUrl;
+            _protocolVersion = negotiateResponse->protocolVersion;
            // disconnect(this, SLOT(transportStarted(SignalException*)));
             connect(_transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(transportStarted(SignalException*)), Qt::UniqueConnection);
             getTransport()->start("");

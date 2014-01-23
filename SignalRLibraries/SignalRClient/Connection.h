@@ -118,6 +118,9 @@ public:
 
     void emitLogMessage(QString, LogSeverity severity);
 
+    const QString &getWebSocketsUrl() { return _webSocketsUrl; }
+    const QString &getProtocolVersion() { return _protocolVersion;}
+
 Q_SIGNALS:
     void stateChanged(Connection::State old_state, Connection::State new_state);
     void errorOccured(SignalException error);
@@ -148,6 +151,9 @@ private:
     KeepAliveData *_keepAliveData;
     QNetworkProxy _proxySettings;
     int _reconnectWaitTime;
+    bool _tryWebSockets;
+    QString _webSocketsUrl;
+    QString _protocolVersion;
 };
 
 #endif

@@ -24,6 +24,9 @@ private Q_SLOTS:
     void onDisconnected();
     void onError(QAbstractSocket::SocketError);
 
+    void onTextMessageReceived(QString);
+    void onPong(quint64, QByteArray);
+
 private:
     QWebSocket *_webSocket;
     bool _started;

@@ -40,6 +40,8 @@ struct NegotiateResponse
     QString protocolVersion;
     double disconnectTimeout;
     double keepAliveTimeout;
+    bool tryWebSockets;
+    QString webSocketsUrl;
 };
 
 #endif
