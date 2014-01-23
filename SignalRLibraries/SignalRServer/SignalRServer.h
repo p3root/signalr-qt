@@ -34,7 +34,7 @@
 #include <QObject>
 #include <QHostAddress>
 #include "signalrserver_global.h"
-#include <QHttpServer.h>
+#include <qhttpserver.h>
 
 class PersistentConnection;
 

@@ -1,3 +1,9 @@
 [submodule "ThirdParty/QtWebSockets"]
 	path = ThirdParty/QtWebSockets
 	url = https://github.com/p3root/QtWebSocket
+[submodule "ThirdParty/QHttpServer"]
+	path = ThirdParty/QHttpServer
+	url = https://patrik@github.com/nikhilm/qhttpserver
+[submodule "ThirdParty/qhttpserver"]
+	path = ThirdParty/qhttpserver
+	url = https://patrik@github.com/nikhilm/qhttpserver

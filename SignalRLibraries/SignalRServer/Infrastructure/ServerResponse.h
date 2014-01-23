@@ -31,7 +31,7 @@
 #ifndef SERVERRESPONSE_H
 #define SERVERRESPONSE_H
 
-#include <QHttpResponse.h>
+#include <qhttpresponse.h>
 
 class ServerResponse
 {

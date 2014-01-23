@@ -31,7 +31,7 @@
 #ifndef SERVERREQUEST_H
 #define SERVERREQUEST_H
 
-#include <QHttpRequest.h>
+#include <qhttprequest.h>
 #include "../Infrastructure/Principal.h"
 
 class ServerRequest

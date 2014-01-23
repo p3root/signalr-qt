@@ -34,8 +34,8 @@
 #include "ServerRequest.h"
 #include "ServerResponse.h"
 
-#include <QHttpRequest.h>
-#include <QHttpResponse.h>
+#include <qhttprequest.h>
+#include <qhttpresponse.h>
 
 class HostContext
 {
