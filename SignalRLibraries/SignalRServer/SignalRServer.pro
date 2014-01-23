@@ -72,9 +72,10 @@ else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/ -lQextJson
 INCLUDEPATH += $$PWD/../../ThirdParty/QtExtJson
 DEPENDPATH += $$PWD/../../ThirdParty/QtExtJson
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/qhttpserver/src/release/ -lqhttpserver
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/qhttpserver/src/debug/ -lqhttpserver
-else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/qhttpserver/src/ -lqhttpserver
 
-INCLUDEPATH += $$PWD/../../ThirdParty/qhttpserver/src
-DEPENDPATH += $$PWD/../../ThirdParty/qhttpserver/src
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QHttpServer/src/release/ -lQHttpServer
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QHttpServer/src/debug/ -lQHttpServer
+else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QHttpServer/src/ -lQHttpServer
+
+INCLUDEPATH += $$PWD/../../ThirdParty/QHttpServer/src
+DEPENDPATH += $$PWD/../../ThirdParty/QHttpServer/src

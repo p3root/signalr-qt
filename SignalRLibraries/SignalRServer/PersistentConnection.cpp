@@ -30,8 +30,8 @@
 
 
 #include "PersistentConnection.h"
-#include <qhttprequest.h>
-#include <qhttpresponse.h>
+#include <QHttpRequest.h>
+#include <QHttpResponse.h>
 #include <QMap>
 #include <QUuid>
 #include <QextJson.h>

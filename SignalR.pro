@@ -2,8 +2,8 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     ThirdParty/QtExtJson \
-    ThirdParty/qhttpserver \
-    ThirdParty/QtWebSockets/qt4-src \
+    ThirdParty/QHttpServer \
+    ThirdParty/QtWebSockets/QtWebSockets4-src \
     SignalRLibraries \
     SignalRSamples
 

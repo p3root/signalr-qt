@@ -31,8 +31,8 @@
 #ifndef PERSISTENTCONNECTION_H
 #define PERSISTENTCONNECTION_H
 
-#include <qhttpserverfwd.h>
-#include <qhttpresponse.h>
+#include <QHttpServerFwd.h>
+#include <QHttpResponse.h>
 
 #include "Infrastructure/IProtectedData.h"
 #include "Infrastructure/HostContext.h"

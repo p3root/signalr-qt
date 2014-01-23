@@ -30,9 +30,9 @@
 
 
 #include "SignalRServer.h"
-#include <qhttprequest.h>
+#include <QHttpRequest.h>
 #include <QUrl>
-#include <qhttpresponse.h>
+#include <QHttpResponse.h>
 
 #include "PersistentConnection.h"
 
