@@ -36,8 +36,8 @@
 class KeepAliveData
 {
 public:
-    KeepAliveData(double timeout);
-    KeepAliveData(QDateTime lastKeepAlive, double timeout, double timeoutWarning, double checkInterval);
+    KeepAliveData(double timeout, double connectionTimeOut=120);
+    KeepAliveData(QDateTime lastKeepAlive, double timeout, double timeoutWarning, double checkInterval, double connectionTimeOut=120);
 
     void setLastKeepAlive(QDateTime);
     void setConnectionTimeout(double conTimeout);

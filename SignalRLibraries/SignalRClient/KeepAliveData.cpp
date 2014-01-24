@@ -32,21 +32,21 @@
 
 const static double _keepAliveWarnAt = 2.0 / 3.0;
 
-KeepAliveData::KeepAliveData(double timeout)
+KeepAliveData::KeepAliveData(double timeout, double connectionTimeOut)
 {
     _timeout = timeout;
     _timeoutWarning = timeout * _keepAliveWarnAt;
     _checkInterval = (timeout - _timeoutWarning) / 3;
-    _connectionTimeout = 120.0;
+    _connectionTimeout = connectionTimeOut;
 }
 
-KeepAliveData::KeepAliveData(QDateTime lastKeepAlive, double timeout, double timeoutWarning, double checkInterval)
+KeepAliveData::KeepAliveData(QDateTime lastKeepAlive, double timeout, double timeoutWarning, double checkInterval, double connectionTimeOut)
 {
     _lastKeepAlive = lastKeepAlive;
     _timeout = timeout;
     _timeoutWarning = timeoutWarning;
     _checkInterval = checkInterval;
-    _connectionTimeout = 120.0;
+    _connectionTimeout = connectionTimeOut;
 }
 
 void KeepAliveData::setLastKeepAlive(QDateTime dt)

@@ -45,7 +45,7 @@ TransportHelper::~TransportHelper(void)
 QString TransportHelper::getReceiveQueryString(Connection* connection, QString data, QString transport)
 {
     QString connectionTokenKey = "connectionToken";
-    QString conData = "&" + connectionTokenKey + "=" + QString(connection->getConnectionToken());
+    QString conData = "&" + connectionTokenKey + "=" + QString(Helper::encode(connection->getConnectionToken()));
     QString qs = "?transport=" + transport + conData;
 
     QString messageId = connection->getMessageId();
@@ -151,7 +151,11 @@ const NegotiateResponse* TransportHelper::parseNegotiateHttpResponse(const QStri
         if(map.contains("TryWebSockets") && map.value("TryWebSockets").toBool())
         {
             response->tryWebSockets = true;
-            response->webSocketsUrl = map.value("WebSocketServerUrl").toString();
+            response->transportConnectTimeout = map.value("TransportConnectTimeout").toInt();
+            if(map.contains("WebSocketServerUrl"))
+            {
+                response->webSocketsUrl = map.value("WebSocketServerUrl").toString();
+            }
         }
         else
         {

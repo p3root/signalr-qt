@@ -219,11 +219,14 @@ void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, 
         {
             if(negotiateResponse->keepAliveTimeout > 0)
             {
-                _keepAliveData = new KeepAliveData(negotiateResponse->keepAliveTimeout);
+                _keepAliveData = new KeepAliveData(negotiateResponse->keepAliveTimeout, negotiateResponse->transportConnectTimeout);
             }
             setConnectionState(*negotiateResponse);
             _tryWebSockets = negotiateResponse->tryWebSockets;
-            _webSocketsUrl = negotiateResponse->webSocketsUrl;
+            if(negotiateResponse->webSocketsUrl.isEmpty())
+                _webSocketsUrl = _host;
+            else
+                _webSocketsUrl = negotiateResponse->webSocketsUrl;
             _protocolVersion = negotiateResponse->protocolVersion;
            // disconnect(this, SLOT(transportStarted(SignalException*)));
             connect(_transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(transportStarted(SignalException*)), Qt::UniqueConnection);
@@ -260,7 +263,10 @@ void Connection::transportStarted(SignalException* error)
 {
     if(!error)
     {
-        changeState(Connecting, Connected);
+        if(_state == Reconnecting)
+            changeState(Reconnecting, Connected);
+        else
+            changeState(Connecting, Connected);
     }
     else
     {

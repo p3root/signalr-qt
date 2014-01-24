@@ -5,6 +5,7 @@
 #include <qwebsocket.h>
 #include "Connection.h"
 #include "Helper/TransportHelper.h"
+#include <QTimer>
 
 class WebSocketTransport : public HttpBasedTransport
 {
@@ -27,8 +28,11 @@ private Q_SLOTS:
     void onTextMessageReceived(QString);
     void onPong(quint64, QByteArray);
 
+    void keepAliveTimerTimeout();
+
 private:
     QWebSocket *_webSocket;
+    QTimer _keepAliveTimer;
     bool _started;
 };
 
