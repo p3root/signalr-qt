@@ -33,7 +33,7 @@
 
 ServerSentEventsTransport::ServerSentEventsTransport(HttpClient* httpClient, Connection* con) : HttpBasedTransport(httpClient, con), _eventStream(0)
 {
-
+    _started = false;
 }
 
 ServerSentEventsTransport::~ServerSentEventsTransport(void)

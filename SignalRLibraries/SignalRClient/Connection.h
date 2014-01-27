@@ -116,6 +116,8 @@ public:
     int getReconnectWaitTime() { return _reconnectWaitTime; }
     void setReconnectWaitTime(int timeInSeconds) { _reconnectWaitTime = timeInSeconds; }
 
+    bool tryWebSockets() { return _tryWebSockets; }
+
     void emitLogMessage(QString, LogSeverity severity);
 
     const QString &getWebSocketsUrl() { return _webSocketsUrl; }

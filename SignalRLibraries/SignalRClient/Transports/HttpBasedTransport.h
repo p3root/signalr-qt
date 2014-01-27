@@ -46,15 +46,14 @@ protected:
 
 public:
     HttpBasedTransport(HttpClient* httpClient, Connection* con);
-    ~HttpBasedTransport(void);
+    virtual ~HttpBasedTransport(void);
 
     void negotiateCompleted(QString data, SignalException* ex);
+    virtual void onNegotiatenCompleted(const NegotiateResponse& res);
     void negotiate();
     void send(QString data);
     virtual void stop();
     void abort();
-
-    virtual const QString& getTransportType() = 0;
 
     void tryDequeueNextWorkItem();
 private:    

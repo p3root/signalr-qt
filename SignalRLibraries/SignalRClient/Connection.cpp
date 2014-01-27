@@ -32,7 +32,7 @@
 #include <QString>
 #include "Transports/HttpClient.h"
 #include "Helper/Helper.h"
-#include "Transports/LongPollingTransport.h"
+#include "Transports/AutoTransport.h"
 
 Connection::Connection(const QString &host) : _transport(0), _count(0), _keepAliveData(0)
 {
@@ -59,7 +59,7 @@ void Connection::start(bool autoReconnect)
 
 void Connection::start(HttpClient* client, bool autoReconnect)
 {	
-    start(new LongPollingTransport(client, this), autoReconnect);
+    start(new AutoTransport(client, this), autoReconnect);
 }
 
 void Connection::start(ClientTransport* transport, bool autoReconnect)

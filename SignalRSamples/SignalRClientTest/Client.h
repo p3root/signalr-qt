@@ -40,6 +40,7 @@
 #include <Helper/Helper.h>
 #include <Transports/WebSocketTransport.h>
 #include <Transports/ServerSentEventsTransport.h>
+#include <Transports/AutoTransport.h>
 #include <HeartbeatMonitor.h>
 
 class Client : public QObject

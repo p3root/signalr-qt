@@ -52,6 +52,8 @@ public:
     virtual void abort() = 0;
     virtual void lostConnection(Connection*);
 
+    virtual const QString& getTransportType() = 0;
+
 Q_SIGNALS:
     void transportStarted(SignalException* ex);
 

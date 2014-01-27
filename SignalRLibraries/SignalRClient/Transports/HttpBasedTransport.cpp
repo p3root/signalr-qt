@@ -52,6 +52,7 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
 
         if(res)
         {
+            onNegotiatenCompleted(*res);
             _connection->negotiateCompleted(res, ex);
             delete res;
         }
@@ -60,6 +61,11 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
     {
          _connection->negotiateCompleted(0, ex);
     }
+
+}
+
+void HttpBasedTransport::onNegotiatenCompleted(const NegotiateResponse &)
+{
 
 }
 
@@ -123,7 +129,7 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalE
 {    
     Q_UNUSED(httpResponse);
     Q_UNUSED(error);
-    bool timedOut, disconnected;
+    bool timedOut = false, disconnected = false;
 
     if(!error)
     {

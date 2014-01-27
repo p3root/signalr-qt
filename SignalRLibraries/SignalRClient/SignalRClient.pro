@@ -31,7 +31,8 @@ SOURCES += \
     Hubs/HubCallback.cpp \
     KeepAliveData.cpp \
     HeartbeatMonitor.cpp \
-    Transports/WebSocketTransport.cpp
+    Transports/WebSocketTransport.cpp \
+    Transports/AutoTransport.cpp
 
 
 
@@ -55,7 +56,8 @@ HEADERS += \
     Hubs/HubCallback.h \
     KeepAliveData.h \
     HeartbeatMonitor.h \
-    Transports/WebSocketTransport.h
+    Transports/WebSocketTransport.h \
+    Transports/AutoTransport.h
 
 
 
