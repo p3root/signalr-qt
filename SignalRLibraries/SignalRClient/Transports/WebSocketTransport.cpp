@@ -14,6 +14,9 @@ void WebSocketTransport::start(QString)
     if(_webSocket == 0)
     {
         _webSocket = new QWebSocket();
+        _webSocket->setAdditonalQueryString(_connection->getAdditionalQueryString());
+        _webSocket->setAddtionalHeaders(_connection->getAdditionalHttpHeaders());
+
         QString conOrRecon = "connect";
         if(_started)
             conOrRecon = "reconnect";
@@ -48,17 +51,27 @@ void WebSocketTransport::start(QString)
 
 void WebSocketTransport::send(QString data)
 {
-    Q_UNUSED(data);
+    if(_webSocket)
+    {
+        //QString writeData = QString("{%1}").arg(data);
+        qint64 bytesWritten = _webSocket->write(data);
+        Q_UNUSED(bytesWritten);
+    }
 }
 
 void WebSocketTransport::stop()
 {
-
+    abort();
 }
 
 void WebSocketTransport::abort()
 {
-
+    if(_webSocket)
+    {
+        _webSocket->close();
+        _webSocket->deleteLater();
+        _webSocket = 0;
+    }
 }
 
 const QString &WebSocketTransport::getTransportType()

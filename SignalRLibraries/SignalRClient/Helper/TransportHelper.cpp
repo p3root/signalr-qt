@@ -107,6 +107,12 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
             connection->onReceived(var);
         }
 
+        if(map.contains("E"))
+        {
+            //TODO: what do here?!
+            connection->emitLogMessage(raw, Connection::Error);
+        }
+
         if(*disconnected)
             return;
 

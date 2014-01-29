@@ -38,6 +38,7 @@ void AutoTransport::onNegotiatenCompleted(const NegotiateResponse& res)
 void AutoTransport::start(QString data)
 {
     ClientTransport *transport = _transports[_index];
+    _connection->emitLogMessage("Using transport '" + transport->getTransportType() +"'", Connection::Info);
     connect(transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(onTransportStated(SignalException*)));
     transport->start(data);
 }

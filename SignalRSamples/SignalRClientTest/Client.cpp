@@ -51,7 +51,7 @@ Client::~Client()
 void Client::start()
 {
     qDebug() << "Client Thread: " << thread()->currentThreadId();
-    _connection = new HubConnection("http://192.168.1.137:8080/signalr");
+    _connection = new HubConnection("http://192.168.1.77:8080/signalr");
     _connection->setLogErrorsToQDebug(false);
     _connection->setReconnectWaitTime(3);
     _monitor = new HeartbeatMonitor(_connection, 0);
@@ -66,6 +66,13 @@ void Client::start()
     connect(_connection, SIGNAL(errorOccured(SignalException)), this, SLOT(onError(SignalException)));
     connect(_connection, SIGNAL(stateChanged(Connection::State,Connection::State)), this, SLOT(onStateChanged(Connection::State,Connection::State)));
     connect(_connection, SIGNAL(logMessage(QString,int)), this, SLOT(onLogMessage(QString,int)));
+
+    QList<QPair<QString, QString> > headers;
+    QPair<QString, QString> data("1", "2");
+    headers.append(data);
+
+    _connection->setAdditionalHttpHeaders(headers);
+    _connection->setAdditionalQueryString(headers);
 
     _connection->start(_transport, true);
 }
