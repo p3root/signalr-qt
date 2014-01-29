@@ -13,7 +13,7 @@ After some long time tests, and stress tests it should be done.
 
  * SSE (ServerSentEvents) works.
  * LongPollings works (added Client-side timeout handling, default is 120s, SignalRServer closes each LP connection after 110s).
- * WebSockets will follow as well.
+ * WebSockets works. Testing will be needed to make every scenario possible 
 
 Tested on:
  * Linux Qt 4.8.2 and QT 5.1 (x86_64)
