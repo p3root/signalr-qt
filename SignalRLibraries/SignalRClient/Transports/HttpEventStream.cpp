@@ -57,13 +57,27 @@ void HttpEventStream::open()
     QString host = QString(_url.host());
 #endif
 
+    int port = _url.port();
+
+    if(port < 0)
+    {
+        if(_url.scheme() == "http")
+        {
+            port = 80;
+        }
+        else if(_url.scheme() == "https")
+        {
+            port = 443;
+        }
+    }
+
     QHostInfo info = QHostInfo::fromName(host);
 
     if(info.error() == QHostInfo::NoError)
     {
         if(!info.addresses().isEmpty())
         {
-            _sock->connectToHost(info.addresses().first(), _url.port());
+            _sock->connectToHost(info.addresses().first(), port);
             if(_sock->waitForConnected())
             {
                 _sock->setSocketOption(QAbstractSocket::KeepAliveOption,1);
