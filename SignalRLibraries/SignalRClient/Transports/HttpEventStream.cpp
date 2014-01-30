@@ -86,7 +86,7 @@ void HttpEventStream::open()
 
                 //prepare http request
                 os << QByteArray().append(getRequest);
-                os << "Host: " << host << ":" << _url.port() << "\r\n";
+                os << "Host: " << host << ":" << port << "\r\n";
                 os << "User-Agent: SignalR.Client\r\n";
                 os << "Accept: text/event-stream\r\n";
 
