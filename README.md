@@ -5,6 +5,9 @@ This is an C++ implementation of Microsofts ASP.Net SignalR. (https://github.com
 
 For questions please send me an email (patrik.pfaffenbauer@p3.co.at) or conatct me via skype (patrik.pfaffenbauer)
 
+Please clone the repository recursive. Otherwise the submodules will not be cloned, and you can't build the libs.
+
+git clone --recursive https://github.com/p3root/signalr-qt.git
 
 Client
 ======
@@ -13,7 +16,7 @@ After some long time tests, and stress tests it should be done.
 
  * SSE (ServerSentEvents) works.
  * LongPollings works (added Client-side timeout handling, default is 120s, SignalRServer closes each LP connection after 110s).
- * WebSockets will follow as well.
+ * WebSockets works. Testing will be needed to make every scenario possible 
 
 Tested on:
  * Linux Qt 4.8.2 and QT 5.1 (x86_64)
