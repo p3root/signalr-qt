@@ -109,26 +109,26 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                     _connection->changeState(Connection::Connected, Connection::Disconnected);
 
                     if(_connection->getLogErrorsToQDebug())
-                        qDebug() << "LongPollingTranpsort: lost connection...try to reconnect";
+                        qDebug() << "LongPollingTranpsort: lost connection...trying to reconnect";
 
-                    _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
+                    _connection->emitLogMessage("lost connection...trying to reconnect", Connection::Debug);
                     Helper::wait(_connection->getReconnectWaitTime());
                 }
-                else if(error->getType() == SignalException::OperationCanceled || error->getType() == SignalException::UnkownNetworkError)
+                else if(error->getType() == SignalException::OperationCanceled)
                 {
                     serverError = false;
-                    _connection->emitLogMessage("connection was closed due a client timeout", Connection::Warning);
+                    _connection->emitLogMessage("connection was closed due to a client timeout", Connection::Warning);
                     Helper::wait(_connection->getReconnectWaitTime());
                 }
-                else if(error->getType() == SignalException::UnkownNetworkError)
+                else if(error->getType() == SignalException::UnknownNetworkError)
                 {
                     serverError = false;
-                    _connection->emitLogMessage("connection was closed dua a unkown network error", Connection::Error);
+                    _connection->emitLogMessage("connection was closed due to an unknown network error", Connection::Error);
                     Helper::wait(_connection->getReconnectWaitTime());
                 }
                 else
                 {
-                    _connection->emitLogMessage("unkown error (" + error->getMessage() + ")", Connection::Error);
+                    _connection->emitLogMessage("unknown error (" + error->getMessage() + ")", Connection::Error);
                     Helper::wait(_connection->getReconnectWaitTime());
                 }
 

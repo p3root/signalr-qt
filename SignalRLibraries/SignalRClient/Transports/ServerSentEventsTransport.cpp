@@ -139,7 +139,7 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
     else
     {
         data = data.remove(0, data.indexOf("data: ")+5);
-        _connection->getKeepAliveData().setLastKeepAlive(QDateTime::currentDateTime());
+        _connection->getKeepAliveData().setLastKeepAlive(QDateTime::currentDateTimeUtc());
         TransportHelper::processMessages(_connection, data, &timedOut, &disconnected);
     }
 

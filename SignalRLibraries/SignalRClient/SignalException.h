@@ -51,8 +51,8 @@ public:
         ContentNotFoundError,
         HostNotFoundError,
         OperationCanceled,
-        UnkownNetworkError,
-        UnkownError
+        UnknownNetworkError,
+        UnknownError
     };
 
     SignalException();

@@ -75,7 +75,7 @@ void AutoTransport::onTransportStated(SignalException *e)
 {
     if(e)
     {
-        if(_index < _transports.count())
+        if(_index + 1 < _transports.count())
         {
             _index++;
             start("");

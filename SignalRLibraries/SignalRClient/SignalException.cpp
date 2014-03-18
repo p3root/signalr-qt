@@ -32,7 +32,7 @@
 
 SignalException::SignalException() : _message("")
 {
-    _type = UnkownError;
+    _type = UnknownError;
 }
 
 SignalException::SignalException(const QString message, SignalExceptionType type) : _message(message)

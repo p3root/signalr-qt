@@ -225,40 +225,45 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
 
         switch(error)
         {
-            case 1:
-                ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
-                break;
-            case 2:
-                ex = new SignalException(errorString, SignalException::RemoteHostClosedConnection);
-                break;
-            case 3:
-                ex = new SignalException(errorString, SignalException::HostNotFoundError);
-                break;
-            case 4:
-                ex = new SignalException(errorString, SignalException::SocketOperationTimedOut);
-                break;
-            case 5:
-                ex = new SignalException(errorString, SignalException::OperationCanceled);
-                break;
-            case 99:
-                ex = new SignalException(errorString, SignalException::UnkownNetworkError);
-                break;
-            case 203:
-                ex = new SignalException(errorString, SignalException::ContentNotFoundError);
-                break;
-            case 204:
-                ex = new SignalException(errorString, SignalException::ServerRequiresAuthorization);
-                break;
-            default:
-                ex = new SignalException(errorString, SignalException::UnkownError);
-                break;
+        case 1:
+            ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
+            break;
+        case 2:
+            ex = new SignalException(errorString, SignalException::RemoteHostClosedConnection);
+            break;
+        case 3:
+            ex = new SignalException(errorString, SignalException::HostNotFoundError);
+            break;
+        case 4:
+            ex = new SignalException(errorString, SignalException::SocketOperationTimedOut);
+            break;
+        case 5:
+            ex = new SignalException(errorString, SignalException::OperationCanceled);
+            break;
+        case 99:
+            ex = new SignalException(errorString, SignalException::UnknownNetworkError);
+            break;
+        case 203:
+            ex = new SignalException(errorString, SignalException::ContentNotFoundError);
+            break;
+        case 204:
+            ex = new SignalException(errorString, SignalException::ServerRequiresAuthorization);
+            break;
+        default:
+            ex = new SignalException(errorString, SignalException::UnknownError);
+            break;
         }
 
         if(!_isAborting)
         {
             _currentConnections.removeOne(reply);
             reply->deleteLater();
-            Q_EMIT getRequestCompleted("", ex);
+
+            if (reply->operation() == QNetworkAccessManager::GetOperation) {
+                Q_EMIT getRequestCompleted("", ex);
+            } else {
+                Q_EMIT postRequestCompleted("", ex);
+            }
         }
     }
 }

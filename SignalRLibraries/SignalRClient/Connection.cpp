@@ -190,7 +190,7 @@ KeepAliveData &Connection::getKeepAliveData()
 void Connection::updateLastKeepAlive()
 {
     if(_keepAliveData)
-        _keepAliveData->setLastKeepAlive(QDateTime::currentDateTime());
+        _keepAliveData->setLastKeepAlive(QDateTime::currentDateTimeUtc());
 }
 
 void Connection::connectionSlow()

@@ -105,7 +105,7 @@ void HeartbeatMonitor::beat()
     if(!checkKeepAliveData())
         return;
 
-    double timeElapsed = QDateTime::currentDateTime().secsTo(_connection->getKeepAliveData().getLastKeepAlive()) * -1;
+    double timeElapsed = QDateTime::currentDateTimeUtc().secsTo(_connection->getKeepAliveData().getLastKeepAlive()) * -1;
     beat(timeElapsed);
 }
 

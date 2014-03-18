@@ -100,14 +100,14 @@ void Helper::wait(int seconds)
     sleep(seconds);
 #endif
 #ifdef Q_OS_WIN32
-    Sleep(seconds);
+    Sleep(seconds*1000);
 #endif
 }
 
 void Helper::waitMs(int milliseconds)
 {
 #ifdef Q_OS_LINUX
-    usleep(milliseconds);
+    usleep(milliseconds*1000);
 #endif
 #ifdef Q_OS_WIN32
     Sleep(milliseconds);
