@@ -50,7 +50,7 @@ QString TransportHelper::getReceiveQueryString(Connection* connection, QString d
 
     QString messageId = connection->getMessageId();
     QString groupsToken =  connection->getGroupsToken();
-    
+
     if(!messageId.isEmpty())
     {
         qs += "&messageId=" + messageId;
@@ -109,7 +109,7 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
 
         if(map.contains("E"))
         {
-            //TODO: what do here?!
+            //error occured
             connection->emitLogMessage(raw, Connection::Error);
         }
 
@@ -122,9 +122,16 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
             {
                 QVariantList lst = map["M"].value<QVariantList>();
 
-                foreach(QVariant cur, lst)
+                if(lst.count() == 0)
                 {
-                    connection->onReceived(cur);
+                    connection->onReceived(QVariant());
+                }
+                else
+                {
+                    foreach(QVariant cur, lst)
+                    {
+                        connection->onReceived(cur);
+                    }
                 }
             }
         }

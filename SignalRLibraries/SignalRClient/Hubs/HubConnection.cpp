@@ -128,6 +128,10 @@ void HubConnection::onReceived(QVariant data)
             Connection::onReceived(data);
         }
     }
+    else
+    {
+        Connection::onReceived(data);
+    }
 }
 
 HubProxy *HubConnection::getByName(const QString &name)
