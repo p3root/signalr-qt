@@ -44,7 +44,7 @@ public:
     ~HubConnection();
 
     void send(const QString &data, const QString &id, HubCallback*);
-    void stop();
+    bool stop(int timeoutMs=0);
 
     HubProxy* createHubProxy(QString name);
 

@@ -47,7 +47,7 @@ void LongPollingTransport::start(QString)
 {
     connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(onPollHttpResponse(QString,SignalException*)));
 
-    _keepAliveTimer.setInterval(_connection->getKeepAliveData().getConnectionTimeout()*1000); //default on the signalr server is 110 sec, just to ensure not to run in a socket timeout
+    _keepAliveTimer.setInterval(120*1000); //default on the signalr server is 110 sec, just to ensure not to run in a socket timeout
     _keepAliveTimer.setSingleShot(true);
 
     QString conOrRecon = "connect";

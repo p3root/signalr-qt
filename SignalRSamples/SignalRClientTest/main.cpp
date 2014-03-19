@@ -93,6 +93,9 @@ int main(int argc, char *argv[])
     Client c(a);
     c.start();
 
-    return a.exec();
+    int rc = a.exec();
 
+    //c.stop();
+
+    return rc;
 }

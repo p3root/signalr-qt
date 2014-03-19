@@ -52,8 +52,7 @@ public:
     virtual void onNegotiatenCompleted(const NegotiateResponse& res);
     void negotiate();
     void send(QString data);
-    virtual void stop();
-    void abort();
+    bool abort(int timeoutMs = 0);
 
     void tryDequeueNextWorkItem();
 private:    

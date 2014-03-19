@@ -29,7 +29,7 @@
  */
 
 #include "HttpBasedTransport.h"
-
+#include "Helper/Helper.h"
 
 HttpBasedTransport::HttpBasedTransport(HttpClient* httpClient, Connection *con) : ClientTransport(con), _sending(false)
 {
@@ -39,7 +39,7 @@ HttpBasedTransport::HttpBasedTransport(HttpClient* httpClient, Connection *con) 
 
 HttpBasedTransport::~HttpBasedTransport(void)
 {
-    delete _httpClient;
+    _httpClient->deleteLater();
 }
 
 void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
@@ -59,7 +59,7 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
     }
     else
     {
-         _connection->negotiateCompleted(0, ex);
+        _connection->negotiateCompleted(0, ex);
     }
 
 }
@@ -142,14 +142,41 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalE
     tryDequeueNextWorkItem();
 }
 
-void HttpBasedTransport::stop()
+bool HttpBasedTransport::abort(int timeoutMs)
 {
-    //emit aboutToClose();
-}
+    disconnect(this, SLOT(onSendHttpResponse(QString,SignalException*)));
 
+    QString url = _connection->getUrl() +
+            "/abort";
 
-void HttpBasedTransport::abort()
-{
-    //emit aboutToAbort();
+    url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
+
+    QEventLoop loop;
+    QTimer timeout;
+    if(timeoutMs > 0)
+    {
+        timeout.setInterval(timeoutMs);
+        timeout.setSingleShot(true);
+        connect(&timeout, SIGNAL(timeout()), &loop, SLOT(quit()));
+        timeout.start();
+    }
+    connect(_httpClient,SIGNAL(postRequestCompleted(QString,SignalException*)), &loop, SLOT(quit()));
+
+    _connection->emitLogMessage("starting abort request (" + _connection->getConnectionId() +")" , Connection::Debug);
+    _httpClient->post(url, QMap<QString, QString>());
+
+    //not the prettiest way, but I found no other solution
+    while(true)
+    {
+        loop.processEvents(QEventLoop::AllEvents, 200);
+
+        if((!timeout.isActive() && timeoutMs > 0) || !_httpClient->isPostInProgress())
+            break;
+    }
+    _httpClient->abort(true);
+
+    if(!timeout.isActive() && timeoutMs > 0)
+        return false;
+    return true;
 }
 

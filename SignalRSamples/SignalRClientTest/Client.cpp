@@ -36,8 +36,8 @@
 Client::Client(QCoreApplication &app)
 {
     _timer.setSingleShot(true);
-    _timer.setInterval(30000);
-   // _timer.start();
+    _timer.setInterval(10000);
+    _timer.start();
     connect(&_timer, SIGNAL(timeout()), this, SLOT(timerTick()));
     connect(&app, SIGNAL(aboutToQuit()), SLOT(stop()));
 }
@@ -51,7 +51,7 @@ Client::~Client()
 void Client::start()
 {
     qDebug() << "Client Thread: " << thread()->currentThreadId();
-    _connection = new HubConnection("http://192.168.1.77:8080/signalr");
+    _connection = new HubConnection("http://192.168.1.69:9099/signalr");
     _connection->setLogErrorsToQDebug(false);
     _connection->setReconnectWaitTime(3);
     _monitor = new HeartbeatMonitor(_connection, 0);
@@ -79,7 +79,14 @@ void Client::start()
 
 void Client::stop()
 {
-    _connection->stop();
+    if(_connection->stop(5000))
+    {
+        qDebug() << "successfully disconnected from signalr server";
+    }
+    else
+    {
+        qWarning() << "could not disconnect from signalr server";
+    }
 }
 
 void Client::onHubMessageReceived(QVariant v)

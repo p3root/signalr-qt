@@ -48,7 +48,6 @@ Connection::Connection(const QString &host) : _transport(0), _count(0), _keepAli
 
 Connection::~Connection()
 {
-    delete _transport;
     delete _keepAliveData;
 }
 
@@ -198,12 +197,14 @@ void Connection::connectionSlow()
    Q_EMIT onConnectionSlow();
 }
 
-void Connection::stop()
+bool Connection::stop(int timeoutMs)
 {
-    changeState(_state, Disconnected);
-    _transport->stop();
+    changeState(_state, Disconnecting);
+    bool abort = _transport->abort(timeoutMs);
     _transport->deleteLater();
     _transport = 0;
+    changeState(_state, Disconnected);
+    return abort;
 }
 
 void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, SignalException* error)

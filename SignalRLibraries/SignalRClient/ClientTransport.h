@@ -48,8 +48,7 @@ public:
     virtual void negotiate() = 0;
     virtual void start(QString data) = 0;
     virtual void send(QString data) = 0;
-    virtual void stop() = 0;
-    virtual void abort() = 0;
+    virtual bool abort(int timeoutMs = 0) = 0;
     virtual void lostConnection(Connection*);
 
     virtual const QString& getTransportType() = 0;

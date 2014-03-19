@@ -52,9 +52,9 @@ void HubConnection::send(const QString &data, const QString &id, HubCallback *c)
     Connection::send(data);
 }
 
-void HubConnection::stop()
+bool HubConnection::stop(int timeoutMs)
 {
-    Connection::stop();
+    return Connection::stop(timeoutMs);
 }
 
 HubProxy *HubConnection::createHubProxy(QString name)

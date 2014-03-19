@@ -42,7 +42,7 @@
 	#include <QtNetwork/qnetworkreply.h>
 #else
 	#include <QNetworkAccessManager>
-	#include <QNetworkReply>
+    #include <QNetworkReply>
 #endif
 
 class Connection;
@@ -58,6 +58,9 @@ public:
     void post(QString url, QMap<QString, QString> arguments);
 
     void abort(bool abort = true);
+
+    bool isPostInProgress() { return _postInProgress; }
+    bool isGetInProgress() { return _getInProgress; }
 
 Q_SIGNALS:
     void getRequestCompleted(const QString& httpResponse, SignalException* error);
@@ -76,6 +79,8 @@ private:
 
 
 private:
+    bool _postInProgress;
+    bool _getInProgress;
     bool _isAborting;
     QNetworkAccessManager *_man;
     QMutex *_getMutex;

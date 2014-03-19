@@ -8,7 +8,7 @@ AutoTransport::AutoTransport(HttpClient *httpClient, Connection *con) : HttpBase
 {
     _transports = QList<ClientTransport*>();
     _transports.append(new WebSocketTransport(httpClient, con));
-    _transports.append(new ServerSentEventsTransport(httpClient, con));
+   // _transports.append(new ServerSentEventsTransport(httpClient, con));
     _transports.append(new LongPollingTransport(httpClient, con));
     _index = 0;
     _transport = 0;
@@ -43,20 +43,13 @@ void AutoTransport::start(QString data)
     transport->start(data);
 }
 
-void AutoTransport::abort()
+bool AutoTransport::abort(int timeoutMs)
 {
     if(_transport)
     {
-        _transport->abort();
+       return _transport->abort(timeoutMs);
     }
-}
-
-void AutoTransport::stop()
-{
-    if(_transport)
-    {
-        _transport->stop();
-    }
+    return true;
 }
 
 void AutoTransport::send(QString data)

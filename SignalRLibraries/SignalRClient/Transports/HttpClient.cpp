@@ -53,6 +53,9 @@ HttpClient::HttpClient(Connection *con) : _isAborting(false), _man(0)
 
     connect(_man, SIGNAL(finished(QNetworkReply*)), SLOT(requestFinished(QNetworkReply*)));
     connect(_man, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), SLOT(onIgnoreSSLErros(QNetworkReply*,QList<QSslError>)));
+
+    _postInProgress = false;
+    _getInProgress = false;
 }
 
 HttpClient::~HttpClient()
@@ -99,6 +102,7 @@ void HttpClient::get(QString url)
 
     _connection->emitLogMessage("starting get request (" + _connection->getConnectionId() +")" , Connection::Debug);
     QNetworkReply *getReply = _man->get(req);
+    _getInProgress = true;
 
     _currentConnections.append(getReply);
 }
@@ -148,7 +152,7 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
     _connection->emitLogMessage("starting post request (" + _connection->getConnectionId() +")", Connection::Debug);
 
     QNetworkReply *postReply = _man->post(req, QByteArray().append(queryString));
-
+    _postInProgress = true;
     _currentConnections.append(postReply);
 }
 
@@ -171,12 +175,15 @@ void HttpClient::requestFinished(QNetworkReply *reply)
     {
         _currentConnections.removeOne(reply);
         reply->deleteLater();
+        _postInProgress = false;
+        _getInProgress = false;
         return;
     }
 
     if(operation == QNetworkAccessManager::GetOperation)
     {
         _connection->emitLogMessage("get request finished", Connection::Debug);
+        _getInProgress = false;
 
         if(error == QNetworkReply::NoError)
             getRequestFinished(reply);
@@ -185,6 +192,7 @@ void HttpClient::requestFinished(QNetworkReply *reply)
     }
     else if(operation == QNetworkAccessManager::PostOperation)
     {
+        _postInProgress = false;
         _connection->emitLogMessage("post request finished", Connection::Debug);
 
         if(error == QNetworkReply::NoError)
@@ -200,6 +208,8 @@ void HttpClient::getRequestFinished(QNetworkReply *reply)
         return;
 
     QString data = QString(reply->readAll());
+
+    //_connection->emitLogMessage(data, Connection::Debug);
 
     if(reply->error() == QNetworkReply::NoError)
     {
@@ -225,33 +235,33 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
 
         switch(error)
         {
-        case 1:
-            ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
-            break;
-        case 2:
-            ex = new SignalException(errorString, SignalException::RemoteHostClosedConnection);
-            break;
-        case 3:
-            ex = new SignalException(errorString, SignalException::HostNotFoundError);
-            break;
-        case 4:
-            ex = new SignalException(errorString, SignalException::SocketOperationTimedOut);
-            break;
-        case 5:
-            ex = new SignalException(errorString, SignalException::OperationCanceled);
-            break;
-        case 99:
-            ex = new SignalException(errorString, SignalException::UnknownNetworkError);
-            break;
-        case 203:
-            ex = new SignalException(errorString, SignalException::ContentNotFoundError);
-            break;
-        case 204:
-            ex = new SignalException(errorString, SignalException::ServerRequiresAuthorization);
-            break;
-        default:
-            ex = new SignalException(errorString, SignalException::UnknownError);
-            break;
+            case 1:
+                ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
+                break;
+            case 2:
+                ex = new SignalException(errorString, SignalException::RemoteHostClosedConnection);
+                break;
+            case 3:
+                ex = new SignalException(errorString, SignalException::HostNotFoundError);
+                break;
+            case 4:
+                ex = new SignalException(errorString, SignalException::SocketOperationTimedOut);
+                break;
+            case 5:
+                ex = new SignalException(errorString, SignalException::OperationCanceled);
+                break;
+            case 99:
+                ex = new SignalException(errorString, SignalException::UnknownNetworkError);
+                break;
+            case 203:
+                ex = new SignalException(errorString, SignalException::ContentNotFoundError);
+                break;
+            case 204:
+                ex = new SignalException(errorString, SignalException::ServerRequiresAuthorization);
+                break;
+            default:
+                ex = new SignalException(errorString, SignalException::UnkownError);
+                break;
         }
 
         if(!_isAborting)
@@ -274,6 +284,8 @@ void HttpClient::postRequestFinished(QNetworkReply *reply)
         return;
 
     QString data = QString(reply->readAll());
+
+    //_connection->emitLogMessage(data, Connection::Debug);
 
     if( reply->error() == QNetworkReply::NoError)
     {

@@ -52,7 +52,7 @@ public:
         HostNotFoundError,
         OperationCanceled,
         UnknownNetworkError,
-        UnknownError
+        UnkownError
     };
 
     SignalException();

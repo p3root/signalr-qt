@@ -63,6 +63,74 @@ void HubProxy::invoke(QString method, HubCallback *callback)
     invoke(method, QVariantList(), callback);
 }
 
+QVariant HubProxy::syncInvoke(QString method, QString param, int timeoutMs, bool *ok)
+{
+    QEventLoop loop;
+
+    HubCallback *callback = new HubCallback(0, method);
+    QTimer timer;
+    timer.setInterval(timeoutMs);
+    timer.setSingleShot(true);
+    timer.start();
+    invoke(method, param, callback);
+
+    while(true)
+    {
+        loop.processEvents(QEventLoop::AllEvents, 100);
+
+        if(callback->isFinished() || !timer.isActive())
+            break;
+    }
+    if(ok)
+    {
+        if(!timer.isActive())
+        {
+            *ok = false;
+        }
+        else
+        {
+            *ok = true;
+        }
+    }
+    QVariant data = callback->data();
+    delete callback;
+    return data;
+}
+
+QVariant HubProxy::syncInvoke(QString method, QStringList param, int timeoutMs, bool *ok)
+{
+    QEventLoop loop;
+
+    HubCallback *callback = new HubCallback(0, method);
+    QTimer timer;
+    timer.setInterval(timeoutMs);
+    timer.setSingleShot(true);
+    timer.start();
+    invoke(method, param, callback);
+
+    while(true)
+    {
+        loop.processEvents(QEventLoop::AllEvents, 100);
+
+        if(callback->isFinished() || !timer.isActive())
+            break;
+    }
+    if(ok)
+    {
+        if(!timer.isActive())
+        {
+            *ok = false;
+        }
+        else
+        {
+            *ok = true;
+        }
+    }
+    QVariant data = callback->data();
+    delete callback;
+    return data;
+}
+
 void HubProxy::invoke(QString method, QVariant param, HubCallback* callback)
 {
     invoke(method, QVariantList() << param, callback);

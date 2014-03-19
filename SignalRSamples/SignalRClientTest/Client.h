@@ -53,8 +53,8 @@ public:
     void start();
 
 private Q_SLOTS:
-    void timerTick();
     void stop();
+    void timerTick();
     void onHubMessageReceived(QVariant);
     void onError(SignalException);
     void onStateChanged(Connection::State oldState, Connection::State newState);

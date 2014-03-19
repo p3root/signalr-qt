@@ -59,19 +59,16 @@ void WebSocketTransport::send(QString data)
     }
 }
 
-void WebSocketTransport::stop()
+bool WebSocketTransport::abort(int timeoutMs)
 {
-    abort();
-}
-
-void WebSocketTransport::abort()
-{
+    Q_UNUSED(timeoutMs);
     if(_webSocket)
     {
         _webSocket->close();
         _webSocket->deleteLater();
         _webSocket = 0;
     }
+    return true;
 }
 
 const QString &WebSocketTransport::getTransportType()

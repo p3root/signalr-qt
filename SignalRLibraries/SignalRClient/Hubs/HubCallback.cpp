@@ -34,6 +34,7 @@ HubCallback::HubCallback(void* state, const QString name) : QObject()
 {
     _state = state;
     _name = name;
+    _finished = false;
 }
 
 void *HubCallback::getState()
@@ -43,5 +44,7 @@ void *HubCallback::getState()
 
 void HubCallback::raiseMessageReceived(QVariant v)
 {
+    _finished = true;
+    _data = v;
     Q_EMIT messageReceived(this, v);
 }

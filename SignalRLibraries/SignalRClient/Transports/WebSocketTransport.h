@@ -15,8 +15,7 @@ public:
 
     virtual void start(QString data);
     virtual void send(QString data);
-    virtual void stop();
-    virtual void abort();
+    virtual bool abort(int timeoutMs=0);
 
      virtual const QString &getTransportType();
 

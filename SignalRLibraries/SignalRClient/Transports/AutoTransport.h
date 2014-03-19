@@ -13,8 +13,7 @@ public:
 
     void onNegotiatenCompleted(const NegotiateResponse& res);
     void start(QString connection);
-    void abort();
-    void stop();
+    bool abort(int timeoutMs = 0);
     void send(QString data);
 
     const QString &getTransportType();

@@ -51,6 +51,9 @@ public:
     void invoke(QString method, QVariantList params, HubCallback* callback = 0);
     void invoke(QString method, HubCallback* callback = 0);
 
+    QVariant syncInvoke(QString method, QString param, int timeoutMs = ULONG_MAX, bool *ok=0);
+    QVariant syncInvoke(QString method, QStringList param, int timeoutMs = ULONG_MAX, bool *ok=0);
+
     void onReceive(QVariant var);
 
     const QString& getName();

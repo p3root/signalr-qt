@@ -43,7 +43,10 @@ public:
     void* getState();
     void raiseMessageReceived(QVariant);
 
+    bool isFinished() { return _finished; }
+
     const QString &getName() { return _name; }
+    const QVariant data() { return _data; }
 
 Q_SIGNALS:
     void messageReceived(HubCallback*, QVariant);
@@ -51,6 +54,8 @@ Q_SIGNALS:
 private:
     void* _state;
     QString _name;
+    bool _finished;
+    QVariant _data;
 };
 
 #endif // HUBCALLBACK_H
