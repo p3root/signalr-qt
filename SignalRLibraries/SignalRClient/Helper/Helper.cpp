@@ -39,6 +39,8 @@
 
 #include "Connection.h"
 
+namespace P3 { namespace SignalR { namespace Client {
+
 Helper::Helper()
 {
 }
@@ -94,22 +96,4 @@ QString Helper::getEncodedQueryString(QUrl url, Connection *con)
     return retVal;
 }
 
-void Helper::wait(int seconds)
-{
-#ifdef Q_OS_LINUX
-    sleep(seconds);
-#endif
-#ifdef Q_OS_WIN32
-    Sleep(seconds * 1000);
-#endif
-}
-
-void Helper::waitMs(int milliseconds)
-{
-#ifdef Q_OS_LINUX
-    usleep(milliseconds * 1000);
-#endif
-#ifdef Q_OS_WIN32
-    Sleep(milliseconds);
-#endif
-}
+}}}

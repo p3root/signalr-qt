@@ -37,6 +37,9 @@
 #include <QThread>
 #include <QTimer>
 
+
+namespace P3 { namespace SignalR { namespace Client {
+
 class LongPollingTransport : public HttpBasedTransport
 {
     Q_OBJECT
@@ -50,16 +53,24 @@ public:
 
     const QString& getTransportType();
 
+private:
+    void startConnection();
+
 private Q_SLOTS:
     void onPollHttpResponse(const QString& httpResponse, SignalException *error);
     void onPostRequestCompleted(const QString& httpResponse, SignalException *error);
 
     void keepAliveTimerTimeout();
+    void errorRetryTimer();
+    void notStartedErrorRetry();
 
 private:
     bool _started;
     QString _url;
     QTimer _keepAliveTimer;
+    SignalException *_lastSignalException;
 };
+
+}}}
 
 #endif

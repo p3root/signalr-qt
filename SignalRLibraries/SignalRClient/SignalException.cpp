@@ -30,6 +30,8 @@
 
 #include "SignalException.h"
 
+namespace P3 { namespace SignalR { namespace Client {
+
 SignalException::SignalException() : _message("")
 {
     _type = UnkownError;
@@ -48,3 +50,5 @@ const char *SignalException::what() const throw()
 {
     return _message.toStdString().c_str();
 }
+
+}}}

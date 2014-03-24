@@ -33,6 +33,9 @@
 
 #include <QString>
 
+
+namespace P3 { namespace SignalR { namespace Client {
+
 struct NegotiateResponse
 {
     QString connectionId;
@@ -44,5 +47,7 @@ struct NegotiateResponse
     bool tryWebSockets;
     QString webSocketsUrl;
 };
+
+}}}
 
 #endif

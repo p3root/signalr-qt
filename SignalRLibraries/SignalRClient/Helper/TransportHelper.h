@@ -39,6 +39,8 @@
 #include <QextJson.h>
 
 
+namespace P3 { namespace SignalR { namespace Client {
+
 class TransportHelper : public QObject
 {
     Q_OBJECT
@@ -53,5 +55,7 @@ public:
 
     static const NegotiateResponse* parseNegotiateHttpResponse(const QString& httpResponse);
 };
+
+}}}
 
 #endif

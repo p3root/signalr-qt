@@ -30,6 +30,8 @@
 
 #include "HubCallback.h"
 
+namespace P3 { namespace SignalR { namespace Client {
+
 HubCallback::HubCallback(void* state, const QString name) : QObject()
 {
     _state = state;
@@ -48,3 +50,5 @@ void HubCallback::raiseMessageReceived(QVariant v)
     _data = v;
     Q_EMIT messageReceived(this, v);
 }
+
+}}}

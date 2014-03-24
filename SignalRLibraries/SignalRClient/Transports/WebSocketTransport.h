@@ -7,6 +7,9 @@
 #include "Helper/TransportHelper.h"
 #include <QTimer>
 
+
+namespace P3 { namespace SignalR { namespace Client {
+
 class WebSocketTransport : public HttpBasedTransport
 {
     Q_OBJECT
@@ -29,10 +32,15 @@ private Q_SLOTS:
 
     void keepAliveTimerTimeout();
 
+    void reconnectTimerTick();
+
 private:
     QWebSocket *_webSocket;
     QTimer _keepAliveTimer;
     bool _started;
 };
+
+
+}}}
 
 #endif // WEBSOCKETTRANSPORT_H

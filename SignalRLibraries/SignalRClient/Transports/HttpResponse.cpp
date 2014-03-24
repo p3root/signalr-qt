@@ -29,7 +29,7 @@
  */
 
 #include "HttpResponse.h"
-
+namespace P3 { namespace SignalR { namespace Client {
 
 HttpResponse::HttpResponse(void)
 {
@@ -39,3 +39,5 @@ HttpResponse::HttpResponse(void)
 HttpResponse::~HttpResponse(void)
 {
 }
+
+}}}

@@ -34,6 +34,9 @@
 #include <QObject>
 #include <QVariant>
 
+
+namespace P3 { namespace SignalR { namespace Client {
+
 class HubCallback : public QObject
 {
     Q_OBJECT
@@ -57,5 +60,7 @@ private:
     bool _finished;
     QVariant _data;
 };
+
+}}}
 
 #endif // HUBCALLBACK_H

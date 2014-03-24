@@ -30,6 +30,7 @@
 
 #include "ClientTransport.h"
 
+namespace P3 { namespace SignalR { namespace Client {
 
 ClientTransport::ClientTransport(Connection* con) : _connection(0)
 {
@@ -43,3 +44,5 @@ ClientTransport::~ClientTransport(void)
 void ClientTransport::lostConnection(Connection *)
 {
 }
+
+}}}

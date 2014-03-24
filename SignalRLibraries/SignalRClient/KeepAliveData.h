@@ -33,6 +33,9 @@
 
 #include <QDateTime>
 
+
+namespace P3 { namespace SignalR { namespace Client {
+
 class KeepAliveData
 {
 public:
@@ -56,5 +59,7 @@ private:
     double _checkInterval;
     double _connectionTimeout;
 };
+
+}}}
 
 #endif // KEEPALIVEDATA_H

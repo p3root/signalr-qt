@@ -31,6 +31,8 @@
 #include "HeartbeatMonitor.h"
 #include <QDebug>
 
+namespace P3 { namespace SignalR { namespace Client {
+
 HeartbeatMonitor::HeartbeatMonitor(Connection *con, QMutex *stateLocker)
 {
     _connection = con;
@@ -118,3 +120,5 @@ bool HeartbeatMonitor::checkKeepAliveData()
 
     return true;
 }
+
+}}}

@@ -31,18 +31,19 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
+#include <QObject>
 #include <QString>
 #include <SignalException.h>
 #include "Transports/HttpClient.h"
 #include "Transports/NegotiateResponse.h"
 #include "ClientTransport.h"
 #include <QDateTime>
-#include <QObject>
 #include "KeepAliveData.h"
 #include <QNetworkProxy>
 
-class ConnectionHandler;
-class ClientTransport;
+
+
+namespace P3 { namespace SignalR { namespace Client {
 
 class Connection : public QObject
 {
@@ -105,7 +106,7 @@ public:
     const QList< QPair<QString, QString> >& getAdditionalQueryString() { return _additionalQueryString; }
     void setAdditionalQueryString(QList<QPair<QString, QString> > lst);
 
-    void negotiateCompleted(const NegotiateResponse *negotiateResponse, SignalException* error);
+    void negotiateCompleted(const NegotiateResponse *negotiateResponse);
 
     void setProxySettings(const QNetworkProxy proxy) { _proxySettings = proxy; }
     const QNetworkProxy &getProxySettings() { return _proxySettings; }
@@ -131,10 +132,10 @@ Q_SIGNALS:
     void logMessage(QString, int severity);
 
 protected:
-     State _state;
+    State _state;
 
 private Q_SLOTS:
-     void transportStarted(SignalException *ex);
+    void transportStarted(SignalException *ex);
 
 private:
     bool _logErrorsToQDebug;
@@ -146,7 +147,7 @@ private:
     ClientTransport* _transport;
     QList<QPair<QString, QString> > _additionalHeaders;
     QList<QPair<QString, QString> > _additionalQueryString;
-   // ConnectionHandler* _handler;
+    // ConnectionHandler* _handler;
     quint64 _count;
     HttpClient *_httpClient;
     bool _autoReconnect;
@@ -157,5 +158,7 @@ private:
     QString _webSocketsUrl;
     QString _protocolVersion;
 };
+
+}}}
 
 #endif

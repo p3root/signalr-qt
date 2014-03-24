@@ -31,12 +31,15 @@
 #ifndef CLIENTTRANSPORT_H
 #define CLIENTTRANSPORT_H
 
-class Connection;
-
 #include <QString>
 #include "SignalException.h"
 #include "Transports/NegotiateResponse.h"
 #include <QObject>
+
+
+namespace P3  { namespace SignalR { namespace Client {
+
+class Connection;
 
 class ClientTransport : public QObject
 {
@@ -62,5 +65,7 @@ private Q_SLOTS:
 protected:
     Connection* _connection;
 };
+
+}}}
 
 #endif

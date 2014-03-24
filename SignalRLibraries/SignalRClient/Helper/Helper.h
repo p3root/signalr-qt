@@ -32,6 +32,8 @@
 #define HELPER_H
 #include <QtCore>
 
+namespace P3 { namespace SignalR { namespace Client {
+
 class Connection;
 
 class Helper
@@ -41,9 +43,8 @@ public:
 
     static QString encode(QString val);
     static QString getEncodedQueryString(QUrl, Connection *con);
-
-    static void wait(int seconds);
-    static void waitMs(int milliseconds);
 };
+
+}}}
 
 #endif // HELPER_H

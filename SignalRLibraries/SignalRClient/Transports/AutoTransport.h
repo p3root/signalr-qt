@@ -3,6 +3,9 @@
 
 #include "HttpBasedTransport.h"
 
+
+namespace P3 { namespace SignalR { namespace Client {
+
 class AutoTransport  : public HttpBasedTransport
 {
     Q_OBJECT
@@ -27,5 +30,7 @@ private:
     ClientTransport *_transport;
 
 };
+
+}}}
 
 #endif // AUTOTRANSPORT_H

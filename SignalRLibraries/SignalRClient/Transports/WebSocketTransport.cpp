@@ -2,6 +2,8 @@
 #include "Helper/Helper.h"
 #include "SignalException.h"
 
+namespace P3 { namespace SignalR { namespace Client {
+
 WebSocketTransport::WebSocketTransport(HttpClient *c, Connection* con) : HttpBasedTransport(c, con), _webSocket(0)
 {
     connect(&_keepAliveTimer, SIGNAL(timeout()), this, SLOT(keepAliveTimerTimeout()));
@@ -133,8 +135,10 @@ void WebSocketTransport::onDisconnected()
             qDebug() << "ServerSentEventsTransport: Lost connection...try to reconnect";
         _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
 
-        Helper::wait(_connection->getReconnectWaitTime());
-        start("");
+        connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
+        _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
+        _retryTimerTimeout.start();
+
     }
     else if(_connection->getAutoReconnect())
     {
@@ -143,8 +147,12 @@ void WebSocketTransport::onDisconnected()
         _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
 
         _connection->changeState(Connection::Connected, Connection::Reconnecting);
-        Helper::wait(_connection->getReconnectWaitTime());
-        start("");
+
+        connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
+        _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
+        _retryTimerTimeout.start();
+
+        return;
     }
     else
     {
@@ -156,6 +164,14 @@ void WebSocketTransport::onDisconnected()
     _started = false;
     _connection->emitLogMessage("websocket disconnected ("+QString::number(er)+")", Connection::Debug);
 
+}
+
+
+void WebSocketTransport::reconnectTimerTick()
+{
+    _retryTimerTimeout.stop();
+    disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
+    start("");
 }
 
 void WebSocketTransport::onError(QAbstractSocket::SocketError)
@@ -182,7 +198,7 @@ void WebSocketTransport::onPong(quint64, QByteArray)
 
 void WebSocketTransport::keepAliveTimerTimeout()
 {
-      _connection->emitLogMessage("websocket timed out", Connection::Debug);
+    _connection->emitLogMessage("websocket timed out", Connection::Debug);
 
     if(_webSocket->state() == QAbstractSocket::ConnectedState)
         _webSocket->close();
@@ -191,7 +207,10 @@ void WebSocketTransport::keepAliveTimerTimeout()
         _webSocket->deleteLater();
         _webSocket = 0;
 
-        Helper::wait(_connection->getReconnectWaitTime());
-        start("");
+        connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
+        _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
+        _retryTimerTimeout.start();
     }
 }
+
+}}}

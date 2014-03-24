@@ -37,6 +37,9 @@
 #include "Helper/TransportHelper.h"
 #include "SignalException.h"
 #include <QQueue>
+#include <QTimer>
+
+namespace P3 { namespace SignalR { namespace Client {
 
 class HttpBasedTransport : public ClientTransport
 {
@@ -69,6 +72,12 @@ private:
 
 private Q_SLOTS:
     void onSendHttpResponse(const QString& httpResponse, SignalException* error);
+    void retryNegotiation();
+
+protected:
+    QTimer _retryTimerTimeout;
 };
+
+}}}
 
 #endif

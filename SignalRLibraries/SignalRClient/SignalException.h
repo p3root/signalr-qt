@@ -34,6 +34,8 @@
 #include <QString>
 #include <QMetaType>
 
+namespace P3 { namespace SignalR { namespace Client {
+
 class SignalException : public std::exception
 {
 public:
@@ -69,7 +71,8 @@ private:
     SignalExceptionType _type;
 };
 
+}}}
 
-Q_DECLARE_METATYPE(SignalException*)
+Q_DECLARE_METATYPE(P3::SignalR::Client::SignalException*)
 
 #endif // SIGNALEXCEPTION_H

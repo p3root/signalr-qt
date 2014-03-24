@@ -30,6 +30,7 @@
 
 #include "HttpRequest.h"
 
+namespace P3 { namespace SignalR { namespace Client {
 
 HttpRequest::HttpRequest(void)
 {
@@ -39,3 +40,5 @@ HttpRequest::HttpRequest(void)
 HttpRequest::~HttpRequest(void)
 {
 }
+
+}}}//namespace

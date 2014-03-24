@@ -31,6 +31,8 @@
 #include "HubConnection.h"
 #include <QextJson.h>
 
+namespace P3 { namespace SignalR { namespace Client {
+
 HubConnection::HubConnection(QString url) : Connection(url)
 {
 
@@ -145,3 +147,5 @@ HubProxy *HubConnection::getByName(const QString &name)
     }
     return _hubs[name];
 }
+
+}}}

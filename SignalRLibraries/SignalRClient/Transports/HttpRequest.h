@@ -31,11 +31,16 @@
 #ifndef IHTTPREQUEST_H
 #define IHTTPREQUEST_H
 
+
+namespace P3 { namespace SignalR { namespace Client {
+
 class HttpRequest
 {
 public:
     HttpRequest(void);
     ~HttpRequest(void);
 };
+
+}}}
 
 #endif

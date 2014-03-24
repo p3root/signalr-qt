@@ -34,6 +34,9 @@
 #include "HttpBasedTransport.h"
 #include "HttpEventStream.h"
 
+
+namespace P3 { namespace SignalR { namespace Client {
+
 class ServerSentEventsTransport : public HttpBasedTransport
 {
     Q_OBJECT
@@ -52,6 +55,8 @@ private Q_SLOTS:
     void packetReceived(QString packet, SignalException *ex);
     void connected(SignalException* ex);
 
+    void reconnectTimerTick();
+
 
 private:
     void reconnect();
@@ -61,6 +66,8 @@ private:
     void* _state;
     QString _url;
     bool _started;
+
 };
 
+}}}
 #endif

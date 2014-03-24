@@ -43,6 +43,8 @@
 #include <unistd.h>
 #include <Connection.h>
 
+namespace P3 { namespace SignalR { namespace Client {
+
 HttpClient::HttpClient(Connection *con) : _isAborting(false), _man(0)
 {
     _connection = con;
@@ -300,3 +302,5 @@ void HttpClient::onIgnoreSSLErros(QNetworkReply *reply, QList<QSslError> error)
     Q_UNUSED(error);
     reply->ignoreSslErrors(error);
 }
+
+}}}

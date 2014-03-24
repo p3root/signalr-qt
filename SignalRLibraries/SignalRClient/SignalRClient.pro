@@ -14,9 +14,9 @@ TEMPLATE = lib
 DEFINES += SIGNALR_LIBRARY
 
 SOURCES += \
-            Transports/HttpBasedTransport.cpp\
             Transports/LongPollingTransport.cpp\
-            Transports/ServerSentEventsTransport.cpp\
+ Transports/HttpBasedTransport.cpp\
+Transports/ServerSentEventsTransport.cpp\
             Transports/HttpResponse.cpp \
             Transports/HttpRequest.cpp \
             Transports/HttpEventStream.cpp \

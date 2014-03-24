@@ -34,6 +34,8 @@
 #include "Helper/Helper.h"
 #include "Transports/AutoTransport.h"
 
+namespace P3 { namespace SignalR { namespace Client {
+
 Connection::Connection(const QString &host) : _transport(0), _count(0), _keepAliveData(0)
 {
     _host = host;
@@ -194,7 +196,7 @@ void Connection::updateLastKeepAlive()
 
 void Connection::connectionSlow()
 {
-   Q_EMIT onConnectionSlow();
+    Q_EMIT onConnectionSlow();
 }
 
 bool Connection::stop(int timeoutMs)
@@ -207,51 +209,30 @@ bool Connection::stop(int timeoutMs)
     return abort;
 }
 
-void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse, SignalException* error)
+void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse)
 {
-    if(!error)
+
+    if( !(negotiateResponse->protocolVersion == "1.3" || negotiateResponse->protocolVersion == "1.2"))
     {
-        if( !(negotiateResponse->protocolVersion == "1.3" || negotiateResponse->protocolVersion == "1.2"))
-        {
-            onError(SignalException("Invalid protocol version", SignalException::InvalidProtocolVersion));
-            stop();
-        }
-        else
-        {
-            if(negotiateResponse->keepAliveTimeout > 0)
-            {
-                _keepAliveData = new KeepAliveData(negotiateResponse->keepAliveTimeout, negotiateResponse->transportConnectTimeout);
-            }
-            setConnectionState(*negotiateResponse);
-            _tryWebSockets = negotiateResponse->tryWebSockets;
-            if(negotiateResponse->webSocketsUrl.isEmpty())
-                _webSocketsUrl = _host;
-            else
-                _webSocketsUrl = negotiateResponse->webSocketsUrl;
-            _protocolVersion = negotiateResponse->protocolVersion;
-           // disconnect(this, SLOT(transportStarted(SignalException*)));
-            connect(_transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(transportStarted(SignalException*)), Qt::UniqueConnection);
-            getTransport()->start("");
-        }
+        onError(SignalException("Invalid protocol version", SignalException::InvalidProtocolVersion));
+        stop();
     }
     else
     {
-        if(_autoReconnect)
+        if(negotiateResponse->keepAliveTimeout > 0)
         {
-            //onError(*error);
-            if(_logErrorsToQDebug)
-            {
-                qDebug() << "Negotiation failed, will try it again";
-            }
-            emitLogMessage(QString("Negotiation failed, will try it again after %1s").arg(_reconnectWaitTime), Connection::Error);
-            Helper::wait(_reconnectWaitTime);
-            getTransport()->negotiate();
+            _keepAliveData = new KeepAliveData(negotiateResponse->keepAliveTimeout, negotiateResponse->transportConnectTimeout);
         }
+        setConnectionState(*negotiateResponse);
+        _tryWebSockets = negotiateResponse->tryWebSockets;
+        if(negotiateResponse->webSocketsUrl.isEmpty())
+            _webSocketsUrl = _host;
         else
-        {
-            onError(SignalException("Negotiation failed", SignalException::InvalidNegotiationValues));
-            stop();
-        }
+            _webSocketsUrl = negotiateResponse->webSocketsUrl;
+        _protocolVersion = negotiateResponse->protocolVersion;
+        // disconnect(this, SLOT(transportStarted(SignalException*)));
+        connect(_transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(transportStarted(SignalException*)), Qt::UniqueConnection);
+        getTransport()->start("");
     }
 }
 
@@ -295,3 +276,4 @@ void Connection::transportStarted(SignalException* error)
     }
 }
 
+}}}

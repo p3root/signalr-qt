@@ -31,6 +31,8 @@
 #include "HttpBasedTransport.h"
 #include "Helper/Helper.h"
 
+namespace P3 { namespace SignalR { namespace Client {
+
 HttpBasedTransport::HttpBasedTransport(HttpClient* httpClient, Connection *con) : ClientTransport(con), _sending(false)
 {
     _httpClient = httpClient;
@@ -53,15 +55,40 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
         if(res)
         {
             onNegotiatenCompleted(*res);
-            _connection->negotiateCompleted(res, ex);
+
+            _connection->negotiateCompleted(res);
             delete res;
         }
     }
     else
     {
-        _connection->negotiateCompleted(0, ex);
+        if(_connection->getAutoReconnect())
+        {
+            if(_connection->getLogErrorsToQDebug())
+            {
+                qDebug() << "Negotiation failed, will try it again";
+            }
+            _connection->emitLogMessage(QString("Negotiation failed, will try it again after %1s").arg(_connection->getReconnectWaitTime()), Connection::Error);
+
+            connect(&_retryTimerTimeout, SIGNAL(timeout()), SLOT(retryNegotiation()));
+            _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
+            _retryTimerTimeout.start();
+        }
+        else
+        {
+            _connection->onError(SignalException("Negotiation failed", SignalException::InvalidNegotiationValues));
+            _connection->stop();
+        }
     }
 
+}
+
+void HttpBasedTransport::retryNegotiation()
+{
+    disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(retryNegotiation()));
+    qDebug() << "retry started";
+    _retryTimerTimeout.stop();
+    negotiate();
 }
 
 void HttpBasedTransport::onNegotiatenCompleted(const NegotiateResponse &)
@@ -144,6 +171,7 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalE
 
 bool HttpBasedTransport::abort(int timeoutMs)
 {
+    _retryTimerTimeout.stop();
     disconnect(this, SLOT(onSendHttpResponse(QString,SignalException*)));
 
     QString url = _connection->getUrl() +
@@ -180,3 +208,4 @@ bool HttpBasedTransport::abort(int timeoutMs)
     return true;
 }
 
+}}}

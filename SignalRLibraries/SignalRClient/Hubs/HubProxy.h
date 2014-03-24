@@ -36,6 +36,9 @@
 #include <QVariant>
 #include "HubCallback.h"
 
+
+namespace P3 { namespace SignalR { namespace Client {
+
 class HubConnection;
 
 class HubProxy : public QObject
@@ -65,5 +68,7 @@ private:
     HubConnection* _connection;
     const QString _hubName;
 };
+
+}}}
 
 #endif // HUBPROXY_H

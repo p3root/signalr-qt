@@ -38,6 +38,8 @@
 #include <QHostInfo>
 #endif
 
+namespace P3 { namespace SignalR { namespace Client {
+
 HttpEventStream::HttpEventStream(QUrl url, bool logErrorsToQt, Connection *con) : _sock(0), _isFirstReponse(true), _url(url)
 {
     _logErrorsToQt = logErrorsToQt;
@@ -247,3 +249,5 @@ void HttpEventStream::onReadyRead()
 
 
 }
+
+}}}

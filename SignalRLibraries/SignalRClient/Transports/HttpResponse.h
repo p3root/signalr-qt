@@ -34,6 +34,9 @@
 #include <QString>
 #include <SignalException.h>
 
+
+namespace P3 { namespace SignalR { namespace Client {
+
 class HttpResponse
 {
 public:
@@ -47,5 +50,7 @@ public:
     
     virtual void readLine(READ_CALLBACK readCallback, void* state = 0) = 0;
 };
+
+}}}
 
 #endif

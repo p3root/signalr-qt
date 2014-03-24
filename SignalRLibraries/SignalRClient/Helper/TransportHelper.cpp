@@ -32,6 +32,7 @@
 #include <QtGlobal>
 #include "Helper.h"
 
+namespace P3 { namespace SignalR { namespace Client {
 
 TransportHelper::TransportHelper(void)
 {
@@ -178,3 +179,5 @@ const NegotiateResponse* TransportHelper::parseNegotiateHttpResponse(const QStri
     }
     return response;
 }
+
+}}}

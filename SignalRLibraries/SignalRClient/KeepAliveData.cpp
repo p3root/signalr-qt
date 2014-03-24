@@ -30,6 +30,8 @@
 
 #include "KeepAliveData.h"
 
+namespace P3 { namespace SignalR { namespace Client {
+
 const static double _keepAliveWarnAt = 2.0 / 3.0;
 
 KeepAliveData::KeepAliveData(double timeout, double connectionTimeOut)
@@ -84,3 +86,5 @@ const double &KeepAliveData::getConnectionTimeout()
 {
     return _connectionTimeout;
 }
+
+}}}

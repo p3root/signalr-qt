@@ -45,6 +45,10 @@
     #include <QNetworkReply>
 #endif
 
+
+
+namespace P3 { namespace SignalR { namespace Client {
+
 class Connection;
 
 class HttpClient : public QObject
@@ -89,5 +93,7 @@ private:
 
     QList<QNetworkReply*> _currentConnections;
 };
+
+}}}
 
 #endif // HTTPCLIENT_H

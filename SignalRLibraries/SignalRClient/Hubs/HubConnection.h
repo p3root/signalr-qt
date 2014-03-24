@@ -37,6 +37,9 @@
 #include <QStringList>
 #include "HubCallback.h"
 
+
+namespace P3 { namespace SignalR { namespace Client {
+
 class HubConnection : public Connection
 {
 public:
@@ -58,5 +61,7 @@ private:
     QMap<QString, HubCallback*> _callbacks;
 
 };
+
+}}}
 
 #endif // HUBCONNECTION_H

@@ -43,6 +43,8 @@
 #include <Transports/AutoTransport.h>
 #include <HeartbeatMonitor.h>
 
+using namespace P3::SignalR::Client;
+
 class Client : public QObject
 {
     Q_OBJECT

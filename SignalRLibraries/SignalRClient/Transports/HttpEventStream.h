@@ -43,6 +43,9 @@
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 
+
+namespace P3 { namespace SignalR { namespace Client {
+
 class ServerSentEventsTransport;
 class Connection;
 
@@ -79,5 +82,8 @@ private:
     QString readPackage(QString);
 
 };
+
+}}}
+
 
 #endif // EVENTSTREAM_H

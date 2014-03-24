@@ -35,6 +35,9 @@
 #include <QMutex>
 #include <QTimer>
 
+
+namespace P3 { namespace SignalR { namespace Client {
+
 class HeartbeatMonitor : QObject
 {
     Q_OBJECT
@@ -59,5 +62,7 @@ private:
     bool _hasBeenWarned;
     bool _timedOut;
 };
+
+}}}
 
 #endif // HEARTBEATMONITOR_H
