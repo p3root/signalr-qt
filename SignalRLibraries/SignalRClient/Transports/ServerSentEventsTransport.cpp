@@ -149,7 +149,8 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
     {
         data = data.remove(0, data.indexOf("data: ")+5);
         _connection->getKeepAliveData().setLastKeepAlive(QDateTime::currentDateTimeUtc());
-        qDebug() << "keep alive received";
+        if(_connection->getLogErrorsToQDebug())
+            qDebug() << "keep alive received";
         TransportHelper::processMessages(_connection, data, &timedOut, &disconnected);
     }
 
