@@ -86,7 +86,6 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
 void HttpBasedTransport::retryNegotiation()
 {
     disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(retryNegotiation()));
-    qDebug() << "retry started";
     _retryTimerTimeout.stop();
     negotiate();
 }
