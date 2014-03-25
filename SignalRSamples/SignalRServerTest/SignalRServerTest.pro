@@ -35,4 +35,4 @@ else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QH
 else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QHttpServer/src/ -lQHttpServer
 
 INCLUDEPATH += $$PWD/../../ThirdParty/QHttpServer/src
-DEPENDPATH += $$PWD/../../ThirdParty/QHttpServer
+DEPENDPATH += $$PWD/../../ThirdParty/QHttpServer/
