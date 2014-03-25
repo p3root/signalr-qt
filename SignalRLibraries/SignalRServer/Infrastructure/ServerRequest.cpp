@@ -31,12 +31,21 @@
 
 #include "ServerRequest.h"
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+#include <QUrlQuery>
+#endif
+
 namespace P3 { namespace SignalR { namespace Server {
 
 ServerRequest::ServerRequest(const QHttpRequest &req) : _request(req)
 {
     _path = req.path();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    QUrlQuery query = QUrlQuery(req.url());
+    _queryItems = query.queryItems();
+#else
     _queryItems = req.url().queryItems();
+#endif
 
     //TODO: parse principal
 }

@@ -47,6 +47,10 @@
 #define NEGOTIATE_PATH "/negotiate"
 #define PING_PATH "/ping"
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+#include <QUrlQuery>
+#endif
+
 namespace P3 { namespace SignalR { namespace Server {
 
 PersistentConnection::PersistentConnection() : _protectedData(0), _configurationManager(0)
@@ -92,7 +96,14 @@ void PersistentConnection::processRequest(HostContext *context)
         processPingRequest(*context);
         return;
     }
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    QUrlQuery query = QUrlQuery(context->getRequest().getUrl());
+    QString value = query.queryItemValue("transport");
+#else
     QString value = context->getRequest().getUrl().queryItemValue("transport");
+#endif
+
     if(value.isEmpty())
     {
         context->getResponse().closeResponse(500);
@@ -102,7 +113,12 @@ void PersistentConnection::processRequest(HostContext *context)
     {
         TransportBase *t = TransportManager::createTransport(value, *context);
 
-        QString connectionToken = context->getRequest().getUrl().queryItemValue("connectionToken");
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+        QUrlQuery query = QUrlQuery(context->getRequest().getUrl());
+        QString connectionToken = query.queryItemValue("transport");
+#else
+        QString connectionToken = context->getRequest().getUrl().queryItemValue("transport");
+#endif
 
         if(connectionToken.isEmpty())
         {
@@ -186,7 +202,12 @@ void PersistentConnection::processPingRequest(HostContext &context)
 
 QList<QString> PersistentConnection::verifyGroups(HostContext &context, const QString &connectionId)
 {
-    QString groupsToken = context.getRequest().getUrl().queryItemValue("groupsToken");
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    QUrlQuery query = QUrlQuery(context.getRequest().getUrl());
+    QString groupsToken = query.queryItemValue("transport");
+#else
+    QString groupsToken = context.getRequest().getUrl().queryItemValue("transport");
+#endif
 
     if(groupsToken.isEmpty())
     {

@@ -39,7 +39,11 @@ ServerResponse::ServerResponse(QHttpResponse &res) : _response(res)
 
 void ServerResponse::write(const QString &data)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    write(QByteArray(data.toLatin1().constData(), data.size()));
+#else
     write(QByteArray(data.toAscii().constData(), data.size()));
+#endif
 }
 
 void ServerResponse::write(const QByteArray &data)

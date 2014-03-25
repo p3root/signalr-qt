@@ -98,7 +98,11 @@ void HttpClient::get(QString url)
     {
         QString first = QString(_connection->getAdditionalHttpHeaders().at(i).first);
         QString second = QString(_connection->getAdditionalHttpHeaders().at(i).second);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+        req.setRawHeader(first.toHtmlEscaped().toLatin1(), second.toHtmlEscaped().toLatin1());
+#else
         req.setRawHeader(first.toAscii(), second.toAscii());
+#endif
     }
 
 
@@ -148,7 +152,11 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
     {
         QString first = QString(_connection->getAdditionalHttpHeaders().at(i).first);
         QString second = QString(_connection->getAdditionalHttpHeaders().at(i).second);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+        req.setRawHeader(first.toHtmlEscaped().toLatin1(), second.toHtmlEscaped().toLatin1());
+#else
         req.setRawHeader(first.toAscii(), second.toAscii());
+#endif
     }
 
     _connection->emitLogMessage("starting post request (" + _connection->getConnectionId() +")", Connection::Debug);

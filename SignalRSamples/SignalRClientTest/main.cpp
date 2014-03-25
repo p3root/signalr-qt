@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
 
-    qDebug() << a.thread()->currentThreadId();
+    qDebug() << "Using Qt Version: " << qVersion();
 
     Client c(a);
     c.start();
