@@ -30,6 +30,10 @@
 
 #include "LongPollingTransport.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 LongPollingTransport::LongPollingTransport(HostContext &context) : TransportBase(context)
 {
 }
+
+}}}

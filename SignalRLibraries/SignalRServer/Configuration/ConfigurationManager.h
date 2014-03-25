@@ -31,6 +31,8 @@
 #ifndef CONFIGURATIONMANAGER_H
 #define CONFIGURATIONMANAGER_H
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class ConfigurationManager
 {
 public:
@@ -60,5 +62,7 @@ private:
     int _disconnectTimeout;
     int _longPollDelay;
 };
+
+}}}
 
 #endif // CONFIGURATIONMANAGER_H

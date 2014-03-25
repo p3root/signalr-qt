@@ -30,6 +30,8 @@
 
 #include "Principal.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 Principal::Principal()
 {
     _name = "";
@@ -43,3 +45,5 @@ Principal::Principal(QString name, QString authenticationType, bool authenticate
     _authenticationType = authenticationType;
     _isAuthenticated = authenticated;
 }
+
+}}}

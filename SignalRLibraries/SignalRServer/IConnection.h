@@ -4,6 +4,8 @@
 #include <QString>
 #include "ConnectionMessage.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class IConnection
 {
 public:
@@ -11,4 +13,5 @@ public:
     virtual void send(const ConnectionMessage &message) = 0;
 };
 
+}}}
 #endif // ICONNECTION_H

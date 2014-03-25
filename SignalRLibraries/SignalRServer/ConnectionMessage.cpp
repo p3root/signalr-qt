@@ -1,5 +1,7 @@
 #include "ConnectionMessage.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 ConnectionMessage::ConnectionMessage(QList<QString> signal, QVariant value, QList<QString> excludedSignals)
 {
     _signals = signal;
@@ -13,3 +15,5 @@ ConnectionMessage::ConnectionMessage(QString signal, QVariant value, QList<QStri
     _value = value;
     _excludedSignals = excludedSignal;
 }
+
+}}}

@@ -33,6 +33,8 @@
 
 #include "LongPollingTransport.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 TransportManager::TransportManager()
 {
 
@@ -53,3 +55,5 @@ TransportBase *TransportManager::createTransport(const QString &transportName, H
 
     return 0;
 }
+
+}}}

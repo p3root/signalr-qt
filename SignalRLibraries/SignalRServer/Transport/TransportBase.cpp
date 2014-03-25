@@ -30,7 +30,11 @@
 
 #include "TransportBase.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 TransportBase::TransportBase(HostContext &context) :  _context(context)
 {
 
 }
+
+}}}

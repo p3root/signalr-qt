@@ -5,6 +5,8 @@
 #include <QList>
 #include <QVariant>
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class ConnectionMessage
 {
 public:
@@ -22,5 +24,7 @@ private:
     QList<QString> _excludedSignals;
     QVariant _value;
 };
+
+}}}
 
 #endif // CONNECTIONMESSAGE_H

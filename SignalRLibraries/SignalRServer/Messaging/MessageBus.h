@@ -4,6 +4,8 @@
 #include "IMessageBus.h"
 #include "Configuration/ConfigurationManager.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class MessageBus : public IMessageBus
 {
     Q_OBJECT
@@ -14,5 +16,7 @@ public:
 private:
     const ConfigurationManager &_configurationManager;
 };
+
+}}}
 
 #endif // MESSAGEBUS_H

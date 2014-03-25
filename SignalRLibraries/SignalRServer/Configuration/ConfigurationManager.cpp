@@ -30,6 +30,8 @@
 
 #include "ConfigurationManager.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 const int missedTimeoutsBeforeClientReconnect = 2;
 const int heartBeatsPerKeepAlive = 2;
 
@@ -51,3 +53,4 @@ int ConfigurationManager::getHeartBeatInterval()
 {
     return _keepAlive / heartBeatsPerKeepAlive;
 }
+}}}

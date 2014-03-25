@@ -36,6 +36,8 @@
 #include "signalrserver_global.h"
 #include <QHttpServer.h>
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class PersistentConnection;
 
 class SIGNALRSERVERSHARED_EXPORT SignalRServer : public QObject
@@ -55,4 +57,5 @@ private:
     PersistentConnection *_connection;
 };
 
+}}}
 #endif // SIGNALRSERVER_H

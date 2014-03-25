@@ -31,6 +31,8 @@
 
 #include "ServerResponse.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 ServerResponse::ServerResponse(QHttpResponse &res) : _response(res)
 {
 }
@@ -56,3 +58,5 @@ void ServerResponse::closeResponse(int status)
     _response.writeHead(status);
     _response.end(_data);
 }
+
+}}}

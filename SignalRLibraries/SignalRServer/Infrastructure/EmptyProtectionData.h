@@ -34,6 +34,8 @@
 #include "IProtectedData.h"
 #include <QString>
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class EmptyProtectionData : public IProtectedData
 {
 public:
@@ -42,5 +44,5 @@ public:
     virtual QString protect(const QString &data, const QString &purpose);
     virtual QString unprotect(const QString &protectedData, const QString &purpose);
 };
-
+}}}
 #endif // EMPTYPROTECTIONDATA_H

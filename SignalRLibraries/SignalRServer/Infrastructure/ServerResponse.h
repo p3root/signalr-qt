@@ -33,6 +33,8 @@
 
 #include <QHttpResponse.h>
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class ServerResponse
 {
 public:
@@ -54,4 +56,5 @@ private:
     QByteArray _data;
 };
 
+}}}
 #endif // SERVERRESPONSE_H

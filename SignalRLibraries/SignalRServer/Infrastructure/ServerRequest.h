@@ -34,6 +34,8 @@
 #include <QHttpRequest.h>
 #include "../Infrastructure/Principal.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class ServerRequest
 {
 public:
@@ -52,5 +54,5 @@ private:
     QList<QPair<QString, QString> >  _queryItems;
     Principal _user;
 };
-
+}}}
 #endif // SERVERREQUEST_H

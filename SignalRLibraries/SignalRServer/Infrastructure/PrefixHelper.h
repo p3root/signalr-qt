@@ -32,6 +32,7 @@
 #define PREFIXHELPER_H
 
 #include <QString>
+namespace P3 { namespace SignalR { namespace Server {
 
 class PrefixHelper
 {
@@ -52,4 +53,5 @@ public:
     static const QString AckPrefix;
 };
 
+}}}
 #endif // PREFIXHELPER_H

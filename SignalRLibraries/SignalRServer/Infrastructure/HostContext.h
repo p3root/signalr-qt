@@ -37,6 +37,8 @@
 #include <QHttpRequest.h>
 #include <QHttpResponse.h>
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class HostContext
 {
 public:
@@ -50,4 +52,5 @@ private:
     ServerResponse *_response;
 };
 
+}}}
 #endif // HTTPCONTEXT_H

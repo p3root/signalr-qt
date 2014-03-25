@@ -47,6 +47,8 @@
 #define NEGOTIATE_PATH "/negotiate"
 #define PING_PATH "/ping"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 PersistentConnection::PersistentConnection() : _protectedData(0), _configurationManager(0)
 {
     _protectedData = new EmptyProtectionData();
@@ -288,3 +290,5 @@ QList<QString> PersistentConnection::appendGroupPrefixes(HostContext &context, c
     return withPrefix;
 
 }
+
+}}}

@@ -6,6 +6,8 @@
 
 #include "Configuration/ConfigurationManager.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class TransportHeartBeat : public QObject
 {
     Q_OBJECT
@@ -20,5 +22,7 @@ private:
     const ConfigurationManager &_configurationManager;
     QTimer _timer;
 };
+
+}}}
 
 #endif // TRANSPORTHEARTBEAT_H

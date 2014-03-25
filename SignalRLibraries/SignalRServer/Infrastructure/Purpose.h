@@ -33,6 +33,8 @@
 
 #include <QString>
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class Purpose
 {
 public:
@@ -40,4 +42,5 @@ public:
     static const QString Groups;
 };
 
+}}}
 #endif // PURPOSE_H

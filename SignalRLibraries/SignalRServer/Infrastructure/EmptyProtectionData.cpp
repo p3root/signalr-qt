@@ -31,6 +31,8 @@
 #include "EmptyProtectionData.h"
 #include <QObject>
 
+namespace P3 { namespace SignalR { namespace Server {
+
 EmptyProtectionData::EmptyProtectionData()
 {
 }
@@ -46,3 +48,6 @@ QString EmptyProtectionData::unprotect(const QString &protectedData, const QStri
     Q_UNUSED(purpose);
     return protectedData;
 }
+
+
+}}}

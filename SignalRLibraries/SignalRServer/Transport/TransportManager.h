@@ -36,6 +36,8 @@
 #include "TransportBase.h"
 #include "../Infrastructure/HostContext.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class TransportManager
 {
 public:
@@ -47,5 +49,7 @@ public:
 
 
 };
+
+}}}
 
 #endif // TRANSPORTMANAGER_H

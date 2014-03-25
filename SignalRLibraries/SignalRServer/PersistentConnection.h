@@ -38,6 +38,7 @@
 #include "Infrastructure/HostContext.h"
 #include "Configuration/ConfigurationManager.h"
 
+namespace P3 { namespace SignalR { namespace Server {
 
 class PersistentConnection
 {
@@ -77,4 +78,5 @@ private:
 
 };
 
+}}}
 #endif // PERSISTENTCONNECTION_H

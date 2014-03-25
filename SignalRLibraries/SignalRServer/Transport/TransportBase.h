@@ -34,6 +34,8 @@
 #include "Infrastructure/HostContext.h"
 #include "Infrastructure/Connection.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class TransportBase : public QObject
 {
     Q_OBJECT
@@ -57,5 +59,7 @@ private:
     HostContext &_context;
     QString _connectionId;
 };
+
+}}}
 
 #endif // ITRANSPORT_H

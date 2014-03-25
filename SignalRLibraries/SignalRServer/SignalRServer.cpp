@@ -36,6 +36,8 @@
 
 #include "PersistentConnection.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 SignalRServer::SignalRServer() : _httpServer(0)
 {
     _connection = new PersistentConnection();
@@ -66,3 +68,5 @@ void SignalRServer::newConnection(QHttpRequest *req,QHttpResponse *res)
     connect(req, SIGNAL(end()), req, SLOT(deleteLater()));
     connect(res, SIGNAL(done()), res, SLOT(deleteLater()));
 }
+
+}}}

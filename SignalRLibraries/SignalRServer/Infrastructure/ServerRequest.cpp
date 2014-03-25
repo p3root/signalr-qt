@@ -31,6 +31,8 @@
 
 #include "ServerRequest.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 ServerRequest::ServerRequest(const QHttpRequest &req) : _request(req)
 {
     _path = req.path();
@@ -38,3 +40,5 @@ ServerRequest::ServerRequest(const QHttpRequest &req) : _request(req)
 
     //TODO: parse principal
 }
+
+}}}

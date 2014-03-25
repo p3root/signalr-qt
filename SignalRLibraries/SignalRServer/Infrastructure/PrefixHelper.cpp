@@ -30,6 +30,8 @@
 
 #include "PrefixHelper.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 const QString PrefixHelper::HubPrefix = "h-";
 const QString PrefixHelper::HubGroupPrefix = "hg-";
 const QString PrefixHelper::HubConnectionIdPrefix = "hc-";
@@ -55,3 +57,5 @@ QString PrefixHelper::getAck(const QString &connectionId)
 {
     return AckPrefix + QString(connectionId);
 }
+
+}}}

@@ -33,6 +33,8 @@
 
 #include <QString>
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class Principal
 {
 public:
@@ -49,4 +51,5 @@ private:
     bool _isAuthenticated;
 };
 
+}}}
 #endif // PRINCIPAL_H

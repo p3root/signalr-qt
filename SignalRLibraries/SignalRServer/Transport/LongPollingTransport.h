@@ -34,10 +34,14 @@
 #include "TransportBase.h"
 #include "../Infrastructure/HostContext.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class LongPollingTransport : public TransportBase
 {
 public:
     LongPollingTransport(HostContext &context);
 };
+
+}}}
 
 #endif // LONGPOLLINGTRANSPORT_H

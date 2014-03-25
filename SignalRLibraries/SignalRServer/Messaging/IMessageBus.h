@@ -6,6 +6,8 @@
 #include "Message.h"
 #include "MessageResult.h"
 
+namespace P3 { namespace SignalR { namespace Server {
+
 class IMessageBus : public QObject
 {
     Q_OBJECT
@@ -18,4 +20,5 @@ Q_SIGNALS:
 
 };
 
+}}}
 #endif // IMESSAGEBUS_H
