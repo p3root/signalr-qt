@@ -53,4 +53,9 @@ int ConfigurationManager::getHeartBeatInterval()
 {
     return _keepAlive / heartBeatsPerKeepAlive;
 }
+
+int ConfigurationManager::topicTtl() const
+{
+    return (_disconnectTimeout + _keepAlive) * 2;
+}
 }}}

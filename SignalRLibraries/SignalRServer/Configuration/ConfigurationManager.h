@@ -55,6 +55,8 @@ public:
 
     int getHeartBeatInterval();
 
+    int topicTtl() const;
+
 private:
     int _keepAlive;
     int _transportConnectTimeout;

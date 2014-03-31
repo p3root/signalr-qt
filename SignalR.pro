@@ -5,4 +5,5 @@ SUBDIRS += \
     ThirdParty/QHttpServer \
     ThirdParty/QtWebSockets \
     SignalRLibraries \
-    SignalRSamples
+    SignalRSamples \
+    Tests/UnitTests

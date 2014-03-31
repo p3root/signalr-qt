@@ -30,7 +30,11 @@ SOURCES += SignalRServer.cpp \
     Messaging/Message.cpp \
     Messaging/MessageResult.cpp \
     Messaging/MessageBus.cpp \
-    Transport/TransportHeartBeat.cpp
+    Transport/TransportHeartBeat.cpp \
+    Infrastructure/StringMinifier.cpp \
+    Messaging/TopicLookup.cpp \
+    Messaging/Topic.cpp \
+    Messaging/Subscription.cpp
 
 HEADERS += SignalRServer.h\
         signalrserver_global.h \
@@ -54,7 +58,13 @@ HEADERS += SignalRServer.h\
     Messaging/Message.h \
     Messaging/MessageResult.h \
     Messaging/MessageBus.h \
-    Transport/TransportHeartBeat.h
+    Transport/TransportHeartBeat.h \
+    Infrastructure/IStringMinifier.h \
+    Infrastructure/StringMinifier.h \
+    Messaging/TopicLookup.h \
+    Messaging/Topic.h \
+    Messaging/Subscription.h \
+    Messaging/MessageStore.hpp
 
 unix:!symbian {
     maemo5 {

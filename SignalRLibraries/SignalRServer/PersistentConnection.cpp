@@ -46,6 +46,7 @@
 
 #define NEGOTIATE_PATH "/negotiate"
 #define PING_PATH "/ping"
+#define PROTOCOL_VERSION "1.3"
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
 #include <QUrlQuery>
@@ -183,7 +184,7 @@ void PersistentConnection::processNegotiationRequest(HostContext &context)
     payload.insert("KeepAliveTimeout", _configurationManager->getKeepAliveTimeout());
     payload.insert("DisconnectTimeout", _configurationManager->getDisconnectTimeout());
     payload.insert("TryWebSockets", true);
-    payload.insert("ProtocolVersion", "1.3");
+    payload.insert("ProtocolVersion", PROTOCOL_VERSION);
     payload.insert("TransportConnectTimeout", _configurationManager->getTransportConnectTimeout());
 
 
@@ -306,7 +307,7 @@ QList<QString> PersistentConnection::appendGroupPrefixes(HostContext &context, c
 
     foreach(QString str, lst)
     {
-        withPrefix.append(PrefixHelper::PeristentConnectionGroupPrefix + str);
+        withPrefix.append(PrefixHelper::PersistentConnectionGroupPrefix + str);
     }
     return withPrefix;
 

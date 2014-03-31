@@ -41,13 +41,15 @@ public:
     static QString getConnectionId(const QString &connectionId);
     static QString getAck(const QString &connectionId);
 
+    static bool hasGroupPrefix(const QString &value);
+
     static const QString HubPrefix;
     static const QString HubGroupPrefix;
     static const QString HubConnectionIdPrefix;
     static const QString HubUserPrefix;
 
-    static const QString PeristentConnectionPrefix;
-    static const QString PeristentConnectionGroupPrefix;
+    static const QString PersistentConnectionPrefix;
+    static const QString PersistentConnectionGroupPrefix;
 
     static const QString ConnectionIdPrefix;
     static const QString AckPrefix;

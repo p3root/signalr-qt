@@ -37,15 +37,15 @@ const QString PrefixHelper::HubGroupPrefix = "hg-";
 const QString PrefixHelper::HubConnectionIdPrefix = "hc-";
 const QString PrefixHelper::HubUserPrefix = "hu-";
 
-const QString PrefixHelper::PeristentConnectionPrefix = "pc-";
-const QString PrefixHelper::PeristentConnectionGroupPrefix = "pcg-";
+const QString PrefixHelper::PersistentConnectionPrefix = "pc-";
+const QString PrefixHelper::PersistentConnectionGroupPrefix = "pcg-";
 
 const QString PrefixHelper::ConnectionIdPrefix = "c-";
 const QString PrefixHelper::AckPrefix = "ack-";
 
 QString PrefixHelper::getPersistentConnectionName(const QString &connectionName)
 {
-    return PeristentConnectionPrefix + QString(connectionName);
+    return PersistentConnectionPrefix + QString(connectionName);
 }
 
 QString PrefixHelper::getConnectionId(const QString &connectionId)
@@ -56,6 +56,11 @@ QString PrefixHelper::getConnectionId(const QString &connectionId)
 QString PrefixHelper::getAck(const QString &connectionId)
 {
     return AckPrefix + QString(connectionId);
+}
+
+bool PrefixHelper::hasGroupPrefix(const QString &value)
+{
+    return value.startsWith(HubGroupPrefix) || value.startsWith(PersistentConnectionGroupPrefix);
 }
 
 }}}
