@@ -311,6 +311,46 @@ QGenericArgument HubProxy::getGenericArgument(const QString &type, const QString
     {
         return Q_ARG(QString, val);
     }
+    else if(type == "int")
+    {
+        return Q_ARG(int, val.toInt());
+    }
+    else if(type == "float")
+    {
+        return Q_ARG(float, val.toFloat());
+    }
+    else if(type == "double")
+    {
+        return Q_ARG(double, val.toDouble());
+    }
+    else if(type == "short")
+    {
+        return Q_ARG(short, val.toShort());
+    }
+    else if(type == "ushort")
+    {
+        return Q_ARG(ushort, val.toUShort());
+    }
+    else if(type == "uint")
+    {
+        return Q_ARG(uint, val.toUInt());
+    }
+    else if(type == "long")
+    {
+        return Q_ARG(long, val.toLong());
+    }
+    else if(type == "ulong")
+    {
+        return Q_ARG(ulong, val.toULong());
+    }
+    else if(type == "qlonglong" || type == "long long" || type == "qint64")
+    {
+        return Q_ARG(qlonglong, val.toLongLong());
+    }
+    else if(type == "qulonglong" || type == "unsigned long long" || type == "quint64")
+    {
+        return Q_ARG(qulonglong, val.toULongLong());
+    }
 
     qDebug() << "no type found for " << type;
     return Q_ARG(QString, val);
