@@ -21,7 +21,7 @@ private Q_SLOTS:
     void unmify();
 
 private:
-    IStringMinifier *_minifier;
+    StringMinifier *_minifier;
 };
 
 StringMinifierTest::StringMinifierTest()

@@ -11,11 +11,6 @@ StringMinifier::StringMinifier() :  _locker(QMutex::Recursive)
 
 }
 
-StringMinifier::~StringMinifier()
-{
-
-}
-
 QString StringMinifier::minify(QString &value)
 {
     if(!_stringMinifier.contains(value))

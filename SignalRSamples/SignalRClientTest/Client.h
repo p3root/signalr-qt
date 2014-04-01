@@ -57,11 +57,14 @@ public:
 private Q_SLOTS:
     void stop();
     void timerTick();
-    void onHubMessageReceived(QVariant);
+    void onHubMessageReceived(const QVariant&);
+    void onMethodCalled(const QVariant& method, const QVariantList &args);
     void onError(SignalException);
     void onStateChanged(Connection::State oldState, Connection::State newState);
     void answerReceived(HubCallback*, QVariant);
     void onLogMessage(QString, int severity);
+
+    void send(QString message);
 
 private:
     QTimer _timer;

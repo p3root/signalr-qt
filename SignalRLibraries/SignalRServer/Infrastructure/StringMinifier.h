@@ -12,7 +12,6 @@ class StringMinifier : public IStringMinifier
 {
 public:
     StringMinifier();
-    ~StringMinifier();
 
     QString minify(QString &value);
     QString unminify(QString &value);

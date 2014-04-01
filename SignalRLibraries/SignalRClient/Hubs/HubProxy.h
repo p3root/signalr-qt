@@ -44,8 +44,9 @@ class HubConnection;
 class HubProxy : public QObject
 {
     Q_OBJECT
+
 public:
-    HubProxy(HubConnection* connection, QString hubName);
+    HubProxy(HubConnection* connection, QString hubName, QObject *objectToInvoke=0);
     ~HubProxy();
 
     void invoke(QString method, QString param, HubCallback* callback = 0);
@@ -62,10 +63,15 @@ public:
     const QString& getName();
 
 Q_SIGNALS:
-    void hubMessageReceived(QVariant var);
+    void hubMethodCalled(const QVariant &method, const QVariantList &args);
+    void hubMessageReceived(const QVariant &data);
+
+private:
+    QGenericArgument getGenericArgument(const QString &type, const QString &val);
 
 private:
     HubConnection* _connection;
+    QObject *_objectToInvoke;
     const QString _hubName;
 };
 

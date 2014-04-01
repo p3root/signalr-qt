@@ -36,6 +36,7 @@
 #include "HubProxy.h"
 #include <QStringList>
 #include "HubCallback.h"
+#include <QObject>
 
 
 namespace P3 { namespace SignalR { namespace Client {
@@ -49,7 +50,7 @@ public:
     void send(const QString &data, const QString &id, HubCallback*);
     bool stop(int timeoutMs=0);
 
-    HubProxy* createHubProxy(QString name);
+    HubProxy* createHubProxy(QString name, QObject *objectToInvoke=0);
 
     QString onSending();
     void onReceived(QVariant data);

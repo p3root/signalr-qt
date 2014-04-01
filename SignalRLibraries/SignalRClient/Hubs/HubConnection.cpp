@@ -59,7 +59,7 @@ bool HubConnection::stop(int timeoutMs)
     return Connection::stop(timeoutMs);
 }
 
-HubProxy *HubConnection::createHubProxy(QString name)
+HubProxy *HubConnection::createHubProxy(QString name, QObject *objectToInvoke)
 {
     if(_state != Disconnected)
     {
@@ -75,7 +75,7 @@ HubProxy *HubConnection::createHubProxy(QString name)
     HubProxy* proxy;
     if(!_hubs.contains(name))
     {
-        proxy = new HubProxy(this, name);
+        proxy = new HubProxy(this, name, objectToInvoke);
         _hubs.insert(name, proxy);
         return proxy;
     }

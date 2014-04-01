@@ -37,7 +37,7 @@ Client::Client(QCoreApplication &app)
 {
     _timer.setSingleShot(true);
     _timer.setInterval(10000);
-    _timer.start();
+   // _timer.start();
     connect(&_timer, SIGNAL(timeout()), this, SLOT(timerTick()));
     connect(&app, SIGNAL(aboutToQuit()), SLOT(stop()));
 }
@@ -59,9 +59,10 @@ void Client::start()
     _client = new HttpClient(_connection);
     _transport = new AutoTransport(_client, _connection);
 
-    HubProxy* proxy = _connection->createHubProxy("Chat");
+    HubProxy* proxy = _connection->createHubProxy("Chat", this);
 
     connect(proxy, SIGNAL(hubMessageReceived(QVariant)), this, SLOT(onHubMessageReceived(QVariant)));
+    connect(proxy, SIGNAL(hubMethodCalled(QVariant,QVariantList)), this, SLOT(onMethodCalled(QVariant,QVariantList)));
 
     connect(_connection, SIGNAL(errorOccured(SignalException)), this, SLOT(onError(SignalException)));
     connect(_connection, SIGNAL(stateChanged(Connection::State,Connection::State)), this, SLOT(onStateChanged(Connection::State,Connection::State)));
@@ -89,9 +90,14 @@ void Client::stop()
     }
 }
 
-void Client::onHubMessageReceived(QVariant v)
+void Client::onHubMessageReceived(const QVariant &v)
 {
     qDebug() << v;
+}
+
+void Client::onMethodCalled(const QVariant &method, const QVariantList &args)
+{
+    qDebug() << method << " " << args;
 }
 
 void Client::onError(SignalException error)
@@ -129,6 +135,11 @@ void Client::onLogMessage(QString msg, int severity)
 {
     Q_UNUSED(severity);
     qDebug() << msg;
+}
+
+void Client::send(QString message)
+{
+    qDebug() << "send method called : " << message;
 }
 
 void Client::timerTick()

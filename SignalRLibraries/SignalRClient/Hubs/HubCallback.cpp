@@ -48,6 +48,7 @@ void HubCallback::raiseMessageReceived(QVariant v)
 {
     _finished = true;
     _data = v;
+
     Q_EMIT messageReceived(this, v);
 }
 
