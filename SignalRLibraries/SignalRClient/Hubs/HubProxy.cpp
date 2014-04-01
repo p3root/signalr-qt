@@ -198,6 +198,20 @@ void HubProxy::onReceive(QVariant var)
                     Q_EMIT hubMethodCalled(method, args);
                     return;
                 }
+
+                //i have no fucking idea why I cannot pass template class as args in QMetaObject::invoke
+                //so i just stringify it an pass it to the method as a string
+                int x = 0;
+                foreach(QVariant arg, args)
+                {
+                    if(arg.type() == QVariant::Map
+                            || arg.type() == QVariant::List)
+                    {
+                        args[x] = QextJson::stringify(arg);
+                    }
+                    x++;
+                }
+
                 bool retVal = true;
 
                 switch(params.length())
