@@ -54,6 +54,7 @@ public:
         HostNotFoundError,
         OperationCanceled,
         UnknownNetworkError,
+        InternalServerError,
         UnkownError
     };
 

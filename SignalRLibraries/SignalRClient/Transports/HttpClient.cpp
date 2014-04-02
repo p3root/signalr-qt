@@ -269,6 +269,9 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
             case 204:
                 ex = new SignalException(errorString, SignalException::ServerRequiresAuthorization);
                 break;
+            case 299:
+                ex = new SignalException(errorString, SignalException::InternalServerError);
+                break;
             default:
                 ex = new SignalException(errorString, SignalException::UnkownError);
                 break;

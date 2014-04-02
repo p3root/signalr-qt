@@ -134,7 +134,8 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                  _connection->onError(*error);
 
                 if(error->getType() == SignalException::ContentNotFoundError
-                        || error->getType() == SignalException::ConnectionRefusedError) {
+                        || error->getType() == SignalException::ConnectionRefusedError ||
+                        error->getType() == SignalException::InternalServerError) {
 
                    // _started = false;
                     _connection->changeState(Connection::Connected, Connection::Disconnected);
