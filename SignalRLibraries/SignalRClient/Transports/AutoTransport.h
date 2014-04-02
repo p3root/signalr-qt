@@ -19,6 +19,8 @@ public:
     bool abort(int timeoutMs = 0);
     void send(QString data);
 
+    void retry();
+
     const QString &getTransportType();
 
 private Q_SLOTS:

@@ -75,6 +75,16 @@ void LongPollingTransport::stop()
     _httpClient->abort();
 }
 
+void LongPollingTransport::retry()
+{
+    HttpBasedTransport::retry();
+
+    if(_retryTimerTimeout.isActive())
+    {
+        startConnection();
+    }
+}
+
 const QString &LongPollingTransport::getTransportType()
 {
     static QString type  ="longPolling";
@@ -121,10 +131,12 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
 
             if(_started)
             {
+                 _connection->onError(*error);
+
                 if(error->getType() == SignalException::ContentNotFoundError
                         || error->getType() == SignalException::ConnectionRefusedError) {
 
-                    _started = false;
+                   // _started = false;
                     _connection->changeState(Connection::Connected, Connection::Disconnected);
 
                     if(_connection->getLogErrorsToQDebug())
@@ -178,7 +190,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                     Q_EMIT transportStarted(ex);
                     _keepAliveTimer.start();
                 }
-                _connection->onError(*error);
+
             }
             else
             {
@@ -277,6 +289,7 @@ void LongPollingTransport::errorRetryTimer()
 {
     _retryTimerTimeout.stop();
     disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(errorRetryTimer()));
+    disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(notStartedErrorRetry()));
     startConnection();
 }
 

@@ -74,6 +74,8 @@ public:
     void start(HttpClient* client, bool autoReconnect = false);
     virtual bool stop(int timeoutMs=0);
     virtual void send(const QString &data);
+
+    void retry();
     
     State getState();
     const QString &getConnectionId() const;

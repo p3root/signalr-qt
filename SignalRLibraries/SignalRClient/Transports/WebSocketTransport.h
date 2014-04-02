@@ -16,11 +16,12 @@ class WebSocketTransport : public HttpBasedTransport
 public:
     WebSocketTransport(HttpClient *c, Connection* con);
 
-    virtual void start(QString data);
-    virtual void send(QString data);
-    virtual bool abort(int timeoutMs=0);
+    void start(QString data);
+    void send(QString data);
+    bool abort(int timeoutMs=0);
+    void retry();
 
-     virtual const QString &getTransportType();
+    virtual const QString &getTransportType();
 
 private Q_SLOTS:
     void onConnected();
@@ -38,6 +39,7 @@ private:
     QWebSocket *_webSocket;
     QTimer _keepAliveTimer;
     bool _started;
+    QTimer _retryTimerTimeout;
 };
 
 

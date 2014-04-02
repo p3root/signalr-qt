@@ -84,6 +84,12 @@ void ServerSentEventsTransport::lostConnection(Connection *)
     reconnect();
 }
 
+void ServerSentEventsTransport::retry()
+{
+    stop();
+    reconnect();
+}
+
 const QString &ServerSentEventsTransport::getTransportType()
 {
     static QString type = "serverSentEvents";

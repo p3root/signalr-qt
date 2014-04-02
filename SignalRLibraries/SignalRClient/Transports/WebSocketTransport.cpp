@@ -73,6 +73,12 @@ bool WebSocketTransport::abort(int timeoutMs)
     return true;
 }
 
+void WebSocketTransport::retry()
+{
+    abort();
+    start("");
+}
+
 const QString &WebSocketTransport::getTransportType()
 {
     static QString type = "webSockets";

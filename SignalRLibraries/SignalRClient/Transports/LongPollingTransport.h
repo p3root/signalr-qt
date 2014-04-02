@@ -51,6 +51,8 @@ public:
     void abort();
     void stop();
 
+    void retry();
+
     const QString& getTransportType();
 
 private:
@@ -69,6 +71,8 @@ private:
     QString _url;
     QTimer _keepAliveTimer;
     SignalException *_lastSignalException;
+    QTimer _retryTimerTimeout;
+
 };
 
 }}}

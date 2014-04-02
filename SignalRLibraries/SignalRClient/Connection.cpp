@@ -80,6 +80,11 @@ void Connection::send(const QString &data)
     _transport->send(data);
 }
 
+void Connection::retry()
+{
+    _transport->retry();
+}
+
 Connection::State Connection::getState()
 {
     return _state;
@@ -95,12 +100,6 @@ bool Connection::changeState(State oldState, State newState)
     if(_state == oldState)
     {
         _state = newState;
-
-        if(newState == Disconnected)
-        {
-            _connectionId = "";
-            _connectionToken = "";
-        }
 
         Q_EMIT stateChanged(oldState, newState);
 
@@ -206,6 +205,10 @@ bool Connection::stop(int timeoutMs)
     _transport->deleteLater();
     _transport = 0;
     changeState(_state, Disconnected);
+
+    _connectionId = "";
+    _connectionToken = "";
+
     return abort;
 }
 

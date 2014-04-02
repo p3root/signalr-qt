@@ -36,8 +36,8 @@
 Client::Client(QCoreApplication &app)
 {
     _timer.setSingleShot(true);
-    _timer.setInterval(10000);
-   // _timer.start();
+    _timer.setInterval(5000);
+    //_timer.start();
     connect(&_timer, SIGNAL(timeout()), this, SLOT(timerTick()));
     connect(&app, SIGNAL(aboutToQuit()), SLOT(stop()));
 }
@@ -103,6 +103,9 @@ void Client::onMethodCalled(const QVariant &method, const QVariantList &args)
 void Client::onError(SignalException error)
 {
      qDebug() << error.what();
+
+     _connection->setReconnectWaitTime(100);
+      _timer.start();
 }
 
 void Client::onStateChanged(Connection::State oldState, Connection::State newState)
@@ -144,6 +147,8 @@ void Client::send(QString message)
 
 void Client::timerTick()
 {
-    qApp->exit(3);
+    //    qApp->exit(3);
+    qDebug() << "start retry before retrytimer ticks";
+    _connection->retry();
 }
 

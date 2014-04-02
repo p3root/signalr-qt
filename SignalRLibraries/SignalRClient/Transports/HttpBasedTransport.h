@@ -57,6 +57,8 @@ public:
     void send(QString data);
     bool abort(int timeoutMs = 0);
 
+    virtual void retry();
+
     void tryDequeueNextWorkItem();
 private:    
     
@@ -69,13 +71,11 @@ private:
     
     QQueue<SendQueueItem*> _sendQueue;
     bool _sending;
+    QTimer _retryTimerTimeout;
 
 private Q_SLOTS:
     void onSendHttpResponse(const QString& httpResponse, SignalException* error);
     void retryNegotiation();
-
-protected:
-    QTimer _retryTimerTimeout;
 };
 
 }}}

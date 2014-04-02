@@ -60,6 +60,12 @@ void AutoTransport::send(QString data)
         _transport->send(data);
 }
 
+void AutoTransport::retry()
+{
+    if(_transport)
+        _transport->retry();
+}
+
 const QString &AutoTransport::getTransportType()
 {
     static QString transport = "autoConnection";

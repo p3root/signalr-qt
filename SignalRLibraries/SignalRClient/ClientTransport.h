@@ -53,6 +53,7 @@ public:
     virtual void send(QString data) = 0;
     virtual bool abort(int timeoutMs = 0) = 0;
     virtual void lostConnection(Connection*);
+    virtual void retry() = 0;
 
     virtual const QString& getTransportType() = 0;
 

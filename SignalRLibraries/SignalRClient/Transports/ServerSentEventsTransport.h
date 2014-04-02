@@ -48,6 +48,7 @@ public:
     void abort();
     void stop();
     void lostConnection(Connection *);
+    void retry();
 
     const QString& getTransportType();
 
@@ -66,6 +67,7 @@ private:
     void* _state;
     QString _url;
     bool _started;
+    QTimer _retryTimerTimeout;
 
 };
 
