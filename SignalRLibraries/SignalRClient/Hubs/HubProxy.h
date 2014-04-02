@@ -63,8 +63,8 @@ public:
     const QString& getName();
 
 Q_SIGNALS:
-    void hubMethodCalled(const QVariant &method, const QVariantList &args);
-    void hubMessageReceived(const QVariant &data);
+    void hubMethodCalled(const QString &method, const QVariantList &args);
+    Q_DECL_DEPRECATED void hubMessageReceived(const QVariant &data);
 
 private:
     QGenericArgument getGenericArgument(const QString &type, const QString &val);

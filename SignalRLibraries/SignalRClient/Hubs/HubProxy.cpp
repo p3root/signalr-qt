@@ -163,25 +163,12 @@ void HubProxy::onReceive(QVariant var)
         for(int i = meta->methodOffset(); i < meta->methodCount(); ++i)
         {
             QString curMethod = QString::fromLatin1(meta->method(i).signature());
-            QString origMethod = QString(curMethod) + "\0";
 
             if(curMethod.startsWith(method))
             {
                 curMethod.remove(0, method.length()); //remove method name
                 curMethod.remove(0, 1); //remove open brace
                 curMethod.remove(curMethod.count()-1, 1); //remove close brace
-
-                int containsGeneric = curMethod.indexOf('<');
-                do
-                {
-                    if(containsGeneric > 0) //method contains generic params
-                    {
-                        int nextComma = curMethod.indexOf(',', containsGeneric);
-                        curMethod.replace(nextComma, 1, ";"); //replace comma with semikolon at generic types
-                    }
-
-                    containsGeneric = curMethod.indexOf('<', containsGeneric+1);
-                } while(containsGeneric > 0);
 
                 QStringList params = curMethod.split(','); //split params
 
@@ -194,7 +181,7 @@ void HubProxy::onReceive(QVariant var)
 
                 if(params.count() != args.count())
                 {
-                    qDebug() << "invalid size in give and needed args found, hubMethodCalled will be emited";
+                    _connection->emitLogMessage("Invalid size in give and needed args found, hubMethodCalled will be emited", Connection::Debug);
                     Q_EMIT hubMethodCalled(method, args);
                     return;
                 }
@@ -307,17 +294,12 @@ void HubProxy::onReceive(QVariant var)
                             getGenericArgument(params[9], args[9].toString()));
                     break;
                 default:
-                    qDebug() << "not more then 10 params allowd in dynamic invoke, calling onHubMethodCalled";
+                    _connection->emitLogMessage("Not more then 10 params allow in dynamic invokation", Connection::Debug);
                     Q_EMIT hubMethodCalled(method, args);
                     break;
                 }
 
-                if(!retVal)
-                {
-                    qDebug() << "it seems like something went wrong on invoking the method, calling onHubMethodCalled";
-                    Q_EMIT hubMethodCalled(method, args);
-                }
-                else
+                if(retVal)
                 {
                     invokeOk = true;
                 }
@@ -325,7 +307,7 @@ void HubProxy::onReceive(QVariant var)
         }
         if(!invokeOk)
         {
-            qDebug() << "something went wrong on the hub invokation";
+            _connection->emitLogMessage("Could not dynamically invoke method", Connection::Debug);
             Q_EMIT hubMethodCalled(method, args);
         }
     }
@@ -334,13 +316,13 @@ void HubProxy::onReceive(QVariant var)
         QVariantMap qvl = var.toMap();
         if(qvl.contains(("M")) && qvl.contains("A"))
         {
-            QVariant method = qvl["M"];
+            QString method = qvl["M"].toString();
             QVariantList args = qvl["A"].toList();
             Q_EMIT hubMethodCalled(method, args);
         }
         else
         {
-            Q_EMIT hubMessageReceived(var);
+            _connection->emitLogMessage("HubProxy Message with no Method name called", Connection::Warning);
         }
     }
 }
@@ -398,7 +380,7 @@ QGenericArgument HubProxy::getGenericArgument(const QString &type, const QString
     }
 
 
-    qDebug() << "no type found for " << type;
+    _connection->emitLogMessage("getGenericArgument: no type found for " + type + " it will be seen as a QString", Connection::Warning);
     return Q_ARG(QString, val);
 }
 
