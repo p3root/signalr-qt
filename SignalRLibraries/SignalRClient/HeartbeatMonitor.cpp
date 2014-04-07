@@ -63,8 +63,7 @@ void HeartbeatMonitor::beat(double timeElapsed)
     if(!checkKeepAliveData())
         return;
 
-    if(_locker)
-        QMutexLocker l(_locker);
+    QMutexLocker l(_locker);
 
     if(_connection->getState() == Connection::Connected)
     {

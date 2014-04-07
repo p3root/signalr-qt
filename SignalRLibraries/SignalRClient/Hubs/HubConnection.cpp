@@ -33,7 +33,7 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-HubConnection::HubConnection(QString url) : Connection(url)
+HubConnection::HubConnection(const QString &url) : Connection(url)
 {
 
 }
@@ -61,6 +61,10 @@ bool HubConnection::stop(int timeoutMs)
 
 HubProxy *HubConnection::createHubProxy(QString name, QObject *objectToInvoke)
 {
+    if(_hubs.contains(name))
+    {
+        return _hubs[name];
+    }
     if(_state != Disconnected)
     {
         if(getLogErrorsToQDebug())

@@ -125,7 +125,8 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
 
                 if(lst.count() == 0)
                 {
-                    connection->onReceived(QVariant());
+                    QVariant empty;
+                    connection->onReceived(empty);
                 }
                 else
                 {

@@ -59,6 +59,7 @@ public:
 
 Q_SIGNALS:
     void transportStarted(SignalException* ex);
+    void onMessageSentCompleted(SignalException* ex);
 
 private Q_SLOTS:
     virtual void negotiateCompleted(QString data, SignalException* ex) = 0;

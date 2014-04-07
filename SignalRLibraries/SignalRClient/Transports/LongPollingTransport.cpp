@@ -134,18 +134,18 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                  _connection->onError(*error);
 
                 if(error->getType() == SignalException::ContentNotFoundError
-                        || error->getType() == SignalException::ConnectionRefusedError ||
-                        error->getType() == SignalException::InternalServerError) {
+                        || error->getType() == SignalException::ConnectionRefusedError
+                        || error->getType() == SignalException::InternalServerError) {
 
-                   // _started = false;
-                    _connection->changeState(Connection::Connected, Connection::Disconnected);
+                    //_started = false;
+                    _connection->changeState(Connection::Connected, Connection::Reconnecting);
 
                     if(_connection->getLogErrorsToQDebug())
                         qDebug() << "LongPollingTranpsort: lost connection...trying to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s";
 
                     _connection->emitLogMessage("lost connection...trying to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", Connection::Debug);
 
-                    connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(errorRetryTimer()));
+                    connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
                     _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
                     _retryTimerTimeout.start();
 
@@ -179,7 +179,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                 {
                     _connection->emitLogMessage("unknown error (" + error->getMessage() + ")", Connection::Error);
 
-                    connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(errorRetryTimer()));
+                    connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
                     _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
                     _retryTimerTimeout.start();
 
@@ -219,7 +219,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
 
                     _connection->emitLogMessage("lost connection...try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", Connection::Debug);
 
-                    connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(notStartedErrorRetry()));
+                    connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
                     _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
                     _retryTimerTimeout.start();
 
@@ -231,7 +231,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                         qDebug() << "LongPollingTranpsort: (autoconnect=true) lost connection...try to reconnect";
                     _connection->emitLogMessage("lost connection...try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", Connection::Debug);
 
-                    connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(notStartedErrorRetry()));
+                    connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
                     _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
                     _retryTimerTimeout.start();
 
@@ -290,14 +290,14 @@ void LongPollingTransport::errorRetryTimer()
 {
     _retryTimerTimeout.stop();
     disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(errorRetryTimer()));
-    disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(notStartedErrorRetry()));
+    disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
     startConnection();
 }
 
-void LongPollingTransport::notStartedErrorRetry()
+void LongPollingTransport::reconnectErrorRetry()
 {
     _retryTimerTimeout.stop();
-    disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(notStartedErrorRetry()));
+    disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
 
     _keepAliveTimer.start();
     Q_EMIT transportStarted(_lastSignalException);

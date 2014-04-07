@@ -69,7 +69,7 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
                 qDebug() << "Negotiation failed, will try it again";
             }
             _connection->emitLogMessage(QString("Negotiation failed, will try it again after %1s").arg(_connection->getReconnectWaitTime()), Connection::Error);
-            _connection->onError(SignalException("Negotiation failed", SignalException::InvalidNegotiationValues));
+            _connection->onError(SignalException("Negotiation failed", ex->getType()));
             connect(&_retryTimerTimeout, SIGNAL(timeout()), SLOT(retryNegotiation()));
             _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
             _retryTimerTimeout.start();
@@ -175,6 +175,8 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalE
 
     disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
     tryDequeueNextWorkItem();
+
+    Q_EMIT onMessageSentCompleted(error);
 }
 
 bool HttpBasedTransport::abort(int timeoutMs)

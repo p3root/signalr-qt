@@ -44,16 +44,16 @@ namespace P3 { namespace SignalR { namespace Client {
 class HubConnection : public Connection
 {
 public:
-    HubConnection(QString url);
+    HubConnection(const QString &url);
     ~HubConnection();
 
-    void send(const QString &data, const QString &id, HubCallback*);
-    bool stop(int timeoutMs=0);
+    virtual void send(const QString &data, const QString &id, HubCallback*);
+    virtual bool stop(int timeoutMs=0);
 
     HubProxy* createHubProxy(QString name, QObject *objectToInvoke=0);
 
     QString onSending();
-    void onReceived(QVariant data);
+    virtual void onReceived(QVariant data);
 
     HubProxy* getByName(const QString& name);
 

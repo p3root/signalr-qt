@@ -49,18 +49,22 @@ public:
     HubProxy(HubConnection* connection, QString hubName, QObject *objectToInvoke=0);
     ~HubProxy();
 
-    void invoke(QString method, QString param, HubCallback* callback = 0);
-    void invoke(QString method, QStringList params, HubCallback* callback = 0);
-    void invoke(QString method, QVariant param, HubCallback* callback = 0);
-    void invoke(QString method, QVariantList params, HubCallback* callback = 0);
-    void invoke(QString method, HubCallback* callback = 0);
+    void invoke(const QString &method, const QString &param, HubCallback* callback = 0);
+    void invoke(const QString &method, const QStringList &params, HubCallback* callback = 0);
+    void invoke(const QString &method, const QVariant &param, HubCallback* callback = 0);
+    void invoke(const QString &method, const QVariantList &params, HubCallback* callback = 0);
+    void invoke(const QString &method, HubCallback* callback = 0);
 
-    QVariant syncInvoke(QString method, QString param, int timeoutMs = ULONG_MAX, bool *ok=0);
-    QVariant syncInvoke(QString method, QStringList param, int timeoutMs = ULONG_MAX, bool *ok=0);
+    QVariant syncInvoke(const QString &method, const QString &param, int timeoutMs = 10000, bool *ok=0);
+    QVariant syncInvoke(const QString &method, const QStringList &param, int timeoutMs = 10000, bool *ok=0);
 
-    void onReceive(QVariant var);
+    QVariant syncInvoke(const QString &method, const QVariant& param, int timeoutMs = 10000, bool *ok=0);
+    QVariant syncInvoke(const QString &method, const QVariantList &param, int timeoutMs = 10000, bool *ok=0);
 
-    const QString& getName();
+
+    void onReceive(const QVariant &var);
+
+    const QString& getName() const { return _hubName; }
 
 Q_SIGNALS:
     void hubMethodCalled(const QString &method, const QVariantList &args);

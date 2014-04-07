@@ -64,7 +64,7 @@ private Q_SLOTS:
 
     void keepAliveTimerTimeout();
     void errorRetryTimer();
-    void notStartedErrorRetry();
+    void reconnectErrorRetry();
 
 private:
     bool _started;

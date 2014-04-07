@@ -44,7 +44,7 @@ public:
         InvalidNegotiationValues = 0,
         InvalidProtocolVersion,
         EventStreamSocketLost,
-        CouldNotEstablishbConnection,
+        CouldNotEstablishConnection,
         ConnectionRefusedError,
         ServerClosedConnection,
         ServerRequiresAuthorization,

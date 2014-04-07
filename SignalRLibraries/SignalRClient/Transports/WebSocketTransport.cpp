@@ -194,6 +194,8 @@ void WebSocketTransport::onTextMessageReceived(QString str)
     TransportHelper::processMessages(_connection, str, &timedOut, &disconnected);
 
     _connection->emitLogMessage("text message received (" + str +")", Connection::Debug);
+
+    Q_EMIT onMessageSentCompleted(0);
     _keepAliveTimer.start();
 }
 

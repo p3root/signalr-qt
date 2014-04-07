@@ -69,9 +69,9 @@ public:
     Connection(const QString &url);
     virtual ~Connection(void);
 
-    void start(bool autoReconnect = false);
-    void start(ClientTransport* tranport, bool autoReconnect = false);
-    void start(HttpClient* client, bool autoReconnect = false);
+    virtual void start(bool autoReconnect = false);
+    virtual void start(ClientTransport* tranport, bool autoReconnect = false);
+    virtual void start(HttpClient* client, bool autoReconnect = false);
     virtual bool stop(int timeoutMs=0);
     virtual void send(const QString &data);
 
@@ -132,12 +132,18 @@ Q_SIGNALS:
     void messageReceived(QVariant data);
     void onConnectionSlow();
     void logMessage(QString, int severity);
+    void messageSentCompleted(SignalException *ex);
 
 protected:
     State _state;
 
+protected:
+    virtual void onTransportStarted(SignalException *) {}
+    virtual void onMessageSentCompleted(SignalException *) {}
+
 private Q_SLOTS:
     void transportStarted(SignalException *ex);
+    void transportMessageSent(SignalException *ex);
 
 private:
     bool _logErrorsToQDebug;

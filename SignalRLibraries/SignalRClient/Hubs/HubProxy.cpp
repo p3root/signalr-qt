@@ -43,12 +43,12 @@ HubProxy::~HubProxy()
 {
 }
 
-void HubProxy::invoke(QString method, QString param, HubCallback *callback)
+void HubProxy::invoke(const QString &method, const QString &param, HubCallback *callback)
 {
     invoke(method, QStringList() << param, callback);
 }
 
-void HubProxy::invoke(QString method, QStringList params, HubCallback *callback)
+void HubProxy::invoke(const QString &method, const QStringList &params, HubCallback *callback)
 {
     QVariantList variant;
 
@@ -60,12 +60,31 @@ void HubProxy::invoke(QString method, QStringList params, HubCallback *callback)
     invoke(method, variant, callback);
 }
 
-void HubProxy::invoke(QString method, HubCallback *callback)
+void HubProxy::invoke(const QString &method, HubCallback *callback)
 {
     invoke(method, QVariantList(), callback);
 }
 
-QVariant HubProxy::syncInvoke(QString method, QString param, int timeoutMs, bool *ok)
+QVariant HubProxy::syncInvoke(const QString &method, const QString &param, int timeoutMs, bool *ok)
+{
+    QVariant par(param);
+
+    return syncInvoke(method, par, timeoutMs, ok);
+}
+
+QVariant HubProxy::syncInvoke(const QString &method, const QStringList &params, int timeoutMs, bool *ok)
+{
+    QVariantList variant;
+
+    foreach(QString str, params)
+    {
+        variant << str;
+    }
+
+    return syncInvoke(method, variant, timeoutMs, ok);
+}
+
+QVariant HubProxy::syncInvoke(const QString &method, const QVariant &param, int timeoutMs, bool *ok)
 {
     QEventLoop loop;
 
@@ -99,9 +118,12 @@ QVariant HubProxy::syncInvoke(QString method, QString param, int timeoutMs, bool
     return data;
 }
 
-QVariant HubProxy::syncInvoke(QString method, QStringList param, int timeoutMs, bool *ok)
+QVariant HubProxy::syncInvoke(const QString &method, const QVariantList &param, int timeoutMs, bool *ok)
 {
     QEventLoop loop;
+
+    if(timeoutMs < 0)
+        timeoutMs = 100000;
 
     HubCallback *callback = new HubCallback(0, method);
     QTimer timer;
@@ -133,12 +155,12 @@ QVariant HubProxy::syncInvoke(QString method, QStringList param, int timeoutMs, 
     return data;
 }
 
-void HubProxy::invoke(QString method, QVariant param, HubCallback* callback)
+void HubProxy::invoke(const QString &method, const QVariant &param, HubCallback* callback)
 {
     invoke(method, QVariantList() << param, callback);
 }
 
-void HubProxy::invoke(QString method, QVariantList params, HubCallback* callback)
+void HubProxy::invoke(const QString &method, const QVariantList &params, HubCallback* callback)
 {
     QVariantMap map;
     map.insert("A", params);
@@ -148,7 +170,7 @@ void HubProxy::invoke(QString method, QVariantList params, HubCallback* callback
     _connection->send(QextJson::stringify(QVariant::fromValue(map)), QString::number(_connection->getCount()), callback);
 }
 
-void HubProxy::onReceive(QVariant var)
+void HubProxy::onReceive(const QVariant &var)
 {
     QVariantMap qvl = var.toMap();
 
@@ -327,11 +349,6 @@ void HubProxy::onReceive(QVariant var)
     }
 }
 
-const QString &HubProxy::getName()
-{
-    return _hubName;
-}
-
 QGenericArgument HubProxy::getGenericArgument(const QString &type, const QString &val)
 {
     if(type == "QString")
@@ -340,7 +357,7 @@ QGenericArgument HubProxy::getGenericArgument(const QString &type, const QString
     }
     else if(type == "int")
     {
-        return Q_ARG(int, val.toInt());
+        return Q_ARG(int, int(val.toInt()));
     }
     else if(type == "float")
     {

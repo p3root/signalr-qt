@@ -25,11 +25,14 @@ public:
 
 private Q_SLOTS:
     void onTransportStated(SignalException *e);
+    void onMessageSent(SignalException *ex);
 
 private:
     QList<ClientTransport*> _transports;
     int _index;
     ClientTransport *_transport;
+
+    QQueue<QString> _messages;
 
 };
 

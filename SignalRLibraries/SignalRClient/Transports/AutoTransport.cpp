@@ -42,7 +42,18 @@ void AutoTransport::start(QString data)
     ClientTransport *transport = _transports[_index];
     _connection->emitLogMessage("Using transport '" + transport->getTransportType() +"'", Connection::Info);
     connect(transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(onTransportStated(SignalException*)));
+    connect(transport, SIGNAL(onMessageSentCompleted(SignalException*)), this, SLOT(onMessageSent(SignalException*)));
     transport->start(data);
+
+    if(_messages.count() > 0)
+    {
+        foreach(QString str, _messages)
+        {
+            transport->send(str);
+        }
+
+        _messages.clear();
+    }
 }
 
 bool AutoTransport::abort(int timeoutMs)
@@ -58,6 +69,8 @@ void AutoTransport::send(QString data)
 {
     if(_transport)
         _transport->send(data);
+    else
+        _messages.append(data);
 }
 
 void AutoTransport::retry()
@@ -91,6 +104,11 @@ void AutoTransport::onTransportStated(SignalException *e)
         _transport = _transports[_index];
         Q_EMIT transportStarted(e);
     }
+}
+
+void AutoTransport::onMessageSent(SignalException *ex)
+{
+    Q_EMIT onMessageSentCompleted(ex);
 }
 
 }}}

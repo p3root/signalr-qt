@@ -68,6 +68,8 @@ void Connection::start(ClientTransport* transport, bool autoReconnect)
     _transport = transport;
     _autoReconnect = autoReconnect;
 
+    connect(transport, SIGNAL(onMessageSentCompleted(SignalException*)), this, SLOT(transportMessageSent(SignalException*)));
+
     if(changeState(Disconnected, Connecting))
     {
         _transport->negotiate();
@@ -277,6 +279,14 @@ void Connection::transportStarted(SignalException* error)
             stop();
         }
     }
+
+    onTransportStarted(error);
+}
+
+void Connection::transportMessageSent(SignalException *ex)
+{
+    onMessageSentCompleted(ex);
+    Q_EMIT messageSentCompleted(ex);
 }
 
 }}}
