@@ -131,6 +131,12 @@ public:
 
     HeartbeatMonitor *createHeartbeatMonitor();
 
+Q_SIGNALS:
+    void sendData(const QString &data);
+
+private Q_SLOTS:
+    void onSendData(const QString &data);
+
 private Q_SLOTS:
     void transportStarted(SignalException *ex);
     void transportMessageSent(SignalException *ex);

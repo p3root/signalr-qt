@@ -55,6 +55,8 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
 #ifndef QT_NO_SSL
     _sslConfiguration = QSslConfiguration::defaultConfiguration();
 #endif
+
+    connect(this, SIGNAL(sendData(QString)), this, SLOT(onSendData(QString)));
 }
 
 
@@ -86,7 +88,7 @@ void ConnectionPrivate::start(ClientTransport* transport, bool autoReconnect)
 
 void ConnectionPrivate::send(const QString &data)
 {
-    _transport->send(data);
+    Q_EMIT sendData(data);
 }
 
 void ConnectionPrivate::retry()
@@ -269,6 +271,11 @@ void ConnectionPrivate::emitLogMessage(QString msg, SignalR::LogSeverity severit
 HeartbeatMonitor *ConnectionPrivate::createHeartbeatMonitor()
 {
     return new HeartbeatMonitor(this);
+}
+
+void ConnectionPrivate::onSendData(const QString &data)
+{
+    _transport->send(data);
 }
 
 void ConnectionPrivate::transportStarted(SignalException* error)

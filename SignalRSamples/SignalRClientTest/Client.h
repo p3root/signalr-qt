@@ -67,6 +67,9 @@ private Q_SLOTS:
     void send(QString message);
 
 private:
+    static int test(HubConnection* t);
+
+private:
     QTimer _timer;
     HubConnection* _connection;
     HttpClient* _client;

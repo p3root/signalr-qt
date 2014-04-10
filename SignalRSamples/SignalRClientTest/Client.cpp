@@ -73,6 +73,8 @@ void Client::start()
     _connection->setAdditionalQueryString(headers);
 
     _connection->start(_transport, true);
+
+
 }
 
 void Client::stop()
@@ -108,6 +110,9 @@ void Client::onStateChanged(SignalR::State oldState, SignalR::State newState)
         connect(callback, SIGNAL(messageReceived(HubCallback*,QVariant)), this, SLOT(answerReceived(HubCallback*,QVariant)));
         HubProxy* prox = _connection->getByName("Chat");
         prox->invoke("Send", QString("message"), callback);
+
+        QFuture<int> res = QtConcurrent::run(Client::test, _connection);
+        res.waitForFinished();
     }
     else if(newState == SignalR::Disconnected)
     {
@@ -132,6 +137,13 @@ void Client::onLogMessage(QString msg, int severity)
 void Client::send(QString message)
 {
     qDebug() << "send method called : " << message;
+}
+
+int Client::test(HubConnection *t)
+{
+    HubProxy* prox = t->getByName("Chat");
+    prox->invoke("Send", QString("message"));
+    return 0;
 }
 
 void Client::timerTick()
