@@ -9,14 +9,16 @@ Please clone the repository recursive. Otherwise the submodules will not be clon
 
 git clone --recursive https://github.com/p3root/signalr-qt.git
 
+Then just run qmake and make.
+
 Client
 ======
 
-After some long time tests, and stress tests it should be done. 
+Supported Transports:
 
- * SSE (ServerSentEvents) works.
- * LongPollings works (added Client-side timeout handling, default is 120s, SignalRServer closes each LP connection after 110s).
- * WebSockets works. Testing will be needed to make every scenario possible 
+* Long Polling
+* Server Sent Events
+* WebSockets
 
 Tested on:
  * Linux Qt 4.8.2 and QT 5.1 (x86_64)
@@ -24,12 +26,12 @@ Tested on:
 
 Server
 =======
-in work
+still in work
 
 LICENSE
 ======
 
-Copyright (c) 2013, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
+Copyright (c) 2013-2014, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
 All rights reserved.
  
 Redistribution and use in source and binary forms, with or without modification,
