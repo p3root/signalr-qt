@@ -13,11 +13,20 @@ WebSocketTransport::WebSocketTransport(HttpClient *c, Connection* con) : HttpBas
 
 void WebSocketTransport::start(QString)
 {
+    if(_webSocket)
+    {
+        _webSocket->deleteLater();
+        _webSocket = 0;
+    }
     if(_webSocket == 0)
     {
         _webSocket = new QWebSocket();
         _webSocket->setAdditonalQueryString(_connection->getAdditionalQueryString());
         _webSocket->setAddtionalHeaders(_connection->getAdditionalHttpHeaders());
+        _webSocket->setProxy(_connection->getProxySettings());
+        _webSocket->setSslConfiguration(_connection->getSslConfiguration());
+
+      //  _webSocket->ignoreSslErrors();
 
         QString conOrRecon = "connect";
         if(_started)
@@ -42,6 +51,8 @@ void WebSocketTransport::start(QString)
         connect(_webSocket, SIGNAL(textMessageReceived(QString)), this, SLOT(onTextMessageReceived(QString)));
         connect(_webSocket, SIGNAL(pong(quint64,QByteArray)), this, SLOT(onPong(quint64,QByteArray)));
 
+        connect(_webSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(onIgnoreSsl(QList<QSslError>)));
+
         _keepAliveTimer.stop();
         _keepAliveTimer.setInterval(_connection->getKeepAliveData().getTimeout()*1000);
         _keepAliveTimer.start();
@@ -55,9 +66,11 @@ void WebSocketTransport::send(QString data)
 {
     if(_webSocket)
     {
-        //QString writeData = QString("{%1}").arg(data);
         qint64 bytesWritten = _webSocket->write(data);
-        Q_UNUSED(bytesWritten);
+        if(bytesWritten != data.size())
+        {
+            _connection->emitLogMessage("Written bytes does not equals given bytes", Connection::Warning);
+        }
     }
 }
 
@@ -87,7 +100,8 @@ const QString &WebSocketTransport::getTransportType()
 
 void WebSocketTransport::onConnected()
 {
-    _connection->emitLogMessage("websocket connected", Connection::Debug);
+    _started = true;
+    _connection->emitLogMessage("WebSocket connected", Connection::Debug);
     Q_EMIT transportStarted(0);
 }
 
@@ -105,12 +119,18 @@ void WebSocketTransport::onDisconnected()
     switch(er)
     {
     case QAbstractSocket::RemoteHostClosedError:
+        error = new SignalException(_webSocket->errorString(), SignalException::RemoteHostClosedConnection);
+        break;
     case QAbstractSocket::ConnectionRefusedError:
+        error = new SignalException(_webSocket->errorString(), SignalException::ConnectionRefusedError);
+        break;
+    case QAbstractSocket::NetworkError:
+        error = new SignalException(_webSocket->errorString(), SignalException::UnknownNetworkError);
+        break;
     case QAbstractSocket::SocketAccessError:
     case QAbstractSocket::SocketResourceError:
     case QAbstractSocket::SocketTimeoutError:
     case QAbstractSocket::DatagramTooLargeError:
-    case QAbstractSocket::NetworkError:
     case QAbstractSocket::AddressInUseError:
     case QAbstractSocket::SocketAddressNotAvailableError:
     case QAbstractSocket::UnsupportedSocketOperationError:
@@ -124,22 +144,20 @@ void WebSocketTransport::onDisconnected()
     case QAbstractSocket::ProxyProtocolError:
     case QAbstractSocket::UnknownSocketError:
     case QAbstractSocket::HostNotFoundError:
-        error = new SignalException();
+        error = new SignalException(_webSocket->errorString(), SignalException::UnkownError);
         break;
     }
 
     if(_webSocket->state() == QAbstractSocket::ConnectedState)
         _webSocket->close();
-    _webSocket->deleteLater();
-    _webSocket = 0;
 
     _connection->onError(*error);
 
     if(_connection->ensureReconnecting())
     {
         if(_connection->getLogErrorsToQDebug())
-            qDebug() << "ServerSentEventsTransport: Lost connection...try to reconnect";
-        _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
+            qDebug() << "WebSocket: Lost connection...try to reconnect in " << QString::number(_connection->getReconnectWaitTime());
+        _connection->emitLogMessage("WebSocket: lost connection...try to reconnect in " + QString::number(_connection->getReconnectWaitTime()), Connection::Debug);
 
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
         _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
@@ -149,8 +167,8 @@ void WebSocketTransport::onDisconnected()
     else if(_connection->getAutoReconnect())
     {
         if(_connection->getLogErrorsToQDebug())
-            qDebug() << "ServerSentEventsTransport: (autoconnect=true)  Lost connection...try to reconnect";
-        _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
+            qDebug() << "WebSocket: (autoconnect=true)  Lost connection...try to reconnect in " << QString::number(_connection->getReconnectWaitTime());
+        _connection->emitLogMessage("WebSocket: lost connection...try to reconnect in " + QString::number(_connection->getReconnectWaitTime()), Connection::Debug);
 
         _connection->changeState(Connection::Connected, Connection::Reconnecting);
 
@@ -160,14 +178,9 @@ void WebSocketTransport::onDisconnected()
 
         return;
     }
-    else
-    {
-        _connection->onError(*error);
-    }
 
     delete error;
 
-    _started = false;
     _connection->emitLogMessage("websocket disconnected ("+QString::number(er)+")", Connection::Debug);
 
 }
@@ -178,6 +191,19 @@ void WebSocketTransport::reconnectTimerTick()
     _retryTimerTimeout.stop();
     disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
     start("");
+}
+
+void WebSocketTransport::onIgnoreSsl(QList<QSslError> errors)
+{
+    if(!_connection->ignoreSslErrors())
+        return;
+
+    _webSocket->ignoreSslErrors(errors);
+
+    foreach(QSslError er, errors)
+    {
+        _connection->emitLogMessage(er.errorString(), Connection::Error);
+    }
 }
 
 void WebSocketTransport::onError(QAbstractSocket::SocketError)

@@ -39,6 +39,7 @@
 #else
 	#include <QHostAddress>
 	#include <QTcpSocket>
+    #include <QSslSocket>
 #endif
 #include "HttpRequest.h"
 #include "HttpResponse.h"
@@ -68,7 +69,7 @@ private:
     void open();
 
 private Q_SLOTS:
-    void onReadyRead();
+    void onSslErrors(const QList<QSslError> &errors);
 
 private:
     Connection* _connection;

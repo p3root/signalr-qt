@@ -50,8 +50,7 @@ void HttpEventStream::open()
 {
     _isAborting = false;
     _isFirstReponse = true;
-    _sock = new QTcpSocket();
-    QTextStream os(_sock);
+    _sock = 0;
 
 #ifdef Q_OS_WIN32
     QString host = QString(_url.host());
@@ -60,7 +59,9 @@ void HttpEventStream::open()
 #endif
 
     int port = _url.port();
+    bool isSslSocket = false;
 
+    //if no port is given in the url, set the default ports
     if(port < 0)
     {
         if(_url.scheme() == "http")
@@ -73,25 +74,56 @@ void HttpEventStream::open()
         }
     }
 
+    //create a new ssl socket if https is used
+    if(_url.scheme() == "https")
+    {
+        QSslSocket *sslSocket = new QSslSocket();
+        sslSocket->setSslConfiguration(_connection->getSslConfiguration());
+
+        if(_connection->ignoreSslErrors())
+            sslSocket->ignoreSslErrors();
+
+        connect(sslSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(onSslErrors(QList<QSslError>)), Qt::DirectConnection);
+
+        _sock = sslSocket;
+        isSslSocket = true;
+    }
+    else
+    {
+        //otherwise create a tcp socket
+        _sock = new QTcpSocket();
+    }
+
+    QTextStream os(_sock);
+
+    //setting the give proxy settings for the socket
+    _sock->setProxy(_connection->getProxySettings());
+
+    //try to resolve the hostname
     QHostInfo info = QHostInfo::fromName(host);
 
     if(info.error() == QHostInfo::NoError)
     {
         if(!info.addresses().isEmpty())
         {
-            _sock->connectToHost(info.addresses().first(), port);
+            if(isSslSocket)
+                ((QSslSocket*)_sock)->connectToHostEncrypted(_url.host(), port);
+            else
+                _sock->connectToHost(info.addresses().first(), port);
             if(_sock->waitForConnected())
             {
                 _sock->setSocketOption(QAbstractSocket::KeepAliveOption,1);
+                _sock->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
                 QString getRequest = QString("%1 %2 %3").arg("GET", _url.path() +"?"+ Helper::getEncodedQueryString(_url, _connection), "HTTP/1.1\r\n");
 
-                //prepare http request
+                //prepare init http request
                 os << QByteArray().append(getRequest);
                 os << "Host: " << host << ":" << port << "\r\n";
                 os << "User-Agent: SignalR.Client\r\n";
                 os << "Accept: text/event-stream\r\n";
 
+                //add additional http headers
                 for(int i = 0; i < _connection->getAdditionalHttpHeaders().size(); i++)
                 {
                     QString first = QString(_connection->getAdditionalHttpHeaders().at(i).first);
@@ -103,9 +135,8 @@ void HttpEventStream::open()
                 }
 
                 os << "\r\n";
+                //write data to socket
                 os.flush();
-
-                connect(_sock, SIGNAL(readyRead()), this, SLOT(onReadyRead()), Qt::QueuedConnection);
 
                 Q_EMIT connected(0);
             }
@@ -137,6 +168,8 @@ void HttpEventStream::run()
 
     while(!_isAborting)
     {
+        //wait for the given connection timeout to get some data
+        //if this functions returns false, no keep alive is give from the signalr server
         if(_sock->waitForReadyRead(_connection->getKeepAliveData().getTimeout()*1000))
         {
             if(!_sock->bytesAvailable())
@@ -147,6 +180,7 @@ void HttpEventStream::run()
                 if(_isFirstReponse)
                 {
                     QString header = "";
+                    //parse headers
                     while(!header.endsWith("\r\n\r\n"))
                     {
                         header += QString(_sock->read(1));
@@ -155,6 +189,7 @@ void HttpEventStream::run()
                     _isFirstReponse = false;
                 }
 
+                //parsing SSE package
                 QString pack = readPackage("");
                 if(!pack.isEmpty())
                 {
@@ -175,20 +210,26 @@ void HttpEventStream::run()
         }
         else
         {
+            QAbstractSocket::SocketError socketError = _sock->error();
+            QString errorString = _sock->errorString();
+
             if(!_isAborting)
             {
-                QAbstractSocket::SocketError socketError = _sock->error();
+
                 SignalException *ex = 0;
                 switch(socketError)
                 {
-                    case QAbstractSocket::SocketTimeoutError:
-                    case QAbstractSocket::RemoteHostClosedError:
-                        ex = new SignalException(_sock->errorString(), SignalException::RemoteHostClosedConnection);
-                        _isAborting = true;
-                        break;
-                    default:
-                        ex = new SignalException(_sock->errorString(), SignalException::EventStreamSocketLost);
-                        break;
+                case QAbstractSocket::SocketTimeoutError:
+                case QAbstractSocket::RemoteHostClosedError:
+                    ex = new SignalException(errorString, SignalException::RemoteHostClosedConnection);
+                    _isAborting = true;
+                    break;
+                case QAbstractSocket::SslHandshakeFailedError:
+                    ex = new SignalException(errorString, SignalException::SslHandshakeFailed);
+                    break;
+                default:
+                    ex = new SignalException(errorString, SignalException::EventStreamSocketLost);
+                    break;
 
                 }
 
@@ -203,7 +244,8 @@ void HttpEventStream::run()
 
     if(_sock->isOpen())
         _sock->close();
-    delete _sock;
+    _sock->deleteLater();
+    _sock = 0;
 }
 
 QString HttpEventStream::readPackage(QString val)
@@ -244,10 +286,13 @@ QString HttpEventStream::readPackage(QString val)
     return readPackage(val);
 }
 
-void HttpEventStream::onReadyRead()
+void HttpEventStream::onSslErrors(const QList<QSslError> &errors)
 {
+    if(!_connection->ignoreSslErrors())
+        return;
 
-
+    QSslSocket *socket = reinterpret_cast<QSslSocket*>(_sock);
+    socket->ignoreSslErrors(errors);
 }
 
 }}}

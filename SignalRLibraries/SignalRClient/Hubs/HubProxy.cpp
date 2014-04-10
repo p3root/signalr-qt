@@ -162,12 +162,13 @@ void HubProxy::invoke(const QString &method, const QVariant &param, HubCallback*
 
 void HubProxy::invoke(const QString &method, const QVariantList &params, HubCallback* callback)
 {
+    QString i = QString::number(_connection->getNextCount());
     QVariantMap map;
     map.insert("A", params);
-    map.insert("I", QString::number(_connection->getCount()));
+    map.insert("I", i);
     map.insert("H", _hubName);
     map.insert("M", method);
-    _connection->send(QextJson::stringify(QVariant::fromValue(map)), QString::number(_connection->getCount()), callback);
+    send(QextJson::stringify(QVariant::fromValue(map)), i, callback);
 }
 
 void HubProxy::onReceive(const QVariant &var)
@@ -347,6 +348,11 @@ void HubProxy::onReceive(const QVariant &var)
             _connection->emitLogMessage("HubProxy Message with no Method name called", Connection::Warning);
         }
     }
+}
+
+void HubProxy::send(const QString &data, const QString &id, HubCallback *c)
+{
+    _connection->send(data, id, c);
 }
 
 QGenericArgument HubProxy::getGenericArgument(const QString &type, const QString &val)

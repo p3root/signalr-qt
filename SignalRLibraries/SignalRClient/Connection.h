@@ -40,7 +40,7 @@
 #include <QDateTime>
 #include "KeepAliveData.h"
 #include <QNetworkProxy>
-
+#include <QSslConfiguration>
 
 
 namespace P3 { namespace SignalR { namespace Client {
@@ -85,14 +85,15 @@ public:
     const QString &getUrl() const;
     const QString &getMessageId() const;
     int getPort();
-    quint64 getCount() const;
+    quint64 getNextCount();
+    void presetCount(quint64 preset);
     bool getAutoReconnect() const;
 
     KeepAliveData& getKeepAliveData();
-    void updateLastKeepAlive();
+    virtual void updateLastKeepAlive();
     void connectionSlow();
 
-    bool changeState(State oldState, State newState);
+    virtual bool changeState(State oldState, State newState);
     bool ensureReconnecting();
     void onError(SignalException exp);
     virtual void onReceived(QVariant data);
@@ -125,6 +126,12 @@ public:
 
     const QString &getWebSocketsUrl() { return _webSocketsUrl; }
     const QString &getProtocolVersion() { return _protocolVersion;}
+
+    bool ignoreSslErrors() { return _ignoreSslErrors; }
+    void setIgnoreSslErrors(bool ignoreSslErrors) { _ignoreSslErrors = ignoreSslErrors; }
+
+    void setSslConfiguration(const QSslConfiguration &config) { _sslConfiguration = config; }
+    const QSslConfiguration &getSslConfiguration() { return _sslConfiguration; }
 
 Q_SIGNALS:
     void stateChanged(Connection::State old_state, Connection::State new_state);
@@ -165,6 +172,9 @@ private:
     bool _tryWebSockets;
     QString _webSocketsUrl;
     QString _protocolVersion;
+
+    bool _ignoreSslErrors;
+    QSslConfiguration _sslConfiguration;
 };
 
 }}}

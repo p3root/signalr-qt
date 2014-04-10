@@ -108,6 +108,7 @@ void HttpClient::get(QString url)
 
     _connection->emitLogMessage("starting get request (" + _connection->getConnectionId() +")" , Connection::Debug);
     QNetworkReply *getReply = _man->get(req);
+    getReply->setSslConfiguration(_connection->getSslConfiguration());
     _getInProgress = true;
 
     _currentConnections.append(getReply);
@@ -162,6 +163,7 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
     _connection->emitLogMessage("starting post request (" + _connection->getConnectionId() +")", Connection::Debug);
 
     QNetworkReply *postReply = _man->post(req, QByteArray().append(queryString));
+    postReply->setSslConfiguration(_connection->getSslConfiguration());
     _postInProgress = true;
     _currentConnections.append(postReply);
 }
@@ -310,7 +312,14 @@ void HttpClient::postRequestFinished(QNetworkReply *reply)
 
 void HttpClient::onIgnoreSSLErros(QNetworkReply *reply, QList<QSslError> error)
 {
-    Q_UNUSED(error);
+    if(!_connection->ignoreSslErrors())
+        return;
+
+    foreach(QSslError er, error)
+    {
+        _connection->emitLogMessage(er.errorString(), Connection::Error);
+    }
+
     reply->ignoreSslErrors(error);
 }
 

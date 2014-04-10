@@ -50,7 +50,9 @@ HubConnection::~HubConnection()
 
 void HubConnection::send(const QString &data, const QString &id, HubCallback *c)
 {
-    _callbacks.insert(id, c);
+    if (c)
+        _callbacks.insert(id, c);
+
     Connection::send(data);
 }
 
@@ -79,7 +81,7 @@ HubProxy *HubConnection::createHubProxy(QString name, QObject *objectToInvoke)
     HubProxy* proxy;
     if(!_hubs.contains(name))
     {
-        proxy = new HubProxy(this, name, objectToInvoke);
+        proxy = newHubProxy(name, objectToInvoke);
         _hubs.insert(name, proxy);
         return proxy;
     }
@@ -150,6 +152,11 @@ HubProxy *HubConnection::getByName(const QString &name)
         emitLogMessage("Cloud not find proxy with name " + name, Connection::Error);
     }
     return _hubs[name];
+}
+
+HubProxy *HubConnection::newHubProxy(const QString &name, QObject *objectToInvoke)
+{
+    return new HubProxy(this, name, objectToInvoke);
 }
 
 }}}

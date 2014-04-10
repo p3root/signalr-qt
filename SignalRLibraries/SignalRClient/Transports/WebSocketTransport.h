@@ -35,6 +35,8 @@ private Q_SLOTS:
 
     void reconnectTimerTick();
 
+    void onIgnoreSsl(QList<QSslError>);
+
 private:
     QWebSocket *_webSocket;
     QTimer _keepAliveTimer;

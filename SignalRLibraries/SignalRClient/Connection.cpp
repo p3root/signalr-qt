@@ -46,6 +46,7 @@ Connection::Connection(const QString &host) : _transport(0), _count(0), _keepAli
     qRegisterMetaType<Connection::State>("Connection::State");
     _logErrorsToQDebug = false;
     _reconnectWaitTime = 5;
+    _sslConfiguration = QSslConfiguration::defaultConfiguration();
 }
 
 Connection::~Connection()
@@ -78,7 +79,6 @@ void Connection::start(ClientTransport* transport, bool autoReconnect)
 
 void Connection::send(const QString &data)
 {
-    _count++;
     _transport->send(data);
 }
 
@@ -174,9 +174,14 @@ const QString &Connection::getMessageId() const
     return _messageId;
 }
 
-quint64 Connection::getCount() const
+quint64 Connection::getNextCount()
 {
-    return _count;
+    return ++_count;
+}
+
+void Connection::presetCount(quint64 preset)
+{
+    _count = preset;
 }
 
 bool Connection::getAutoReconnect() const

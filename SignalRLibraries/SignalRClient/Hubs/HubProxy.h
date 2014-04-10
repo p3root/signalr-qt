@@ -66,6 +66,9 @@ public:
 
     const QString& getName() const { return _hubName; }
 
+protected:
+    virtual void send(const QString &data, const QString &id, HubCallback *c);
+
 Q_SIGNALS:
     void hubMethodCalled(const QString &method, const QVariantList &args);
     Q_DECL_DEPRECATED void hubMessageReceived(const QVariant &data);

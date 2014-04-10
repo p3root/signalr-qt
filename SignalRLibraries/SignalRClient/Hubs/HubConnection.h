@@ -57,6 +57,8 @@ public:
 
     HubProxy* getByName(const QString& name);
 
+protected:
+    virtual HubProxy* newHubProxy(const QString &name, QObject *objectToInvoke=0);
 private:
     QMap<QString, HubProxy*> _hubs;
     QMap<QString, HubCallback*> _callbacks;

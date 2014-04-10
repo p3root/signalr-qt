@@ -10,7 +10,7 @@ AutoTransport::AutoTransport(HttpClient *httpClient, Connection *con) : HttpBase
 {
     _transports = QList<ClientTransport*>();
     _transports.append(new WebSocketTransport(httpClient, con));
-   // _transports.append(new ServerSentEventsTransport(httpClient, con));
+    _transports.append(new ServerSentEventsTransport(httpClient, con));
     _transports.append(new LongPollingTransport(httpClient, con));
     _index = 0;
     _transport = 0;

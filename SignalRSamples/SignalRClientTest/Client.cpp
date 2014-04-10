@@ -51,18 +51,18 @@ Client::~Client()
 void Client::start()
 {
     qDebug() << "Client Thread: " << thread()->currentThreadId();
-    _connection = new HubConnection("http://192.168.1.69:9099/signalr");
+    _connection = new HubConnection("https://192.168.1.152:9099/signalr");
     _connection->setLogErrorsToQDebug(false);
+    _connection->setIgnoreSslErrors(true);
     _connection->setReconnectWaitTime(3);
     _monitor = new HeartbeatMonitor(_connection, 0);
 
     _client = new HttpClient(_connection);
-    _transport = new AutoTransport(_client, _connection);
+    _transport = new ServerSentEventsTransport(_client, _connection);
 
     HubProxy* proxy = _connection->createHubProxy("Chat", this);
 
-    connect(proxy, SIGNAL(hubMessageReceived(QVariant)), this, SLOT(onHubMessageReceived(QVariant)));
-    connect(proxy, SIGNAL(hubMethodCalled(QVariant,QVariantList)), this, SLOT(onMethodCalled(QVariant,QVariantList)));
+    connect(proxy, SIGNAL(hubMethodCalled(QString,QVariantList)), this, SLOT(onMethodCalled(QString,QVariantList)));
 
     connect(_connection, SIGNAL(errorOccured(SignalException)), this, SLOT(onError(SignalException)));
     connect(_connection, SIGNAL(stateChanged(Connection::State,Connection::State)), this, SLOT(onStateChanged(Connection::State,Connection::State)));
@@ -90,12 +90,7 @@ void Client::stop()
     }
 }
 
-void Client::onHubMessageReceived(const QVariant &v)
-{
-    qDebug() << v;
-}
-
-void Client::onMethodCalled(const QVariant &method, const QVariantList &args)
+void Client::onMethodCalled(const QString &method, const QVariantList &args)
 {
     qDebug() << method << " " << args;
 }
@@ -104,8 +99,8 @@ void Client::onError(SignalException error)
 {
      qDebug() << error.what();
 
-     _connection->setReconnectWaitTime(100);
-      _timer.start();
+    // _connection->setReconnectWaitTime(100);
+   //   _timer.start();
 }
 
 void Client::onStateChanged(Connection::State oldState, Connection::State newState)
@@ -149,6 +144,6 @@ void Client::timerTick()
 {
     //    qApp->exit(3);
     qDebug() << "start retry before retrytimer ticks";
-    _connection->retry();
+ //   _connection->retry();
 }
 
