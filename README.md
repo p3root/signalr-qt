@@ -20,6 +20,8 @@ Supported Transports:
 * Server Sent Events
 * WebSockets
 
+All transports supports SSL as well.
+
 Tested on:
  * Linux Qt 4.8.2 and QT 5.1 (x86_64)
  * Windows Qt 5.2 (x64)
