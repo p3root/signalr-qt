@@ -33,15 +33,15 @@
 
 #include "HttpBasedTransport.h"
 #include "HttpEventStream.h"
-
+#include "Connection.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
-class ServerSentEventsTransport : public HttpBasedTransport
+class SIGNALR_EXPORT ServerSentEventsTransport : public HttpBasedTransport
 {
     Q_OBJECT
 public:
-    ServerSentEventsTransport(HttpClient* client, Connection *con);
+    ServerSentEventsTransport();
     ~ServerSentEventsTransport(void);
 
     void start(QString data);

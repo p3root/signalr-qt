@@ -1,10 +1,13 @@
 #include "WebSocketTransport.h"
 #include "Helper/Helper.h"
 #include "SignalException.h"
+#include "Connection_p.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
-WebSocketTransport::WebSocketTransport(HttpClient *c, Connection* con) : HttpBasedTransport(c, con), _webSocket(0)
+WebSocketTransport::WebSocketTransport() :
+    HttpBasedTransport(),
+    _webSocket(0)
 {
     connect(&_keepAliveTimer, SIGNAL(timeout()), this, SLOT(keepAliveTimerTimeout()));
     _keepAliveTimer.setSingleShot(true);
@@ -71,7 +74,7 @@ void WebSocketTransport::send(QString data)
         qint64 bytesWritten = _webSocket->write(data);
         if(bytesWritten != data.size())
         {
-            _connection->emitLogMessage("Written bytes does not equals given bytes", Connection::Warning);
+            _connection->emitLogMessage("Written bytes does not equals given bytes", SignalR::Warning);
         }
     }
 }
@@ -159,8 +162,8 @@ void WebSocketTransport::onDisconnected()
 
     if(_connection->ensureReconnecting())
     {
-        _connection->emitLogMessage("WS: lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", Connection::Debug);
-        _connection->changeState(Connection::Connected, Connection::Reconnecting);
+        _connection->emitLogMessage("WS: lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", SignalR::Debug);
+        _connection->changeState(SignalR::Connected, SignalR::Reconnecting);
 
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
         _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
@@ -169,8 +172,8 @@ void WebSocketTransport::onDisconnected()
     }
     else if(_connection->getAutoReconnect())
     {
-        _connection->emitLogMessage("WebSocket: lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", Connection::Debug);
-        _connection->changeState(Connection::Connected, Connection::Reconnecting);
+        _connection->emitLogMessage("WebSocket: lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", SignalR::Debug);
+        _connection->changeState(SignalR::Connected, SignalR::Reconnecting);
 
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
         _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
@@ -200,14 +203,14 @@ void WebSocketTransport::onIgnoreSsl(QList<QSslError> errors)
 
     foreach(QSslError er, errors)
     {
-        _connection->emitLogMessage(er.errorString(), Connection::Error);
+        _connection->emitLogMessage(er.errorString(), SignalR::Error);
     }
 }
 #endif
 
 void WebSocketTransport::onError(QAbstractSocket::SocketError)
 {
-    _connection->emitLogMessage(_webSocket->errorString(), Connection::Warning);
+    _connection->emitLogMessage(_webSocket->errorString(), SignalR::Warning);
 }
 
 void WebSocketTransport::onTextMessageReceived(QString str)
@@ -225,7 +228,7 @@ void WebSocketTransport::onTextMessageReceived(QString str)
 
 void WebSocketTransport::onPong(quint64, QByteArray)
 {
-    _connection->emitLogMessage("on pong", Connection::Debug);
+    _connection->emitLogMessage("on pong", SignalR::Debug);
 }
 
 void WebSocketTransport::keepAliveTimerTimeout()

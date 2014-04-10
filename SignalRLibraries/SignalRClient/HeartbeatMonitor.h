@@ -31,18 +31,21 @@
 #ifndef HEARTBEATMONITOR_H
 #define HEARTBEATMONITOR_H
 
-#include "Connection.h"
 #include <QMutex>
 #include <QTimer>
+#include "SignalR_global.h"
 
 
 namespace P3 { namespace SignalR { namespace Client {
 
-class HeartbeatMonitor : QObject
+class ConnectionPrivate;
+
+class SIGNALR_EXPORT HeartbeatMonitor : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(HeartbeatMonitor)
 public:
-    HeartbeatMonitor(Connection* con, QMutex* stateLocker);
+    explicit HeartbeatMonitor(ConnectionPrivate *con, QMutex* stateLocker=0);
 
     void start();
     void stop();
@@ -55,7 +58,7 @@ private:
     bool checkKeepAliveData();
 
 private:
-    Connection *_connection;
+    ConnectionPrivate *_connection;
     QMutex *_locker;
 
     QTimer _timer;

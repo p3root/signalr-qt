@@ -33,10 +33,11 @@
 
 #include <QString>
 #include <QMetaType>
+#include "SignalR_global.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
-class SignalException : public std::exception
+class SIGNALR_EXPORT SignalException : public std::exception
 {
 public:
     enum SignalExceptionType

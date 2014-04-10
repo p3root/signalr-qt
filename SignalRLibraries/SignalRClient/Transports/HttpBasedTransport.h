@@ -32,23 +32,24 @@
 #define HTTPBASEDTRANSPORT_H
 
 #include "ClientTransport.h"
-#include "Connection.h"
-#include "Transports/HttpClient.h"
-#include "Helper/TransportHelper.h"
 #include "SignalException.h"
 #include <QQueue>
 #include <QTimer>
+#include <QMap>
+#include "Transports/NegotiateResponse.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
-class HttpBasedTransport : public ClientTransport
+class HttpClient;
+
+class SIGNALR_EXPORT HttpBasedTransport : public ClientTransport
 {
     Q_OBJECT
 protected:
     HttpClient* _httpClient;
 
 public:
-    HttpBasedTransport(HttpClient* httpClient, Connection* con);
+    HttpBasedTransport();
     virtual ~HttpBasedTransport(void);
 
     void negotiateCompleted(QString data, SignalException* ex);
@@ -64,7 +65,7 @@ private:
     
     struct SendQueueItem
     {
-        Connection* connection;
+        ConnectionPrivate* connection;
         QString url;
         QMap<QString, QString> postData;
     };
@@ -72,6 +73,9 @@ private:
     QQueue<SendQueueItem*> _sendQueue;
     bool _sending;
     QTimer _retryTimerTimeout;
+
+protected:
+    void setConnectionPrivate(ConnectionPrivate *connection);
 
 private Q_SLOTS:
     void onSendHttpResponse(const QString& httpResponse, SignalException* error);

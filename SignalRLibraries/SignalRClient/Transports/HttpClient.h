@@ -47,13 +47,13 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-class Connection;
+class ConnectionPrivate;
 
 class HttpClient : public QObject
 {
     Q_OBJECT
 public:
-    HttpClient(Connection* con);
+    HttpClient(ConnectionPrivate* con);
     virtual ~HttpClient();
 
     void get(QString url);
@@ -88,7 +88,7 @@ private:
     QNetworkAccessManager *_man;
     QMutex *_getMutex;
     QMutex *_postMutex;
-    Connection *_connection;
+    ConnectionPrivate *_connection;
 
     QList<QNetworkReply*> _currentConnections;
 };

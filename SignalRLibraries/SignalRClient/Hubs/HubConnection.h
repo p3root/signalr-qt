@@ -41,7 +41,7 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-class HubConnection : public Connection
+class SIGNALR_EXPORT HubConnection : public Connection
 {
 public:
     HubConnection(const QString &url);
@@ -53,9 +53,13 @@ public:
     HubProxy* createHubProxy(QString name, QObject *objectToInvoke=0);
 
     QString onSending();
-    virtual void onReceived(QVariant data);
+    virtual void onReceived(QVariant &data);
 
     HubProxy* getByName(const QString& name);
+
+    quint64 getNextCount();
+
+friend class HubProxy;
 
 protected:
     virtual HubProxy* newHubProxy(const QString &name, QObject *objectToInvoke=0);

@@ -34,12 +34,13 @@
 #include <QString>
 #include "Transports/HttpClient.h"
 #include "ClientTransport.h"
-#include "Connection.h"
 #include "SignalException.h"
 #include <QextJson.h>
 
 
 namespace P3 { namespace SignalR { namespace Client {
+
+class NegotiateResponse;
 
 class TransportHelper : public QObject
 {
@@ -49,8 +50,8 @@ public:
     ~TransportHelper(void);
 
 
-    static QString getReceiveQueryString(Connection* connection, QString data, QString transport);
-    static void processMessages(Connection* connection, QString raw, bool* timedOut, bool* disconnected);
+    static QString getReceiveQueryString(ConnectionPrivate *connection, QString data, QString transport);
+    static void processMessages(ConnectionPrivate *connection, QString raw, bool* timedOut, bool* disconnected);
 
 
     static const NegotiateResponse* parseNegotiateHttpResponse(const QString& httpResponse);

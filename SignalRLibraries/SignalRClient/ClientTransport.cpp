@@ -29,20 +29,26 @@
  */
 
 #include "ClientTransport.h"
+#include "Connection_p.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
-ClientTransport::ClientTransport(Connection* con) : _connection(0)
+ClientTransport::ClientTransport() : _connection(0)
 {
-    _connection = con;
+
 }
 
 ClientTransport::~ClientTransport(void)
 {
 }
 
-void ClientTransport::lostConnection(Connection *)
+void ClientTransport::lostConnection(ConnectionPrivate *)
 {
+}
+
+void ClientTransport::setConnectionPrivate(ConnectionPrivate *con)
+{
+    _connection = con;
 }
 
 }}}

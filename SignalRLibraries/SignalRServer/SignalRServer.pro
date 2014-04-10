@@ -66,14 +66,13 @@ HEADERS += SignalRServer.h\
     Messaging/Subscription.h \
     Messaging/MessageStore.hpp
 
-unix:!symbian {
-    maemo5 {
-        target.path = /opt/usr/lib
-    } else {
-        target.path = /usr/lib
-    }
-    INSTALLS += target
-}
+
+#target.path = $$[QT_INSTALL_PREFIX]/lib
+#headers.files = $$PUBLIC_HEADERS
+#headers.path = $$[QT_INSTALL_PREFIX]/include/signalr
+
+#INSTALLS += target headers
+
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/release/ -lQextJson
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/debug/ -lQextJson

@@ -41,11 +41,11 @@
 #include <QEventLoop>
 #include "Helper/Helper.h"
 #include <unistd.h>
-#include <Connection.h>
+#include <Connection_p.h>
 
 namespace P3 { namespace SignalR { namespace Client {
 
-HttpClient::HttpClient(Connection *con) : _isAborting(false), _man(0)
+HttpClient::HttpClient(ConnectionPrivate *con) : _isAborting(false), _man(0)
 {
     _connection = con;
     _man = new QNetworkAccessManager();
@@ -110,7 +110,7 @@ void HttpClient::get(QString url)
     }
 
 
-    _connection->emitLogMessage("starting get request (" + _connection->getConnectionId() +")" , Connection::Debug);
+    _connection->emitLogMessage("starting get request (" + _connection->getConnectionId() +")" , SignalR::Debug);
     QNetworkReply *getReply = _man->get(req);
 
 #ifndef QT_NO_SSL
@@ -134,6 +134,7 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
         queryString.append(QString("%1=%2&").arg(it.key(), Helper::encode(it.value())));
         ++it;
     }
+
     queryString.remove(queryString.length()-1, 1);
 
     QUrl decodedUrl(url);
@@ -168,7 +169,7 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
 #endif
     }
 
-    _connection->emitLogMessage("starting post request (" + _connection->getConnectionId() +")", Connection::Debug);
+    _connection->emitLogMessage("starting post request (" + _connection->getConnectionId() +")", SignalR::Debug);
 
     QNetworkReply *postReply = _man->post(req, QByteArray().append(queryString));
 
@@ -206,7 +207,7 @@ void HttpClient::requestFinished(QNetworkReply *reply)
 
     if(operation == QNetworkAccessManager::GetOperation)
     {
-        _connection->emitLogMessage("get request finished", Connection::Debug);
+        _connection->emitLogMessage("get request finished", SignalR::Debug);
         _getInProgress = false;
 
         if(error == QNetworkReply::NoError)
@@ -217,7 +218,7 @@ void HttpClient::requestFinished(QNetworkReply *reply)
     else if(operation == QNetworkAccessManager::PostOperation)
     {
         _postInProgress = false;
-        _connection->emitLogMessage("post request finished", Connection::Debug);
+        _connection->emitLogMessage("post request finished", SignalR::Debug);
 
         if(error == QNetworkReply::NoError)
             postRequestFinished(reply);
@@ -251,7 +252,7 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
     int error = (int)err;
     QString errorString = reply->errorString();
 
-    _connection->emitLogMessage("request error " + errorString + " " + QString::number(error), Connection::Error);
+    _connection->emitLogMessage("request error " + errorString + " " + QString::number(error), SignalR::Error);
 
     if(error != QNetworkReply::NoError)
     {
@@ -330,7 +331,7 @@ void HttpClient::onIgnoreSSLErros(QNetworkReply *reply, QList<QSslError> error)
 
     foreach(QSslError er, error)
     {
-        _connection->emitLogMessage(er.errorString(), Connection::Error);
+        _connection->emitLogMessage(er.errorString(), SignalR::Error);
     }
 
     reply->ignoreSslErrors(error);

@@ -33,26 +33,29 @@
 
 #include <QString>
 #include "SignalException.h"
-#include "Transports/NegotiateResponse.h"
 #include <QObject>
 
 
 namespace P3  { namespace SignalR { namespace Client {
 
-class Connection;
+class ConnectionPrivate;
 
-class ClientTransport : public QObject
+class SIGNALR_EXPORT ClientTransport : public QObject
 {
     Q_OBJECT
+
+friend class AutoTransport;
+friend class ConnectionPrivate;
+
 public:
-    ClientTransport(Connection* con);
+    ClientTransport();
     virtual ~ClientTransport(void);
 
     virtual void negotiate() = 0;
     virtual void start(QString data) = 0;
     virtual void send(QString data) = 0;
     virtual bool abort(int timeoutMs = 0) = 0;
-    virtual void lostConnection(Connection*);
+    virtual void lostConnection(ConnectionPrivate*);
     virtual void retry() = 0;
 
     virtual const QString& getTransportType() = 0;
@@ -65,7 +68,10 @@ private Q_SLOTS:
     virtual void negotiateCompleted(QString data, SignalException* ex) = 0;
 
 protected:
-    Connection* _connection;
+    virtual void setConnectionPrivate(ConnectionPrivate* con);
+
+protected:
+    ConnectionPrivate* _connection;
 };
 
 }}}

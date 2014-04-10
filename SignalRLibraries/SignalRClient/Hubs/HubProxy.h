@@ -41,7 +41,7 @@ namespace P3 { namespace SignalR { namespace Client {
 
 class HubConnection;
 
-class HubProxy : public QObject
+class SIGNALR_EXPORT HubProxy : public QObject
 {
     Q_OBJECT
 

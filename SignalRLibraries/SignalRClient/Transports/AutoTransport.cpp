@@ -3,15 +3,18 @@
 #include "WebSocketTransport.h"
 #include "ServerSentEventsTransport.h"
 #include "LongPollingTransport.h"
+#include "Connection_p.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
-AutoTransport::AutoTransport(HttpClient *httpClient, Connection *con) : HttpBasedTransport(httpClient, con)
+AutoTransport::AutoTransport() :
+    HttpBasedTransport()
 {
     _transports = QList<ClientTransport*>();
-    _transports.append(new WebSocketTransport(httpClient, con));
-    _transports.append(new ServerSentEventsTransport(httpClient, con));
-    _transports.append(new LongPollingTransport(httpClient, con));
+    _transports.append(new WebSocketTransport());
+    _transports.append(new ServerSentEventsTransport());
+    _transports.append(new LongPollingTransport());
+
     _index = 0;
     _transport = 0;
 
@@ -21,6 +24,16 @@ AutoTransport::~AutoTransport()
 {
     _transport = 0;
     qDeleteAll(_transports);
+}
+
+void AutoTransport::negotiate()
+{
+    foreach(ClientTransport *ct, _transports)
+    {
+        ct->setConnectionPrivate(_connection);
+    }
+
+    HttpBasedTransport::negotiate();
 }
 
 void AutoTransport::onNegotiatenCompleted(const NegotiateResponse& res)
@@ -40,7 +53,7 @@ void AutoTransport::onNegotiatenCompleted(const NegotiateResponse& res)
 void AutoTransport::start(QString data)
 {
     ClientTransport *transport = _transports[_index];
-    _connection->emitLogMessage("Using transport '" + transport->getTransportType() +"'", Connection::Info);
+    _connection->emitLogMessage("Using transport '" + transport->getTransportType() +"'", SignalR::Info);
     connect(transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(onTransportStated(SignalException*)));
     connect(transport, SIGNAL(onMessageSentCompleted(SignalException*)), this, SLOT(onMessageSent(SignalException*)));
     transport->start(data);

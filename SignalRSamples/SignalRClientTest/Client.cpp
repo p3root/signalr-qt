@@ -50,20 +50,19 @@ Client::~Client()
 
 void Client::start()
 {
-    _connection = new HubConnection("https://192.168.1.152:9099/signalr");
+    _connection = new HubConnection("http://192.168.1.69:9098/signalr");
     _connection->setIgnoreSslErrors(true);
     _connection->setReconnectWaitTime(3);
-    _monitor = new HeartbeatMonitor(_connection, 0);
+    _monitor = _connection->createHeartbeatMonitor();
 
-    _client = new HttpClient(_connection);
-    _transport = new AutoTransport(_client, _connection);
+    _transport = new AutoTransport();
 
     HubProxy* proxy = _connection->createHubProxy("Chat", this);
 
     connect(proxy, SIGNAL(hubMethodCalled(QString,QVariantList)), this, SLOT(onMethodCalled(QString,QVariantList)));
 
     connect(_connection, SIGNAL(errorOccured(SignalException)), this, SLOT(onError(SignalException)));
-    connect(_connection, SIGNAL(stateChanged(Connection::State,Connection::State)), this, SLOT(onStateChanged(Connection::State,Connection::State)));
+    connect(_connection, SIGNAL(stateChanged(SignalR::State,SignalR::State)), this, SLOT(onStateChanged(SignalR::State,SignalR::State)));
     connect(_connection, SIGNAL(logMessage(QString,int)), this, SLOT(onLogMessage(QString,int)));
 
     QList<QPair<QString, QString> > headers;
@@ -98,11 +97,11 @@ void Client::onError(SignalException error)
      qDebug() << error.what();
 }
 
-void Client::onStateChanged(Connection::State oldState, Connection::State newState)
+void Client::onStateChanged(SignalR::State oldState, SignalR::State newState)
 {
     qDebug()  << "state changed: " << oldState << " -> " << newState << " << " << _connection->getConnectionId();
 
-    if(newState == Connection::Connected)
+    if(newState == SignalR::Connected)
     {
         _monitor->start();
         HubCallback* callback = new HubCallback(0);
@@ -110,7 +109,7 @@ void Client::onStateChanged(Connection::State oldState, Connection::State newSta
         HubProxy* prox = _connection->getByName("Chat");
         prox->invoke("Send", QString("message"), callback);
     }
-    else if(newState == Connection::Disconnected)
+    else if(newState == SignalR::Disconnected)
     {
         _monitor->stop();
         disconnect(this, SLOT(answerReceived(HubCallback*,QVariant)));

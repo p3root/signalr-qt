@@ -33,10 +33,15 @@
 
 #include <QtCore/qglobal.h>
 
-#if defined(SIGNALR_LIBRARY)
-#  define SIGNALRSHARED_EXPORT Q_DECL_EXPORT
+#ifndef QT_STATIC
+    #if defined(SIGNALR_LIBRARY)
+        #  define SIGNALR_EXPORT Q_DECL_EXPORT
+    #else
+        #  define SIGNALR_EXPORT Q_DECL_IMPORT
+    #endif
 #else
-#  define SIGNALRSHARED_EXPORT Q_DECL_IMPORT
+    #define SIGNALR_EXPORT
 #endif
+
 
 #endif // SIGNALR_GLOBAL_H

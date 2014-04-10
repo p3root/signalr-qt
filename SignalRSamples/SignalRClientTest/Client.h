@@ -60,7 +60,7 @@ private Q_SLOTS:
 
     void onMethodCalled(const QString& method, const QVariantList &args);
     void onError(SignalException);
-    void onStateChanged(Connection::State oldState, Connection::State newState);
+    void onStateChanged(SignalR::State oldState, SignalR::State newState);
     void answerReceived(HubCallback*, QVariant);
     void onLogMessage(QString, int severity);
 

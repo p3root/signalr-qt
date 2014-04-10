@@ -37,7 +37,7 @@
 #include <windows.h>
 #endif
 
-#include "Connection.h"
+#include "Connection_p.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
@@ -64,7 +64,7 @@ QString Helper::encode(QString val)
 }
 
 
-QString Helper::getEncodedQueryString(QUrl url, Connection *con)
+QString Helper::getEncodedQueryString(QUrl url, ConnectionPrivate *con)
 {
     QString retVal = "";
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)

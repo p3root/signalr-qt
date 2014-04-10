@@ -31,6 +31,8 @@
 #include "TransportHelper.h"
 #include <QtGlobal>
 #include "Helper.h"
+#include "Connection_p.h"
+#include "Transports/NegotiateResponse.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
@@ -43,7 +45,7 @@ TransportHelper::~TransportHelper(void)
 {
 }
 
-QString TransportHelper::getReceiveQueryString(Connection* connection, QString data, QString transport)
+QString TransportHelper::getReceiveQueryString(ConnectionPrivate* connection, QString data, QString transport)
 {
     QString connectionTokenKey = "connectionToken";
     QString conData = "&" + connectionTokenKey + "=" + QString(Helper::encode(connection->getConnectionToken()));
@@ -70,7 +72,7 @@ QString TransportHelper::getReceiveQueryString(Connection* connection, QString d
     return qs;
 }
 
-void TransportHelper::processMessages(Connection* connection, QString raw, bool* timedOut, bool* disconnected)
+void TransportHelper::processMessages(ConnectionPrivate* connection, QString raw, bool* timedOut, bool* disconnected)
 {
     QVariant var = QextJson::parse(raw);
     if(var.convert(QVariant::Map))
@@ -111,7 +113,7 @@ void TransportHelper::processMessages(Connection* connection, QString raw, bool*
         if(map.contains("E"))
         {
             //error occured
-            connection->emitLogMessage(raw, Connection::Error);
+            connection->emitLogMessage(raw, SignalR::Error);
         }
 
         if(*disconnected)

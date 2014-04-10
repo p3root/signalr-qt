@@ -6,14 +6,15 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-class AutoTransport  : public HttpBasedTransport
+class SIGNALR_EXPORT AutoTransport : public HttpBasedTransport
 {
     Q_OBJECT
 
 public:
-    AutoTransport(HttpClient* httpClient, Connection* con);
+    AutoTransport();
     ~AutoTransport();
 
+    void negotiate();
     void onNegotiatenCompleted(const NegotiateResponse& res);
     void start(QString connection);
     bool abort(int timeoutMs = 0);

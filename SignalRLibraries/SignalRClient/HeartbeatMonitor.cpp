@@ -30,10 +30,11 @@
 
 #include "HeartbeatMonitor.h"
 #include <QDebug>
+#include "Connection_p.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
-HeartbeatMonitor::HeartbeatMonitor(Connection *con, QMutex *stateLocker)
+HeartbeatMonitor::HeartbeatMonitor(ConnectionPrivate *con, QMutex *stateLocker)
 {
     _connection = con;
     _locker = stateLocker;
@@ -65,22 +66,21 @@ void HeartbeatMonitor::beat(double timeElapsed)
 
     QMutexLocker l(_locker);
 
-    if(_connection->getState() == Connection::Connected)
+    if(_connection->getState() == SignalR::Connected)
     {
         if(timeElapsed >= _connection->getKeepAliveData().getTimeout())
         {
             if(!_timedOut)
             {
-                _connection->emitLogMessage("Connection Timeout-Out", Connection::Error);
+                _connection->emitLogMessage("Connection Timeout-Out", SignalR::Error);
                 _timedOut = true;
-                _connection->getTransport()->lostConnection(_connection);
             }
         }
         else if(timeElapsed >= _connection->getKeepAliveData().getTimeoutWarning())
         {
             if(!_hasBeenWarned)
             {
-                _connection->emitLogMessage("Connection Timeout-Warning", Connection::Warning);
+                _connection->emitLogMessage("Connection Timeout-Warning", SignalR::Warning);
                 _hasBeenWarned = true;
                 _connection->connectionSlow();
             }

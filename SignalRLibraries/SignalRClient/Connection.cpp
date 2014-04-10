@@ -29,6 +29,8 @@
  */
 
 #include "Connection.h"
+#include "Connection_p.h"
+
 #include <QString>
 #include "Transports/HttpClient.h"
 #include "Helper/Helper.h"
@@ -36,264 +38,203 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-Connection::Connection(const QString &host) : _transport(0), _count(0), _keepAliveData(0)
+Connection::Connection(const QString &host) :
+    d_ptr(new ConnectionPrivate(host, this, this))
 {
-    _host = host;
-    _state = Disconnected;
 
-    qRegisterMetaType<SignalException>("SignalException");
-    qRegisterMetaType<State>("State");
-    qRegisterMetaType<Connection::State>("Connection::State");
-    _reconnectWaitTime = 5;
 
-#ifndef QT_NO_SSL
-    _sslConfiguration = QSslConfiguration::defaultConfiguration();
-#endif
 }
 
 Connection::~Connection()
 {
-    delete _keepAliveData;
+
 }
 
 void Connection::start(bool autoReconnect)
 {
-    start(new HttpClient(this), autoReconnect);
-}
-
-void Connection::start(HttpClient* client, bool autoReconnect)
-{	
-    start(new AutoTransport(client, this), autoReconnect);
+    Q_D(Connection);
+    d->start(autoReconnect);
 }
 
 void Connection::start(ClientTransport* transport, bool autoReconnect)
 {	
-    _transport = transport;
-    _autoReconnect = autoReconnect;
-
-    connect(transport, SIGNAL(onMessageSentCompleted(SignalException*)), this, SLOT(transportMessageSent(SignalException*)));
-
-    if(changeState(Disconnected, Connecting))
-    {
-        _transport->negotiate();
-    }
+    Q_D(Connection);
+    d->start(transport, autoReconnect);
 }
 
 void Connection::send(const QString &data)
 {
-    _transport->send(data);
+    Q_D(Connection);
+    d->send(data);
 }
 
 void Connection::retry()
 {
-    _transport->retry();
+    Q_D(Connection);
+    d->retry();
 }
 
-Connection::State Connection::getState()
+SignalR::State Connection::getState()
 {
-    return _state;
+    Q_D(Connection);
+    return d->getState();
 }
 
 const QString &Connection::getConnectionId() const
 {
-    return _connectionId;
+    const Q_D(Connection);
+    return d->getConnectionId();
 }
 
-bool Connection::changeState(State oldState, State newState)
-{
-    if(_state == oldState)
-    {
-        _state = newState;
-
-        Q_EMIT stateChanged(oldState, newState);
-
-        return true;
-    }
-
-    return false;
-}
-
-bool Connection::ensureReconnecting()
-{
-    changeState(Connected, Reconnecting);
-
-    return _state == Reconnecting;
-}
-
-void Connection::setConnectionState(NegotiateResponse negotiateResponse)
-{
-    _connectionId = negotiateResponse.connectionId;
-    _connectionToken = negotiateResponse.connectionToken;
-}
 
 QString Connection::onSending()
 {
-    return "";
+    Q_D(Connection);
+    return d->onSending();
+}
+
+const QList<QPair<QString, QString> > &Connection::getAdditionalHttpHeaders()
+{
+    Q_D(Connection);
+    return d->getAdditionalHttpHeaders();
 }
 
 void Connection::setAdditionalHttpHeaders(QList<QPair<QString, QString> > lst)
 {
-    _additionalHeaders = lst;
+    Q_D(Connection);
+    d->setAdditionalHttpHeaders(lst);
+}
+
+const QList<QPair<QString, QString> > &Connection::getAdditionalQueryString()
+{
+    Q_D(Connection);
+    return d->getAdditionalQueryString();
 }
 
 void Connection::setAdditionalQueryString(QList<QPair<QString, QString> > lst)
 {
-    _additionalQueryString = lst;
+    Q_D(Connection);
+    d->setAdditionalQueryString(lst);
 }
 
-void Connection::onError(SignalException error)
+
+void Connection::onReceived(QVariant &data)
 {
-    Q_EMIT errorOccured(error);
+    Q_UNUSED(data);
 }
 
-void Connection::onReceived(QVariant data)
+const ClientTransport *Connection::getTransport() const
 {
-    Q_EMIT messageReceived(data);
-}
-
-ClientTransport* Connection::getTransport()
-{
-    return _transport;
+    const Q_D(Connection);
+    return d->getTransport();
 }
 
 const QString &Connection::getUrl() const
 {
-    return _host;
+    const Q_D(Connection);
+    return d->getUrl();
 }
 
 const QString &Connection::getConnectionToken() const
 {
-    return _connectionToken;
+    const Q_D(Connection);
+    return d->getConnectionToken();
 }
 
 const QString &Connection::getGroupsToken() const
 {
-    return _groupsToken;
-}
-
-const QString &Connection::getMessageId() const
-{
-    return _messageId;
-}
-
-quint64 Connection::getNextCount()
-{
-    return ++_count;
+    const Q_D(Connection);
+    return d->getGroupsToken();
 }
 
 void Connection::presetCount(quint64 preset)
 {
-    _count = preset;
+    Q_D(Connection);
+    d->presetCount(preset);
 }
 
 bool Connection::getAutoReconnect() const
 {
-    return _autoReconnect;
-}
-
-KeepAliveData &Connection::getKeepAliveData()
-{
-    return *_keepAliveData;
-}
-
-void Connection::updateLastKeepAlive()
-{
-    if(_keepAliveData)
-        _keepAliveData->setLastKeepAlive(QDateTime::currentDateTimeUtc());
-}
-
-void Connection::connectionSlow()
-{
-    Q_EMIT onConnectionSlow();
+    const Q_D(Connection);
+    return d->getAutoReconnect();
 }
 
 bool Connection::stop(int timeoutMs)
 {
-    changeState(_state, Disconnecting);
-    bool abort = _transport->abort(timeoutMs);
-    _transport->deleteLater();
-    _transport = 0;
-    changeState(_state, Disconnected);
-
-    _connectionId = "";
-    _connectionToken = "";
-
-    return abort;
+    Q_D(Connection);
+    return d->stop(timeoutMs);
 }
 
-void Connection::negotiateCompleted(const NegotiateResponse* negotiateResponse)
+void Connection::setProxySettings(const QNetworkProxy proxy)
 {
-
-    if( !(negotiateResponse->protocolVersion == "1.3" || negotiateResponse->protocolVersion == "1.2"))
-    {
-        onError(SignalException("Invalid protocol version", SignalException::InvalidProtocolVersion));
-        stop();
-    }
-    else
-    {
-        if(negotiateResponse->keepAliveTimeout > 0)
-        {
-            _keepAliveData = new KeepAliveData(negotiateResponse->keepAliveTimeout, negotiateResponse->transportConnectTimeout);
-        }
-        setConnectionState(*negotiateResponse);
-        _tryWebSockets = negotiateResponse->tryWebSockets;
-        if(negotiateResponse->webSocketsUrl.isEmpty())
-            _webSocketsUrl = _host;
-        else
-            _webSocketsUrl = negotiateResponse->webSocketsUrl;
-        _protocolVersion = negotiateResponse->protocolVersion;
-        // disconnect(this, SLOT(transportStarted(SignalException*)));
-        connect(_transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(transportStarted(SignalException*)), Qt::UniqueConnection);
-        getTransport()->start("");
-    }
+    Q_D(Connection);
+    d->setProxySettings(proxy);
 }
 
-void Connection::emitLogMessage(QString msg, Connection::LogSeverity severity)
+const QNetworkProxy &Connection::getProxySettings()
 {
-    Q_EMIT logMessage(msg, severity);
+    Q_D(Connection);
+    return d->getProxySettings();
+}
+
+int Connection::getReconnectWaitTime()
+{
+    Q_D(Connection);
+    return d->getReconnectWaitTime();
+}
+
+void Connection::setReconnectWaitTime(int timeInSeconds)
+{
+    Q_D(Connection);
+    d->setReconnectWaitTime(timeInSeconds);
+}
+
+const QString &Connection::getProtocolVersion()
+{
+    Q_D(Connection);
+    return d->getProtocolVersion();
+}
+
+bool Connection::ignoreSslErrors()
+{
+    Q_D(Connection);
+    return d->ignoreSslErrors();
+}
+
+void Connection::setIgnoreSslErrors(bool ignoreSslErrors)
+{
+    Q_D(Connection);
+    d->setIgnoreSslErrors(ignoreSslErrors);
+}
+
+void Connection::setSslConfiguration(const QSslConfiguration &config)
+{
+    Q_D(Connection);
+    d->setSslConfiguration(config);
+}
+
+const QSslConfiguration &Connection::getSslConfiguration()
+{
+    Q_D(Connection);
+    return d->getSslConfiguration();
+}
+
+HeartbeatMonitor *Connection::createHeartbeatMonitor()
+{
+    Q_D(Connection);
+    return d->createHeartbeatMonitor();
 }
 
 void Connection::transportStarted(SignalException* error)
 {
-    if(!error)
-    {
-        if(_state == Reconnecting)
-            changeState(Reconnecting, Connected);
-        else
-            changeState(Connecting, Connected);
-    }
-    else
-    {
-        if(_autoReconnect)
-        {
-            if(changeState(Disconnected, Connecting))
-            {
-                _transport->negotiate();
-            }
-            else if(changeState(Connected, Reconnecting))
-            {
-                _transport->start("");
-            }
-            else if(changeState(Reconnecting, Connecting))
-            {
-                _transport->start("");
-            }
-        }
-        else
-        {
-
-            onError(*error);
-            stop();
-        }
-    }
-
-    onTransportStarted(error);
+    Q_D(Connection);
+    d->transportStarted(error);
 }
 
 void Connection::transportMessageSent(SignalException *ex)
 {
-    onMessageSentCompleted(ex);
-    Q_EMIT messageSentCompleted(ex);
+    Q_D(Connection);
+    d->transportMessageSent(ex);
 }
 
 }}}

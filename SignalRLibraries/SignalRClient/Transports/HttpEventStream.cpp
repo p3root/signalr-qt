@@ -31,6 +31,7 @@
 #include "HttpEventStream.h"
 #include "Helper/Helper.h"
 #include "Transports/ServerSentEventsTransport.h"
+#include "Connection_p.h"
 
 #if defined(Q_OS_QNX)
 #include <QtNetwork/qhostinfo.h>
@@ -40,7 +41,7 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-HttpEventStream::HttpEventStream(QUrl url, Connection *con) : _sock(0), _isFirstReponse(true), _url(url)
+HttpEventStream::HttpEventStream(QUrl url, ConnectionPrivate *con) : _sock(0), _isFirstReponse(true), _url(url)
 {
     _connection = con;
     _isRunning = false;

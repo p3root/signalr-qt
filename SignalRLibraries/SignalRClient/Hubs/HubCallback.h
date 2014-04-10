@@ -33,11 +33,11 @@
 
 #include <QObject>
 #include <QVariant>
-
+#include "SignalR_global.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
-class HubCallback : public QObject
+class SIGNALR_EXPORT HubCallback : public QObject
 {
     Q_OBJECT
 public:

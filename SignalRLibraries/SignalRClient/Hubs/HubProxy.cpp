@@ -31,6 +31,7 @@
 #include "HubProxy.h"
 #include "HubConnection.h"
 #include <QextJson.h>
+#include "Connection_p.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
@@ -204,7 +205,7 @@ void HubProxy::onReceive(const QVariant &var)
 
                 if(params.count() != args.count())
                 {
-                    _connection->emitLogMessage("Invalid size in give and needed args found, hubMethodCalled will be emited", Connection::Debug);
+                    _connection->getConnectionPrivate()->emitLogMessage("Invalid size in give and needed args found, hubMethodCalled will be emited", SignalR::Debug);
                     Q_EMIT hubMethodCalled(method, args);
                     return;
                 }
@@ -317,7 +318,7 @@ void HubProxy::onReceive(const QVariant &var)
                             getGenericArgument(params[9], args[9].toString()));
                     break;
                 default:
-                    _connection->emitLogMessage("Not more then 10 params allow in dynamic invokation", Connection::Debug);
+                    _connection->getConnectionPrivate()->emitLogMessage("Not more then 10 params allow in dynamic invokation", SignalR::Debug);
                     Q_EMIT hubMethodCalled(method, args);
                     break;
                 }
@@ -330,7 +331,7 @@ void HubProxy::onReceive(const QVariant &var)
         }
         if(!invokeOk)
         {
-            _connection->emitLogMessage("Could not dynamically invoke method", Connection::Debug);
+            _connection->getConnectionPrivate()->emitLogMessage("Could not dynamically invoke method", SignalR::Debug);
             Q_EMIT hubMethodCalled(method, args);
         }
     }
@@ -345,7 +346,7 @@ void HubProxy::onReceive(const QVariant &var)
         }
         else
         {
-            _connection->emitLogMessage("HubProxy Message with no Method name called", Connection::Warning);
+            _connection->getConnectionPrivate()->emitLogMessage("HubProxy Message with no Method name called", SignalR::Warning);
         }
     }
 }
@@ -403,7 +404,7 @@ QGenericArgument HubProxy::getGenericArgument(const QString &type, const QString
     }
 
 
-    _connection->emitLogMessage("getGenericArgument: no type found for " + type + " it will be seen as a QString", Connection::Warning);
+    _connection->getConnectionPrivate()->emitLogMessage("getGenericArgument: no type found for " + type + " it will be seen as a QString", SignalR::Warning);
     return Q_ARG(QString, val);
 }
 

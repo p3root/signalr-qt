@@ -31,6 +31,8 @@
 #include "HubConnection.h"
 #include <QextJson.h>
 
+#include "Connection_p.h"
+
 namespace P3 { namespace SignalR { namespace Client {
 
 HubConnection::HubConnection(const QString &url) : Connection(url)
@@ -67,9 +69,9 @@ HubProxy *HubConnection::createHubProxy(QString name, QObject *objectToInvoke)
     {
         return _hubs[name];
     }
-    if(_state != Disconnected)
+    if(getState() != SignalR::Disconnected)
     {
-        emitLogMessage("A HubProxy cannot be added after the connection has been started", Connection::Error);
+        d_ptr->emitLogMessage("A HubProxy cannot be added after the connection has been started", SignalR::Error);
         return 0;
     }
 
@@ -98,7 +100,7 @@ QString HubConnection::onSending()
     return json;
 }
 
-void HubConnection::onReceived(QVariant data)
+void HubConnection::onReceived(QVariant &data)
 {
     if(data.convert(QVariant::Map))
     {
@@ -141,10 +143,15 @@ HubProxy *HubConnection::getByName(const QString &name)
 {
     if(!_hubs.contains(name))
     {
-        emitLogMessage("Cloud not find proxy with name " + name, Connection::Error);
+        d_ptr->emitLogMessage("Cloud not find proxy with name " + name, SignalR::Error);
         return 0;
     }
     return _hubs[name];
+}
+
+quint64 HubConnection::getNextCount()
+{
+    return d_ptr->getNextCount();
 }
 
 HubProxy *HubConnection::newHubProxy(const QString &name, QObject *objectToInvoke)

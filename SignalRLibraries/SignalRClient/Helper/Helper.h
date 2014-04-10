@@ -34,7 +34,7 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-class Connection;
+class ConnectionPrivate;
 
 class Helper
 {
@@ -42,7 +42,7 @@ public:
     Helper();
 
     static QString encode(QString val);
-    static QString getEncodedQueryString(QUrl, Connection *con);
+    static QString getEncodedQueryString(QUrl, ConnectionPrivate *con);
 };
 
 }}}

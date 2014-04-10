@@ -40,11 +40,11 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-class LongPollingTransport : public HttpBasedTransport
+class SIGNALR_EXPORT LongPollingTransport : public HttpBasedTransport
 {
     Q_OBJECT
 public:
-    LongPollingTransport(HttpClient* httpClient, Connection* con);
+    LongPollingTransport();
     ~LongPollingTransport(void);
 
     void start(QString connection);

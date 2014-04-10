@@ -33,12 +33,14 @@
 
 #include <QObject>
 #include <QString>
-#include <SignalException.h>
-#include "Transports/HttpClient.h"
-#include "Transports/NegotiateResponse.h"
-#include "ClientTransport.h"
 #include <QDateTime>
-#include "KeepAliveData.h"
+
+#include "SignalR.h"
+#include "SignalR_global.h"
+
+#include "SignalException.h"
+#include "ClientTransport.h"
+#include "HeartbeatMonitor.h"
 
 #ifndef QT_NO_NETWORKPROXY
     #include <QNetworkProxy>
@@ -50,97 +52,127 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-class Connection : public QObject
+class ConnectionPrivate;
+
+class SIGNALR_EXPORT Connection : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(Connection)
+    Q_DECLARE_PRIVATE(Connection)
+
 public:
-    enum State
-    {
-        Connecting,
-        Connected,
-        Reconnecting,
-        Disconnecting,
-        Disconnected
-    };
-
-    enum LogSeverity
-    {
-        Debug,
-        Info,
-        Warning,
-        Error
-    };
-
     Connection(const QString &url);
     virtual ~Connection(void);
 
+    ///
+    /// \brief Starts the connection
+    /// \param AutoReconnect if set to true, the transport will ever try to reconnect automaticaly
+    ///
     virtual void start(bool autoReconnect = false);
+
+    ///
+    /// \brief Starts the connection
+    /// \param The transport which the connection will use
+    /// \param AutoReconnect if set to true, the transport will ever try to reconnect automaticaly
+    ///
     virtual void start(ClientTransport* tranport, bool autoReconnect = false);
-    virtual void start(HttpClient* client, bool autoReconnect = false);
+
+    ///
+    /// \brief Stops the connection and sends an abort to the server
+    /// \param The timeout
+    /// \return
+    ///
     virtual bool stop(int timeoutMs=0);
+
+    ///
+    /// \brief Sends data async over the connection
+    /// \param The data to send
+    ///
     virtual void send(const QString &data);
 
+    ///
+    /// \brief Aborts the current retry wait, and tries to reconnect
+    ///
     void retry();
     
-    State getState();
+    ///
+    /// \brief Returns the current connection state
+    /// \return Connection::State
+    ///
+    SignalR::State getState();
+
+    ///
+    /// \brief Returns the current connection id
+    /// \return QString
+    ///
     const QString &getConnectionId() const;
+
+    ///
+    /// \brief Returns the current connection token
+    /// \return QString
+    ///
     const QString &getConnectionToken() const;
+
+    ///
+    /// \brief Returns the current group token
+    /// \return QString
+    ///
     const QString &getGroupsToken() const;
-    ClientTransport* getTransport();
+
+    ///
+    /// \brief Returns the current used ClientTransport
+    /// \return ClientTransport
+    ///
+    const ClientTransport* getTransport() const;
+
+    ///
+    /// \brief Returns the given SignalR Url
+    /// \return QString
+    ///
     const QString &getUrl() const;
-    const QString &getMessageId() const;
-    int getPort();
-    quint64 getNextCount();
+
+    ///
+    /// \brief Presets the used message cound
+    /// \param Count which should be used
+    ///
     void presetCount(quint64 preset);
+
+    ///
+    /// \brief Returns if AutoReconnect is used
+    /// \return bool
+    ///
     bool getAutoReconnect() const;
 
-    KeepAliveData& getKeepAliveData();
-    virtual void updateLastKeepAlive();
-    void connectionSlow();
-
-    virtual bool changeState(State oldState, State newState);
-    bool ensureReconnecting();
-    void onError(SignalException exp);
-    virtual void onReceived(QVariant data);
-
-    void setGroupsToken(const QString &token) { _groupsToken = token; }
-    void setMessageId(const QString &messageId) { _messageId = messageId; }
-    void setConnectionState(NegotiateResponse negotiateResponse);
     virtual QString onSending();
 
-    const QList< QPair<QString, QString> >& getAdditionalHttpHeaders() { return _additionalHeaders; }
+    const QList<QPair<QString, QString> > &getAdditionalHttpHeaders();
     void setAdditionalHttpHeaders(QList<QPair<QString, QString> > lst);
 
-    const QList< QPair<QString, QString> >& getAdditionalQueryString() { return _additionalQueryString; }
+    const QList<QPair<QString, QString> > &getAdditionalQueryString();
     void setAdditionalQueryString(QList<QPair<QString, QString> > lst);
 
-    void negotiateCompleted(const NegotiateResponse *negotiateResponse);
-
 #ifndef QT_NO_NETWORKPROXY
-    void setProxySettings(const QNetworkProxy proxy) { _proxySettings = proxy; }
-    const QNetworkProxy &getProxySettings() { return _proxySettings; }
+    void setProxySettings(const QNetworkProxy proxy);
+    const QNetworkProxy &getProxySettings();
 #endif
 
-    int getReconnectWaitTime() { return _reconnectWaitTime; }
-    void setReconnectWaitTime(int timeInSeconds) { _reconnectWaitTime = timeInSeconds; }
+    int getReconnectWaitTime();
+    void setReconnectWaitTime(int timeInSeconds);
 
-    bool tryWebSockets() { return _tryWebSockets; }
-
-    void emitLogMessage(QString, LogSeverity severity);
-
-    const QString &getWebSocketsUrl() { return _webSocketsUrl; }
-    const QString &getProtocolVersion() { return _protocolVersion;}
+    const QString &getProtocolVersion();
 
 #ifndef QT_NO_SSL
-    bool ignoreSslErrors() { return _ignoreSslErrors; }
-    void setIgnoreSslErrors(bool ignoreSslErrors) { _ignoreSslErrors = ignoreSslErrors; }
+    bool ignoreSslErrors();
+    void setIgnoreSslErrors(bool ignoreSslErrors);
 
-    void setSslConfiguration(const QSslConfiguration &config) { _sslConfiguration = config; }
-    const QSslConfiguration &getSslConfiguration() { return _sslConfiguration; }
+    void setSslConfiguration(const QSslConfiguration &config);
+    const QSslConfiguration &getSslConfiguration();
 #endif
 
+    HeartbeatMonitor *createHeartbeatMonitor();
+
 Q_SIGNALS:
-    void stateChanged(Connection::State old_state, Connection::State new_state);
+    void stateChanged(SignalR::State old_state, SignalR::State new_state);
     void errorOccured(SignalException error);
     void messageReceived(QVariant data);
     void onConnectionSlow();
@@ -148,43 +180,19 @@ Q_SIGNALS:
     void messageSentCompleted(SignalException *ex);
 
 protected:
-    State _state;
+    ConnectionPrivate * getConnectionPrivate() { return d_ptr; }
 
-protected:
     virtual void onTransportStarted(SignalException *) {}
     virtual void onMessageSentCompleted(SignalException *) {}
+    virtual void onReceived(QVariant &data);
 
 private Q_SLOTS:
     void transportStarted(SignalException *ex);
     void transportMessageSent(SignalException *ex);
 
-private:
-    QString _host;
-    QString _connectionId;
-    QString _connectionToken;
-    QString _groupsToken;
-    QString _messageId;
-    ClientTransport* _transport;
-    QList<QPair<QString, QString> > _additionalHeaders;
-    QList<QPair<QString, QString> > _additionalQueryString;
-    // ConnectionHandler* _handler;
-    quint64 _count;
-    HttpClient *_httpClient;
-    bool _autoReconnect;
-    KeepAliveData *_keepAliveData;
-    int _reconnectWaitTime;
-    bool _tryWebSockets;
-    QString _webSocketsUrl;
-    QString _protocolVersion;
+protected:
+    ConnectionPrivate * const d_ptr;
 
-#ifndef QT_NO_NETWORKPROXY
-    QNetworkProxy _proxySettings;
-#endif
-
-#ifndef QT_NO_SSL
-    bool _ignoreSslErrors;
-    QSslConfiguration _sslConfiguration;
-#endif
 };
 
 }}}

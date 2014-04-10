@@ -41,21 +41,20 @@
 	#include <QTcpSocket>
     #include <QSslSocket>
 #endif
-#include "HttpRequest.h"
-#include "HttpResponse.h"
 
+#include "SignalException.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
 class ServerSentEventsTransport;
-class Connection;
+class ConnectionPrivate;
 
 class HttpEventStream : public QThread
 {
     Q_OBJECT
 
 public:
-    HttpEventStream(QUrl url, Connection* con);
+    HttpEventStream(QUrl url, ConnectionPrivate* con);
     ~HttpEventStream();
 
     void close();
@@ -76,7 +75,7 @@ private Q_SLOTS:
 #endif
 
 private:
-    Connection* _connection;
+    ConnectionPrivate* _connection;
     QTcpSocket *_sock;
     bool _isFirstReponse;
     bool _isAborting;

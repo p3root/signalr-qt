@@ -30,12 +30,16 @@
 
 #include "HttpBasedTransport.h"
 #include "Helper/Helper.h"
+#include "Connection_p.h"
+#include "Helper/TransportHelper.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
-HttpBasedTransport::HttpBasedTransport(HttpClient* httpClient, Connection *con) : ClientTransport(con), _sending(false)
+HttpBasedTransport::HttpBasedTransport() :
+    ClientTransport(),
+    _sending(false)
 {
-    _httpClient = httpClient;
+
 }
 
 
@@ -64,7 +68,7 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
     {
         if(_connection->getAutoReconnect())
         {
-            _connection->emitLogMessage(QString("Negotiation failed, will try it again after %1s").arg(_connection->getReconnectWaitTime()), Connection::Error);
+            _connection->emitLogMessage(QString("Negotiation failed, will try it again after %1s").arg(_connection->getReconnectWaitTime()), SignalR::Error);
             _connection->onError(SignalException("Negotiation failed", ex->getType()));
             connect(&_retryTimerTimeout, SIGNAL(timeout()), SLOT(retryNegotiation()));
             _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
@@ -147,6 +151,12 @@ void HttpBasedTransport::tryDequeueNextWorkItem()
     }
 }
 
+void HttpBasedTransport::setConnectionPrivate(ConnectionPrivate *connection)
+{
+    ClientTransport::setConnectionPrivate(connection);
+    _httpClient = new HttpClient(connection);
+}
+
 void HttpBasedTransport::retry()
 {
     if(_retryTimerTimeout.isActive())
@@ -196,7 +206,7 @@ bool HttpBasedTransport::abort(int timeoutMs)
     }
     connect(_httpClient,SIGNAL(postRequestCompleted(QString,SignalException*)), &loop, SLOT(quit()));
 
-    _connection->emitLogMessage("starting abort request (" + _connection->getConnectionId() +")" , Connection::Debug);
+    _connection->emitLogMessage("starting abort request (" + _connection->getConnectionId() +")" , SignalR::Debug);
     _httpClient->post(url, QMap<QString, QString>());
 
     //not the prettiest way, but I found no other solution

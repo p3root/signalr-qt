@@ -10,11 +10,11 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-class WebSocketTransport : public HttpBasedTransport
+class SIGNALR_EXPORT WebSocketTransport : public HttpBasedTransport
 {
     Q_OBJECT
 public:
-    WebSocketTransport(HttpClient *c, Connection* con);
+    WebSocketTransport();
 
     void start(QString data);
     void send(QString data);
