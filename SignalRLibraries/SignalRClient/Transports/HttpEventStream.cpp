@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2013, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
+ *  Copyright (c) 2013-2014, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
  *  All rights reserved.
  *
  *   Redistribution and use in source and binary forms, with or without
@@ -40,17 +40,26 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-HttpEventStream::HttpEventStream(QUrl url, bool logErrorsToQt, Connection *con) : _sock(0), _isFirstReponse(true), _url(url)
+HttpEventStream::HttpEventStream(QUrl url, Connection *con) : _sock(0), _isFirstReponse(true), _url(url)
 {
-    _logErrorsToQt = logErrorsToQt;
     _connection = con;
+    _isRunning = false;
+}
+
+HttpEventStream::~HttpEventStream()
+{
+
 }
 
 void HttpEventStream::open()
 {
+    if(_isRunning)
+        return;
+
+    _isRunning = true;
+
     _isAborting = false;
     _isFirstReponse = true;
-    _sock = 0;
 
 #ifdef Q_OS_WIN32
     QString host = QString(_url.host());
@@ -74,9 +83,11 @@ void HttpEventStream::open()
         }
     }
 
+
     //create a new ssl socket if https is used
     if(_url.scheme() == "https")
     {
+#ifndef QT_NO_SSL
         QSslSocket *sslSocket = new QSslSocket();
         sslSocket->setSslConfiguration(_connection->getSslConfiguration());
 
@@ -87,6 +98,9 @@ void HttpEventStream::open()
 
         _sock = sslSocket;
         isSslSocket = true;
+#else
+     _sock = new QTcpSocket();
+#endif
     }
     else
     {
@@ -96,8 +110,10 @@ void HttpEventStream::open()
 
     QTextStream os(_sock);
 
+#ifndef QT_NO_NETWORKPROXY
     //setting the give proxy settings for the socket
     _sock->setProxy(_connection->getProxySettings());
+#endif
 
     //try to resolve the hostname
     QHostInfo info = QHostInfo::fromName(host);
@@ -143,16 +159,12 @@ void HttpEventStream::open()
             else
             {
                 Q_EMIT connected(new SignalException(_sock->errorString(), SignalException::ConnectionRefusedError));
-                if(_logErrorsToQt)
-                    qCritical() << "EventStream Error:" << _sock->errorString();
             }
         }
     }
     else
     {
         Q_EMIT connected(new SignalException(info.errorString(), SignalException::ConnectionRefusedError));
-        if(_logErrorsToQt)
-            qCritical() << "Host Error:" << info.errorString();
     }
 
 }
@@ -160,6 +172,8 @@ void HttpEventStream::open()
 void HttpEventStream::close()
 {
     _isAborting = true;
+    if(_sock)
+        _sock->abort();
 }
 
 void HttpEventStream::run()
@@ -228,7 +242,7 @@ void HttpEventStream::run()
                     ex = new SignalException(errorString, SignalException::SslHandshakeFailed);
                     break;
                 default:
-                    ex = new SignalException(errorString, SignalException::EventStreamSocketLost);
+                    ex = new SignalException(errorString, SignalException::UnknownNetworkError);
                     break;
 
                 }
@@ -246,6 +260,8 @@ void HttpEventStream::run()
         _sock->close();
     _sock->deleteLater();
     _sock = 0;
+
+    _isRunning = false;
 }
 
 QString HttpEventStream::readPackage(QString val)
@@ -285,7 +301,7 @@ QString HttpEventStream::readPackage(QString val)
 
     return readPackage(val);
 }
-
+#ifndef QT_NO_SSL
 void HttpEventStream::onSslErrors(const QList<QSslError> &errors)
 {
     if(!_connection->ignoreSslErrors())
@@ -294,5 +310,5 @@ void HttpEventStream::onSslErrors(const QList<QSslError> &errors)
     QSslSocket *socket = reinterpret_cast<QSslSocket*>(_sock);
     socket->ignoreSslErrors(errors);
 }
-
+#endif
 }}}

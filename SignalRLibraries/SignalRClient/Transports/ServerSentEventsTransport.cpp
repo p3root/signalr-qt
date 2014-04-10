@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2013, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
+ *  Copyright (c) 2013-2014, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without modification,
@@ -45,6 +45,12 @@ ServerSentEventsTransport::~ServerSentEventsTransport(void)
 
 void ServerSentEventsTransport::start(QString)
 {
+    if(_eventStream)
+    {
+        _eventStream->deleteLater();
+        _eventStream = 0;
+    }
+
     QString urlAppend = "connect";
     if(_started)
         urlAppend = "reconnect";
@@ -52,19 +58,7 @@ void ServerSentEventsTransport::start(QString)
 
     _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
-    if(_eventStream)
-    {
-        _eventStream->deleteLater();
-        _eventStream = 0;
-    }
-
-    _eventStream = new HttpEventStream(_url, _connection->getLogErrorsToQDebug(), _connection);
-
-    connect(_eventStream, SIGNAL(packetReady(QString,SignalException*)), this, SLOT(packetReceived(QString,SignalException*)));
-    connect(_eventStream, SIGNAL(connected(SignalException*)), this, SLOT(connected(SignalException*)));
-
-    _eventStream->start();
-
+    startEventStream();
 }
 
 void ServerSentEventsTransport::abort()
@@ -81,13 +75,13 @@ void ServerSentEventsTransport::stop()
 
 void ServerSentEventsTransport::lostConnection(Connection *)
 {
-    reconnect();
+    // reconnect();
 }
 
 void ServerSentEventsTransport::retry()
 {
     stop();
-    reconnect();
+    startEventStream();
 }
 
 const QString &ServerSentEventsTransport::getTransportType()
@@ -114,35 +108,29 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
     }
     else if(error != 0)
     {
-        if(error->getType() == SignalException::EventStreamSocketLost)
+        if(_connection->ensureReconnecting())
         {
-            reconnect();
-        }
-        else if(_connection->ensureReconnecting())
-        {
-            if(_connection->getLogErrorsToQDebug())
-                qDebug() << "ServerSentEventsTransport: Lost connection...try to reconnect";
-            _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
-
             connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
             _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
             _retryTimerTimeout.start();
 
+            if(_connection->getState() == Connection::Connected)
+                _connection->changeState(_connection->getState(), Connection::Reconnecting);
+
+            logReconnectMessage();
             return;
         }
         else if(_connection->getAutoReconnect())
         {
-            if(_connection->getLogErrorsToQDebug())
-                qDebug() << "ServerSentEventsTransport: (autoconnect=true)  Lost connection...try to reconnect";
-            _connection->emitLogMessage("lost connection...try to reconnect", Connection::Debug);
-
             connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
             _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
             _retryTimerTimeout.start();
 
-              //_connection->changeState(Connection::Connected, Connection::Reconnecting);
+            if(_connection->getState() == Connection::Connected)
+                _connection->changeState(_connection->getState(), Connection::Reconnecting);
 
-              return;
+            logReconnectMessage();
+            return;
         }
         else
         {
@@ -155,8 +143,8 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
     {
         data = data.remove(0, data.indexOf("data: ")+5);
         _connection->getKeepAliveData().setLastKeepAlive(QDateTime::currentDateTimeUtc());
-        if(_connection->getLogErrorsToQDebug())
-            qDebug() << "keep alive received";
+
+        _connection->emitLogMessage("SSE: KeepAlive received", Connection::Debug);
         TransportHelper::processMessages(_connection, data, &timedOut, &disconnected);
     }
 
@@ -181,10 +169,14 @@ void ServerSentEventsTransport::connected(SignalException *error)
 
         _connection->onError(*error);
 
-        if(_connection->getLogErrorsToQDebug())
-            qDebug() << "ServerSentEventsTransport: (autoconnect=true)  Lost connection...try to reconnect";
-        _connection->emitLogMessage("lost connection...try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", Connection::Debug);
+        logReconnectMessage();
+
         return;
+    }
+
+    if(!error)
+    {
+        connect(_eventStream, SIGNAL(packetReady(QString,SignalException*)), this, SLOT(packetReceived(QString,SignalException*)));
     }
 }
 
@@ -192,14 +184,37 @@ void ServerSentEventsTransport::reconnectTimerTick()
 {
     _retryTimerTimeout.stop();
     disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
-    reconnect();
+    closeEventStream();
+    start("");
 }
 
-void ServerSentEventsTransport::reconnect()
+void ServerSentEventsTransport::closeEventStream()
 {
+    if(!_eventStream)
+        return;
+
     if(_eventStream->isRunning())
         _eventStream->close();
+    _eventStream->deleteLater();
+    _eventStream = 0;
+}
+
+void ServerSentEventsTransport::startEventStream()
+{
+    closeEventStream();
+
+    _eventStream = new HttpEventStream(_url,_connection);
+
+    connect(_eventStream, SIGNAL(connected(SignalException*)), this, SLOT(connected(SignalException*)));
+
     _eventStream->start();
+
+}
+
+void ServerSentEventsTransport::logReconnectMessage()
+{
+    _connection->emitLogMessage("SSE: Lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", Connection::Debug);
+
 }
 
 }}}

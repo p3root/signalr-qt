@@ -60,7 +60,10 @@ private Q_SLOTS:
 
 
 private:
-    void reconnect();
+    void closeEventStream();
+    void startEventStream();
+
+    void logReconnectMessage();
 
 private:
     HttpEventStream *_eventStream;

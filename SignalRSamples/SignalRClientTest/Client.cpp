@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2013, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
+ *  Copyright (c) 2013-2014, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without modification,
@@ -50,15 +50,13 @@ Client::~Client()
 
 void Client::start()
 {
-    qDebug() << "Client Thread: " << thread()->currentThreadId();
     _connection = new HubConnection("https://192.168.1.152:9099/signalr");
-    _connection->setLogErrorsToQDebug(false);
     _connection->setIgnoreSslErrors(true);
     _connection->setReconnectWaitTime(3);
     _monitor = new HeartbeatMonitor(_connection, 0);
 
     _client = new HttpClient(_connection);
-    _transport = new ServerSentEventsTransport(_client, _connection);
+    _transport = new AutoTransport(_client, _connection);
 
     HubProxy* proxy = _connection->createHubProxy("Chat", this);
 
@@ -98,9 +96,6 @@ void Client::onMethodCalled(const QString &method, const QVariantList &args)
 void Client::onError(SignalException error)
 {
      qDebug() << error.what();
-
-    // _connection->setReconnectWaitTime(100);
-   //   _timer.start();
 }
 
 void Client::onStateChanged(Connection::State oldState, Connection::State newState)
@@ -142,8 +137,6 @@ void Client::send(QString message)
 
 void Client::timerTick()
 {
-    //    qApp->exit(3);
     qDebug() << "start retry before retrytimer ticks";
- //   _connection->retry();
 }
 

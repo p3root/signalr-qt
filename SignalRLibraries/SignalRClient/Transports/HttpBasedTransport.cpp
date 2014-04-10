@@ -64,10 +64,6 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
     {
         if(_connection->getAutoReconnect())
         {
-            if(_connection->getLogErrorsToQDebug())
-            {
-                qDebug() << "Negotiation failed, will try it again";
-            }
             _connection->emitLogMessage(QString("Negotiation failed, will try it again after %1s").arg(_connection->getReconnectWaitTime()), Connection::Error);
             _connection->onError(SignalException("Negotiation failed", ex->getType()));
             connect(&_retryTimerTimeout, SIGNAL(timeout()), SLOT(retryNegotiation()));

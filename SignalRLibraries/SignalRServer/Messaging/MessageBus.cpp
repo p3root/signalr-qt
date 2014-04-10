@@ -21,12 +21,15 @@ MessageBus::~MessageBus()
 
 void MessageBus::publish(const Message &message)
 {
-
+    Q_UNUSED(message);
 }
 
 void MessageBus::subscribe(void *subscrivber, QString cursor, int maxMessages, void *state)
 {
-
+    Q_UNUSED(subscrivber);
+    Q_UNUSED(cursor);
+    Q_UNUSED(maxMessages);
+    Q_UNUSED(state);
 }
 
 void MessageBus::garbageCollectTopics()

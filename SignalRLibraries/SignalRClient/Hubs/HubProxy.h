@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2013, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
+ *  Copyright (c) 2013-2014, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without modification,
@@ -71,7 +71,6 @@ protected:
 
 Q_SIGNALS:
     void hubMethodCalled(const QString &method, const QVariantList &args);
-    Q_DECL_DEPRECATED void hubMessageReceived(const QVariant &data);
 
 private:
     QGenericArgument getGenericArgument(const QString &type, const QString &val);

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2013, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
+ *  Copyright (c) 2013-2014, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without modification,
@@ -140,10 +140,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                     //_started = false;
                     _connection->changeState(Connection::Connected, Connection::Reconnecting);
 
-                    if(_connection->getLogErrorsToQDebug())
-                        qDebug() << "LongPollingTranpsort: lost connection...trying to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s";
-
-                    _connection->emitLogMessage("lost connection...trying to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", Connection::Debug);
+                    _connection->emitLogMessage("LP: Lost connection, trying to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", Connection::Debug);
 
                     connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
                     _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
@@ -155,7 +152,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                 else if(error->getType() == SignalException::OperationCanceled)
                 {
                     serverError = false;
-                    _connection->emitLogMessage("connection was closed due to a client timeout", Connection::Warning);
+                    _connection->emitLogMessage("LP: Connection was closed due to a client timeout", Connection::Warning);
 
                     connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(errorRetryTimer()));
                     _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
@@ -167,7 +164,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                 else if(error->getType() == SignalException::UnknownNetworkError)
                 {
                     serverError = false;
-                    _connection->emitLogMessage("connection was closed due to an unknown network error", Connection::Error);
+                    _connection->emitLogMessage("LP: Connection was closed due to an unknown network error", Connection::Error);
                     _connection->changeState(_connection->getState(), Connection::Reconnecting);
                     connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(errorRetryTimer()));
                     _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
@@ -177,7 +174,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                 }
                 else
                 {
-                    _connection->emitLogMessage("unknown error (" + error->getMessage() + ")", Connection::Error);
+                    _connection->emitLogMessage("LP: Unknown error (" + error->getMessage() + ")", Connection::Error);
 
                     connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
                     _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
@@ -209,15 +206,12 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                 }
                 else
                 {
-                    _connection->emitLogMessage("unkown error (" + error->getMessage() + ")", Connection::Error);
+                    _connection->emitLogMessage("LP: Unkown error (" + error->getMessage() + ")", Connection::Error);
                 }
 
                 if(_connection->ensureReconnecting())
                 {
-                    if(_connection->getLogErrorsToQDebug())
-                        qDebug() << "LongPollingTranpsort: lost connection...try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s";
-
-                    _connection->emitLogMessage("lost connection...try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", Connection::Debug);
+                     _connection->emitLogMessage("LP: Lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", Connection::Debug);
 
                     connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
                     _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
@@ -227,9 +221,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
                 }
                 else if(_connection->getAutoReconnect())
                 {
-                    if(_connection->getLogErrorsToQDebug())
-                        qDebug() << "LongPollingTranpsort: (autoconnect=true) lost connection...try to reconnect";
-                    _connection->emitLogMessage("lost connection...try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", Connection::Debug);
+                    _connection->emitLogMessage("LP: Lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", Connection::Debug);
 
                     connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
                     _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);

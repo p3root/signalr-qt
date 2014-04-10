@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2013, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
+ *  Copyright (c) 2013-2014, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without modification,
@@ -39,8 +39,13 @@
 #include "ClientTransport.h"
 #include <QDateTime>
 #include "KeepAliveData.h"
-#include <QNetworkProxy>
-#include <QSslConfiguration>
+
+#ifndef QT_NO_NETWORKPROXY
+    #include <QNetworkProxy>
+#endif
+#ifndef QT_NO_SSL
+    #include <QSslConfiguration>
+#endif
 
 
 namespace P3 { namespace SignalR { namespace Client {
@@ -111,11 +116,10 @@ public:
 
     void negotiateCompleted(const NegotiateResponse *negotiateResponse);
 
+#ifndef QT_NO_NETWORKPROXY
     void setProxySettings(const QNetworkProxy proxy) { _proxySettings = proxy; }
     const QNetworkProxy &getProxySettings() { return _proxySettings; }
-
-    void setLogErrorsToQDebug(bool val)  { _logErrorsToQDebug = val; }
-    bool getLogErrorsToQDebug() { return _logErrorsToQDebug; }
+#endif
 
     int getReconnectWaitTime() { return _reconnectWaitTime; }
     void setReconnectWaitTime(int timeInSeconds) { _reconnectWaitTime = timeInSeconds; }
@@ -127,11 +131,13 @@ public:
     const QString &getWebSocketsUrl() { return _webSocketsUrl; }
     const QString &getProtocolVersion() { return _protocolVersion;}
 
+#ifndef QT_NO_SSL
     bool ignoreSslErrors() { return _ignoreSslErrors; }
     void setIgnoreSslErrors(bool ignoreSslErrors) { _ignoreSslErrors = ignoreSslErrors; }
 
     void setSslConfiguration(const QSslConfiguration &config) { _sslConfiguration = config; }
     const QSslConfiguration &getSslConfiguration() { return _sslConfiguration; }
+#endif
 
 Q_SIGNALS:
     void stateChanged(Connection::State old_state, Connection::State new_state);
@@ -153,7 +159,6 @@ private Q_SLOTS:
     void transportMessageSent(SignalException *ex);
 
 private:
-    bool _logErrorsToQDebug;
     QString _host;
     QString _connectionId;
     QString _connectionToken;
@@ -167,14 +172,19 @@ private:
     HttpClient *_httpClient;
     bool _autoReconnect;
     KeepAliveData *_keepAliveData;
-    QNetworkProxy _proxySettings;
     int _reconnectWaitTime;
     bool _tryWebSockets;
     QString _webSocketsUrl;
     QString _protocolVersion;
 
+#ifndef QT_NO_NETWORKPROXY
+    QNetworkProxy _proxySettings;
+#endif
+
+#ifndef QT_NO_SSL
     bool _ignoreSslErrors;
     QSslConfiguration _sslConfiguration;
+#endif
 };
 
 }}}

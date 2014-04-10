@@ -71,10 +71,6 @@ void HeartbeatMonitor::beat(double timeElapsed)
         {
             if(!_timedOut)
             {
-                if(_connection->getLogErrorsToQDebug())
-                {
-                    qCritical() << "Connection Timed-Out";
-                }
                 _connection->emitLogMessage("Connection Timeout-Out", Connection::Error);
                 _timedOut = true;
                 _connection->getTransport()->lostConnection(_connection);
@@ -84,10 +80,6 @@ void HeartbeatMonitor::beat(double timeElapsed)
         {
             if(!_hasBeenWarned)
             {
-                if(_connection->getLogErrorsToQDebug())
-                {
-                    qWarning() << "Connection Timeout-Warning";
-                }
                 _connection->emitLogMessage("Connection Timeout-Warning", Connection::Warning);
                 _hasBeenWarned = true;
                 _connection->connectionSlow();

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2013, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
+ *  Copyright (c) 2013-2014, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without modification,
@@ -49,7 +49,11 @@ HttpClient::HttpClient(Connection *con) : _isAborting(false), _man(0)
 {
     _connection = con;
     _man = new QNetworkAccessManager();
+
+#ifndef QT_NO_NETWORKPROXY
     _man->setProxy(_connection->getProxySettings());
+#endif
+
     _getMutex = new QMutex(QMutex::Recursive);
     _postMutex = new QMutex(QMutex::Recursive);
 
@@ -108,7 +112,11 @@ void HttpClient::get(QString url)
 
     _connection->emitLogMessage("starting get request (" + _connection->getConnectionId() +")" , Connection::Debug);
     QNetworkReply *getReply = _man->get(req);
+
+#ifndef QT_NO_SSL
     getReply->setSslConfiguration(_connection->getSslConfiguration());
+#endif
+
     _getInProgress = true;
 
     _currentConnections.append(getReply);
@@ -163,7 +171,11 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
     _connection->emitLogMessage("starting post request (" + _connection->getConnectionId() +")", Connection::Debug);
 
     QNetworkReply *postReply = _man->post(req, QByteArray().append(queryString));
+
+#ifndef QT_NO_SSL
     postReply->setSslConfiguration(_connection->getSslConfiguration());
+#endif
+
     _postInProgress = true;
     _currentConnections.append(postReply);
 }
@@ -310,6 +322,7 @@ void HttpClient::postRequestFinished(QNetworkReply *reply)
     }
 }
 
+#ifndef QT_NO_SSL
 void HttpClient::onIgnoreSSLErros(QNetworkReply *reply, QList<QSslError> error)
 {
     if(!_connection->ignoreSslErrors())
@@ -322,5 +335,6 @@ void HttpClient::onIgnoreSSLErros(QNetworkReply *reply, QList<QSslError> error)
 
     reply->ignoreSslErrors(error);
 }
+#endif
 
 }}}

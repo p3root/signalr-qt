@@ -44,9 +44,11 @@ Connection::Connection(const QString &host) : _transport(0), _count(0), _keepAli
     qRegisterMetaType<SignalException>("SignalException");
     qRegisterMetaType<State>("State");
     qRegisterMetaType<Connection::State>("Connection::State");
-    _logErrorsToQDebug = false;
     _reconnectWaitTime = 5;
+
+#ifndef QT_NO_SSL
     _sslConfiguration = QSslConfiguration::defaultConfiguration();
+#endif
 }
 
 Connection::~Connection()

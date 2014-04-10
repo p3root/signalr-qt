@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2013, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
+ *  Copyright (c) 2013-2014, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without modification,
@@ -55,7 +55,8 @@ class HttpEventStream : public QThread
     Q_OBJECT
 
 public:
-    HttpEventStream(QUrl url, bool logErrorsToQt, Connection* con);
+    HttpEventStream(QUrl url, Connection* con);
+    ~HttpEventStream();
 
     void close();
 
@@ -69,16 +70,19 @@ private:
     void open();
 
 private Q_SLOTS:
+
+#ifndef QT_NO_SSL
     void onSslErrors(const QList<QSslError> &errors);
+#endif
 
 private:
     Connection* _connection;
-    bool _logErrorsToQt;
     QTcpSocket *_sock;
     bool _isFirstReponse;
     bool _isAborting;
     QMutex _mutex;
     QUrl _url;
+    bool _isRunning;
 
     QString readPackage(QString);
 

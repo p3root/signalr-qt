@@ -45,8 +45,6 @@
     #include <QNetworkReply>
 #endif
 
-
-
 namespace P3 { namespace SignalR { namespace Client {
 
 class Connection;
@@ -73,14 +71,15 @@ Q_SIGNALS:
 private Q_SLOTS:
     void requestFinished(QNetworkReply* reply);
 
+#ifndef QT_NO_SSL
     void onIgnoreSSLErros(QNetworkReply *reply, QList<QSslError> error);
+#endif
 
 private:
     void getRequestFinished(QNetworkReply *reply);
     void replyError(QNetworkReply::NetworkError, QNetworkReply *reply);
 
     void postRequestFinished(QNetworkReply *reply);
-
 
 private:
     bool _postInProgress;

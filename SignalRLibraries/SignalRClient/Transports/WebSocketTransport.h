@@ -35,7 +35,9 @@ private Q_SLOTS:
 
     void reconnectTimerTick();
 
+#ifndef QT_NO_SSL
     void onIgnoreSsl(QList<QSslError>);
+#endif
 
 private:
     QWebSocket *_webSocket;
