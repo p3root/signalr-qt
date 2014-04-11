@@ -113,7 +113,12 @@ void TransportHelper::processMessages(ConnectionPrivate* connection, QString raw
         if(map.contains("E"))
         {
             //error occured
-            connection->emitLogMessage(raw, SignalR::Error);
+            QString errorMessage(map["E"].toString());
+            if (errorMessage.size() > 250)
+                errorMessage = errorMessage.left(250) + "...";
+
+            connection->emitLogMessage(errorMessage, SignalR::Error);
+            connection->emitLogMessage(raw, SignalR::Debug);
         }
 
         if(*disconnected)

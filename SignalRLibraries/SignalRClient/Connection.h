@@ -143,8 +143,6 @@ public:
     ///
     bool getAutoReconnect() const;
 
-    virtual QString onSending();
-
     const QList<QPair<QString, QString> > &getAdditionalHttpHeaders();
     void setAdditionalHttpHeaders(QList<QPair<QString, QString> > lst);
 
@@ -174,7 +172,6 @@ public:
 Q_SIGNALS:
     void stateChanged(SignalR::State old_state, SignalR::State new_state);
     void errorOccured(SignalException error);
-    void messageReceived(QVariant data);
     void onConnectionSlow();
     void logMessage(QString, int severity);
     void messageSentCompleted(SignalException *ex);
@@ -185,6 +182,8 @@ protected:
     virtual void onTransportStarted(SignalException *) {}
     virtual void onMessageSentCompleted(SignalException *) {}
     virtual void onReceived(QVariant &data);
+    virtual void onStateChanged(SignalR::State oldState, SignalR::State newState) { Q_UNUSED(oldState); Q_UNUSED(newState);}
+    virtual QString onSending();
 
 private Q_SLOTS:
     void transportStarted(SignalException *ex);

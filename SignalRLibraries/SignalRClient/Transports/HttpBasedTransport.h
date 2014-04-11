@@ -80,6 +80,7 @@ protected:
 private Q_SLOTS:
     void onSendHttpResponse(const QString& httpResponse, SignalException* error);
     void retryNegotiation();
+    void retryPost();
 };
 
 }}}

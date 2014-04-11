@@ -90,6 +90,11 @@ void HttpBasedTransport::retryNegotiation()
     negotiate();
 }
 
+void HttpBasedTransport::retryPost()
+{
+    tryDequeueNextWorkItem();
+}
+
 void HttpBasedTransport::onNegotiatenCompleted(const NegotiateResponse &)
 {
 
@@ -146,8 +151,6 @@ void HttpBasedTransport::tryDequeueNextWorkItem()
 
         connect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
         _httpClient->post(workItem->url, workItem->postData);
-
-        delete workItem;
     }
 }
 
@@ -174,10 +177,8 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalE
 
     if(!error)
     {
-        //TODO error handling
+        TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected);
     }
-
-    TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected);
 
     disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
     tryDequeueNextWorkItem();

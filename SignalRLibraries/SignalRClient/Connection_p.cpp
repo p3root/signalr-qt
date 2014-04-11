@@ -109,6 +109,7 @@ const QString &ConnectionPrivate::getConnectionId() const
 bool ConnectionPrivate::changeState(SignalR::State oldState, SignalR::State newState)
 {
     Q_Q(Connection);
+    q->onStateChanged(oldState, newState);
 
     if(_state == oldState)
     {
@@ -301,6 +302,10 @@ void ConnectionPrivate::transportStarted(SignalException* error)
                 _transport->start("");
             }
             else if(changeState(SignalR::Reconnecting, SignalR::Connecting))
+            {
+                _transport->start("");
+            }
+            else if(changeState(SignalR::Connecting, SignalR::Reconnecting))
             {
                 _transport->start("");
             }
