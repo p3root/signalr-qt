@@ -174,17 +174,29 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalE
     Q_UNUSED(httpResponse);
     Q_UNUSED(error);
     bool timedOut = false, disconnected = false;
+    quint64 messageId = 0;
 
     if(!error)
     {
         _connection->changeState(_connection->getState(), SignalR::Connected);
-        TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected);
+        SignalException *e = TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected, &messageId);
+
+        if(e)
+        {
+            error = e;
+        }
+
     }
 
     disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
     tryDequeueNextWorkItem();
 
-    Q_EMIT onMessageSentCompleted(error);
+
+    Q_EMIT onMessageSentCompleted(error, messageId);
+
+    if(error)
+        delete error;
+
 }
 
 bool HttpBasedTransport::abort(int timeoutMs)

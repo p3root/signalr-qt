@@ -72,8 +72,9 @@ QString TransportHelper::getReceiveQueryString(ConnectionPrivate* connection, QS
     return qs;
 }
 
-void TransportHelper::processMessages(ConnectionPrivate* connection, QString raw, bool* timedOut, bool* disconnected)
+SignalException *TransportHelper::processMessages(ConnectionPrivate* connection, QString raw, bool* timedOut, bool* disconnected, quint64 *messageId)
 {
+    SignalException *e = 0;
     QVariant var = QextJson::parse(raw);
     if(var.convert(QVariant::Map))
     {
@@ -105,8 +106,12 @@ void TransportHelper::processMessages(ConnectionPrivate* connection, QString raw
             connection->setMessageId(map["C"].toString());
         }
 
-        if(map.contains("I"))
+        if(map.contains("I") && !map.contains("M"))
         {
+            if(messageId)
+            {
+                *messageId = map["I"].toULongLong();
+            }
             connection->onReceived(var);
         }
 
@@ -119,16 +124,23 @@ void TransportHelper::processMessages(ConnectionPrivate* connection, QString raw
 
             connection->emitLogMessage(errorMessage, SignalR::Error);
             connection->emitLogMessage(raw, SignalR::Debug);
+
+            e = new SignalException(errorMessage, SignalException::SignalRServerException);
         }
 
         if(*disconnected)
-            return;
+            return e;
 
         if(map.contains("M"))
         {
             if(map["M"].convert(QVariant::List))
             {
                 QVariantList lst = map["M"].value<QVariantList>();
+
+                if(messageId != 0 && map.contains("I"))
+                {
+                    *messageId = map["I"].toULongLong();
+                }
 
                 if(lst.count() == 0)
                 {
@@ -145,6 +157,8 @@ void TransportHelper::processMessages(ConnectionPrivate* connection, QString raw
             }
         }
     }
+
+    return e;
 }
 
 const NegotiateResponse* TransportHelper::parseNegotiateHttpResponse(const QString &httpResponse)

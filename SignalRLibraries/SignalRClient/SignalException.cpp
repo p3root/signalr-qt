@@ -35,20 +35,34 @@ namespace P3 { namespace SignalR { namespace Client {
 SignalException::SignalException() : _message("")
 {
     _type = UnkownError;
+    _innerException = 0;
 }
 
 SignalException::SignalException(const QString message, SignalExceptionType type) : _message(message)
 {
     _type = type;
+    _innerException = 0;
 }
 
 SignalException::~SignalException() throw()
 {
+    if(_innerException)
+        delete _innerException;
 }
 
 const char *SignalException::what() const throw()
 {
     return _message.toStdString().c_str();
+}
+
+void SignalException::setInnerException(SignalException *innerException)
+{
+    if(_innerException)
+    {
+        delete _innerException;
+        _innerException = 0;
+    }
+    _innerException = innerException;
 }
 
 }}}

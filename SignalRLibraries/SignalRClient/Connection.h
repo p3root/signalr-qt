@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (c) 2013-2014, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
  *  All rights reserved.
  *
@@ -179,15 +179,15 @@ Q_SIGNALS:
 protected:
     ConnectionPrivate * getConnectionPrivate() { return d_ptr; }
 
-    virtual void onTransportStarted(SignalException *) {}
-    virtual void onMessageSentCompleted(SignalException *) {}
+    virtual void onTransportStarted(SignalException *);
+    virtual void onMessageSentCompleted(SignalException *, quint64 messageId);
     virtual void onReceived(QVariant &data);
     virtual void onStateChanged(SignalR::State oldState, SignalR::State newState) { Q_UNUSED(oldState); Q_UNUSED(newState);}
     virtual QString onSending();
 
 private Q_SLOTS:
     void transportStarted(SignalException *ex);
-    void transportMessageSent(SignalException *ex);
+    void transportMessageSent(SignalException *ex, quint64 messageId);
 
 protected:
     ConnectionPrivate * const d_ptr;

@@ -26,7 +26,7 @@ public:
 
 private Q_SLOTS:
     void onTransportStated(SignalException *e);
-    void onMessageSent(SignalException *ex);
+    void onMessageSent(SignalException *ex, quint64 messageId);
 
 private:
     QList<ClientTransport*> _transports;

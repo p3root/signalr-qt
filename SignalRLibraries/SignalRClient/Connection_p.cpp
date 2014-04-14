@@ -78,7 +78,7 @@ void ConnectionPrivate::start(ClientTransport* transport, bool autoReconnect)
     _transport = transport;
     _autoReconnect = autoReconnect;
 
-    connect(transport, SIGNAL(onMessageSentCompleted(SignalException*)), this, SLOT(transportMessageSent(SignalException*)));
+    connect(transport, SIGNAL(onMessageSentCompleted(SignalException*, quint64)), this, SLOT(transportMessageSent(SignalException*, quint64)));
 
     if(changeState(SignalR::Disconnected, SignalR::Connecting))
     {
@@ -321,10 +321,10 @@ void ConnectionPrivate::transportStarted(SignalException* error)
     q->onTransportStarted(error);
 }
 
-void ConnectionPrivate::transportMessageSent(SignalException *ex)
+void ConnectionPrivate::transportMessageSent(SignalException *ex, quint64 messageId)
 {
     Q_Q(Connection);
-    q->onMessageSentCompleted(ex);
+    q->onMessageSentCompleted(ex, messageId);
     Q_EMIT q->messageSentCompleted(ex);
 }
 

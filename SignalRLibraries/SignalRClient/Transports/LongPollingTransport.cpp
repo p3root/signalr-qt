@@ -117,8 +117,12 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
     if(!error)
     {
         _connection->updateLastKeepAlive();
-        TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected);
-
+        SignalException *e = TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected);
+        if(e)
+        {
+            _connection->onError(*e);
+            delete e;
+        }
         _connection->changeState(_connection->getState(), SignalR::Connected);
     }
     else

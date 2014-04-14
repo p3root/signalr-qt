@@ -57,6 +57,7 @@ public:
         UnknownNetworkError,
         InternalServerError,
         SslHandshakeFailed,
+        SignalRServerException,
         UnkownError
     };
 
@@ -68,10 +69,13 @@ public:
     SignalExceptionType getType()  { return _type; }
     const QString &getMessage() { return _message; }
 
+    const SignalException *getInnerException() { return _innerException; }
+    void setInnerException(SignalException *innerException);
 
 private:
     const QString _message;
     SignalExceptionType _type;
+    SignalException *_innerException;
 };
 
 }}}

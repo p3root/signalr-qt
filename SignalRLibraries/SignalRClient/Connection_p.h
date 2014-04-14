@@ -139,7 +139,7 @@ private Q_SLOTS:
 
 private Q_SLOTS:
     void transportStarted(SignalException *ex);
-    void transportMessageSent(SignalException *ex);
+    void transportMessageSent(SignalException *ex, quint64 messageId);
 
 private:
     QString _host;

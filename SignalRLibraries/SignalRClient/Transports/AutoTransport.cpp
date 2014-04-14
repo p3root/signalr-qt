@@ -12,7 +12,7 @@ AutoTransport::AutoTransport() :
 {
     _transports = QList<ClientTransport*>();
     _transports.append(new WebSocketTransport());
-    //_transports.append(new ServerSentEventsTransport());
+  //  _transports.append(new ServerSentEventsTransport());
     _transports.append(new LongPollingTransport());
 
     _index = 0;
@@ -54,8 +54,12 @@ void AutoTransport::start(QString data)
 {
     ClientTransport *transport = _transports[_index];
     _connection->emitLogMessage("Using transport '" + transport->getTransportType() +"'", SignalR::Info);
+
+    disconnect(transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(onTransportStated(SignalException*)));
+    disconnect(transport, SIGNAL(onMessageSentCompleted(SignalException*, quint64)), this, SLOT(onMessageSent(SignalException*, quint64)));
+
     connect(transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(onTransportStated(SignalException*)));
-    connect(transport, SIGNAL(onMessageSentCompleted(SignalException*)), this, SLOT(onMessageSent(SignalException*)));
+    connect(transport, SIGNAL(onMessageSentCompleted(SignalException*, quint64)), this, SLOT(onMessageSent(SignalException*, quint64)));
     transport->start(data);
 
     if(_messages.count() > 0)
@@ -119,9 +123,9 @@ void AutoTransport::onTransportStated(SignalException *e)
     }
 }
 
-void AutoTransport::onMessageSent(SignalException *ex)
+void AutoTransport::onMessageSent(SignalException *ex, quint64 messageId)
 {
-    Q_EMIT onMessageSentCompleted(ex);
+    Q_EMIT onMessageSentCompleted(ex, messageId);
 }
 
 }}}

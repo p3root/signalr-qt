@@ -225,16 +225,26 @@ HeartbeatMonitor *Connection::createHeartbeatMonitor()
     return d->createHeartbeatMonitor();
 }
 
+void Connection::onTransportStarted(SignalException *)
+{
+
+}
+
+void Connection::onMessageSentCompleted(SignalException *, quint64)
+{
+
+}
+
 void Connection::transportStarted(SignalException* error)
 {
     Q_D(Connection);
     d->transportStarted(error);
 }
 
-void Connection::transportMessageSent(SignalException *ex)
+void Connection::transportMessageSent(SignalException *ex, quint64 messageId)
 {
     Q_D(Connection);
-    d->transportMessageSent(ex);
+    d->transportMessageSent(ex, messageId);
 }
 
 }}}

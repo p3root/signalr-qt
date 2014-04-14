@@ -221,14 +221,19 @@ void WebSocketTransport::onTextMessageReceived(QString str)
 {
     _keepAliveTimer.stop();
     bool timedOut = false, disconnected = false;
+    quint64 messageId = 0;
     _connection->updateLastKeepAlive();
 
     _connection->changeState(_connection->getState(), SignalR::Connected);
 
-    TransportHelper::processMessages(_connection, str, &timedOut, &disconnected);
+    SignalException *e = TransportHelper::processMessages(_connection, str, &timedOut, &disconnected, &messageId);
 
+    if(e)
+    {
+        _connection->onError(*e);
+    }
 
-    Q_EMIT onMessageSentCompleted(0);
+    Q_EMIT onMessageSentCompleted(e, messageId);
     _keepAliveTimer.start();
 }
 

@@ -51,7 +51,7 @@ public:
 
 
     static QString getReceiveQueryString(ConnectionPrivate *connection, QString data, QString transport);
-    static void processMessages(ConnectionPrivate *connection, QString raw, bool* timedOut, bool* disconnected);
+    static SignalException *processMessages(ConnectionPrivate *connection, QString raw, bool* timedOut, bool* disconnected, quint64 *messageId=0);
 
 
     static const NegotiateResponse* parseNegotiateHttpResponse(const QString& httpResponse);

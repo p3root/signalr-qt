@@ -147,7 +147,12 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
         _connection->getKeepAliveData().setLastKeepAlive(QDateTime::currentDateTimeUtc());
 
         _connection->emitLogMessage("SSE: KeepAlive received", SignalR::Debug);
-        TransportHelper::processMessages(_connection, data, &timedOut, &disconnected);
+        SignalException *e = TransportHelper::processMessages(_connection, data, &timedOut, &disconnected);
+
+        if(e)
+        {
+            _connection->onError(*e);
+        }
     }
 
     if(disconnected)
