@@ -177,6 +177,7 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalE
 
     if(!error)
     {
+        _connection->changeState(_connection->getState(), SignalR::Connected);
         TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected);
     }
 

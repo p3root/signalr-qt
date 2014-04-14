@@ -105,11 +105,8 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
         {
             Q_EMIT transportStarted(0);
         }
-        else
-        {
-            // Reconnected
-            _connection->changeState(SignalR::Reconnecting, SignalR::Connected);
-        }
+        _connection->changeState(_connection->getState(), SignalR::Connected);
+
     }
     else if(error != 0)
     {

@@ -118,8 +118,8 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, Signa
     {
         _connection->updateLastKeepAlive();
         TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected);
-        if(_connection->getState() != SignalR::Connected)
-            _connection->changeState(_connection->getState(), SignalR::Connected);
+
+        _connection->changeState(_connection->getState(), SignalR::Connected);
     }
     else
     {
@@ -267,6 +267,9 @@ void LongPollingTransport::onPostRequestCompleted(const QString &httpResponse, S
 
         _started = true;
         _httpClient->get(_url);
+
+
+        _connection->changeState(_connection->getState(), SignalR::Connected);
 
         Q_EMIT transportStarted(0);
     }

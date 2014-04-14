@@ -76,6 +76,10 @@ void WebSocketTransport::send(QString data)
         {
             _connection->emitLogMessage("Written bytes does not equals given bytes", SignalR::Warning);
         }
+        else
+        {
+            _connection->changeState(_connection->getState(), SignalR::Connected);
+        }
     }
 }
 
@@ -218,6 +222,8 @@ void WebSocketTransport::onTextMessageReceived(QString str)
     _keepAliveTimer.stop();
     bool timedOut = false, disconnected = false;
     _connection->updateLastKeepAlive();
+
+    _connection->changeState(_connection->getState(), SignalR::Connected);
 
     TransportHelper::processMessages(_connection, str, &timedOut, &disconnected);
 
