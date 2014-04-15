@@ -23,6 +23,10 @@ public:
 
     virtual const QString &getTransportType();
 
+    void lostConnection(ConnectionPrivate *con);
+
+    bool supportsKeepAlive() { return true; }
+
 private Q_SLOTS:
     void onConnected();
     void onDisconnected();

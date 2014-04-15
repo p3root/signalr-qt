@@ -49,7 +49,7 @@ namespace P3 { namespace SignalR { namespace Client {
 class ServerSentEventsTransport;
 class ConnectionPrivate;
 
-class HttpEventStream : public QThread
+class HttpEventStream : public QObject
 {
     Q_OBJECT
 
@@ -59,20 +59,23 @@ public:
 
     void close();
 
-    void run();
+    void open();
 
 Q_SIGNALS:
     void packetReady(QString packet, QSharedPointer<SignalException> ex);
     void connected(QSharedPointer<SignalException>);
 
 private:
-    void open();
+
 
 private Q_SLOTS:
 
 #ifndef QT_NO_SSL
     void onSslErrors(const QList<QSslError> &errors);
 #endif
+
+    void onReadyRead();
+    void onSocketError(QAbstractSocket::SocketError);
 
 private:
     ConnectionPrivate* _connection;

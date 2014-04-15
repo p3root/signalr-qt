@@ -34,6 +34,7 @@
 #include "Transports/HttpClient.h"
 #include "Helper/Helper.h"
 #include "Transports/AutoTransport.h"
+#include <QSharedPointer>
 
 namespace P3 { namespace SignalR { namespace Client {
 
@@ -49,7 +50,8 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
 
     qRegisterMetaType<SignalException>("SignalException");
     qRegisterMetaType<SignalR::State>("State");
-    qRegisterMetaType<SignalR::State>("Connection::State");
+    qRegisterMetaType<SignalR::State>("SignalR::State");
+    qRegisterMetaType<QSharedPointer<SignalException> >("QSharedPointer<SignalException>");
     _reconnectWaitTime = 5;
 
 #ifndef QT_NO_SSL
@@ -57,6 +59,7 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
 #endif
 
     connect(this, SIGNAL(sendData(QString)), this, SLOT(onSendData(QString)));
+    connect(this, SIGNAL(startRetry()), this, SLOT(onRetry()));
 }
 
 
@@ -78,22 +81,50 @@ void ConnectionPrivate::start(ClientTransport* transport, bool autoReconnect)
     _transport = transport;
     _autoReconnect = autoReconnect;
 
+    _monitor = new HeartbeatMonitor(this);
+
     connect(transport, SIGNAL(onMessageSentCompleted(QSharedPointer<SignalException>, quint64)), this, SLOT(transportMessageSent(QSharedPointer<SignalException>, quint64)));
 
-    if(changeState(SignalR::Disconnected, SignalR::Connecting))
+    if(_state == SignalR::Disconnected)
     {
+        changeState(SignalR::Disconnected, SignalR::Connecting);
         _transport->negotiate();
     }
 }
 
 void ConnectionPrivate::send(const QString &data)
 {
-    Q_EMIT sendData(data);
+    if(!_transport)
+    {
+        emitLogMessage("Could not send data. Transport is not initialized", SignalR::Error);
+        return;
+    }
+    if(QThread::currentThreadId() != _transport->_threadId)
+    {
+        Q_EMIT sendData(data);
+    }
+    else
+    {
+        _transport->send(data);
+    }
 }
 
 void ConnectionPrivate::retry()
 {
-    _transport->retry();
+    if(!_transport)
+    {
+        emitLogMessage("Could not retry connection. Transport is not initialized", SignalR::Error);
+        return;
+    }
+
+    if(QThread::currentThreadId() != _transport->_threadId)
+    {
+        Q_EMIT startRetry();
+    }
+    else
+    {
+        _transport->retry();
+    }
 }
 
 SignalR::State ConnectionPrivate::getState()
@@ -106,23 +137,17 @@ const QString &ConnectionPrivate::getConnectionId() const
     return _connectionId;
 }
 
-bool ConnectionPrivate::changeState(SignalR::State oldState, SignalR::State newState)
+void ConnectionPrivate::changeState(SignalR::State oldState, SignalR::State newState)
 {
     Q_Q(Connection);
 
     if(_state != newState)
-        Q_EMIT q->stateChanged(oldState, newState);
-    q->onStateChanged(oldState, newState);
-
-    if(_state == oldState)
     {
-        _state = newState;
-        return true;
+        Q_EMIT q->stateChanged(oldState, newState);
+        q->onStateChanged(oldState, newState);
     }
 
     _state = newState;
-    return false;
-
 }
 
 bool ConnectionPrivate::ensureReconnecting()
@@ -165,7 +190,7 @@ void ConnectionPrivate::onReceived(QVariant &data)
     Q_EMIT q->onReceived(data);
 }
 
-const ClientTransport *ConnectionPrivate::getTransport() const
+ClientTransport *ConnectionPrivate::getTransport()
 {
     return _transport;
 }
@@ -234,6 +259,8 @@ bool ConnectionPrivate::stop(int timeoutMs)
     _connectionId = "";
     _connectionToken = "";
 
+    _monitor->stop();
+
     return abort;
 }
 
@@ -271,14 +298,19 @@ void ConnectionPrivate::emitLogMessage(QString msg, SignalR::LogSeverity severit
     Q_EMIT q->logMessage(msg, severity);
 }
 
-HeartbeatMonitor *ConnectionPrivate::createHeartbeatMonitor()
+HeartbeatMonitor &ConnectionPrivate::getHeartbeatMonitor()
 {
-    return new HeartbeatMonitor(this);
+    return *_monitor;
 }
 
 void ConnectionPrivate::onSendData(const QString &data)
 {
     _transport->send(data);
+}
+
+void ConnectionPrivate::onRetry()
+{
+    _transport->retry();
 }
 
 void ConnectionPrivate::transportStarted(QSharedPointer<SignalException> error)
@@ -290,6 +322,9 @@ void ConnectionPrivate::transportStarted(QSharedPointer<SignalException> error)
             changeState(SignalR::Reconnecting, SignalR::Connected);
         else
             changeState(SignalR::Connecting, SignalR::Connected);
+
+        if(_transport->supportsKeepAlive())
+            _monitor->start();
     }
     else
     {
@@ -309,7 +344,7 @@ void ConnectionPrivate::transportStarted(QSharedPointer<SignalException> error)
             {
                 _transport->start("");
             }
-            else if(getState() == SignalR::Connecting)//changeState(SignalR::Connecting, SignalR::Reconnecting))
+            else if(getState() == SignalR::Connecting)
             {
                 _transport->start("");
             }

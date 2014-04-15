@@ -73,7 +73,7 @@ public:
     const QString &getConnectionId() const;
     const QString &getConnectionToken() const;
     const QString &getGroupsToken() const;
-    const ClientTransport* getTransport() const;
+    ClientTransport* getTransport();
     const QString &getUrl() const;
     const QString &getMessageId() const;
 
@@ -84,9 +84,9 @@ public:
     bool getAutoReconnect() const;
     KeepAliveData& getKeepAliveData();
 
-    virtual void updateLastKeepAlive();
+    void updateLastKeepAlive();
     void connectionSlow();
-    virtual bool changeState(SignalR::State oldState, SignalR::State newState);
+    void changeState(SignalR::State oldState, SignalR::State newState);
 
     bool ensureReconnecting();
 
@@ -129,13 +129,15 @@ public:
     const QSslConfiguration &getSslConfiguration() { return _sslConfiguration; }
 #endif
 
-    HeartbeatMonitor *createHeartbeatMonitor();
+    HeartbeatMonitor &getHeartbeatMonitor();
 
 Q_SIGNALS:
     void sendData(const QString &data);
+    void startRetry();
 
 private Q_SLOTS:
     void onSendData(const QString &data);
+    void onRetry();
 
 private Q_SLOTS:
     void transportStarted(QSharedPointer<SignalException> ex);
@@ -160,6 +162,8 @@ private:
     QString _webSocketsUrl;
     QString _protocolVersion;
     SignalR::State _state;
+
+    HeartbeatMonitor *_monitor;
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy _proxySettings;

@@ -20,7 +20,11 @@ public:
     bool abort(int timeoutMs = 0);
     void send(QString data);
 
+    void lostConnection(ConnectionPrivate *con);
+
     void retry();
+
+    bool supportsKeepAlive();
 
     const QString &getTransportType();
 

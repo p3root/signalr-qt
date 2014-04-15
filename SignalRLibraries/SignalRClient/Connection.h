@@ -123,7 +123,7 @@ public:
     /// \brief Returns the current used ClientTransport
     /// \return ClientTransport
     ///
-    const ClientTransport* getTransport() const;
+    ClientTransport *getTransport();
 
     ///
     /// \brief Returns the given SignalR Url
@@ -167,7 +167,7 @@ public:
     const QSslConfiguration &getSslConfiguration();
 #endif
 
-    HeartbeatMonitor *createHeartbeatMonitor();
+    HeartbeatMonitor &getHeartbeatMonitor();
 
 Q_SIGNALS:
     void stateChanged(SignalR::State old_state, SignalR::State new_state);

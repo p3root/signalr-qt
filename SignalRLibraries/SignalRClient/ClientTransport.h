@@ -61,6 +61,8 @@ public:
 
     virtual const QString& getTransportType() = 0;
 
+    virtual bool supportsKeepAlive() { return false; }
+
 Q_SIGNALS:
     void transportStarted(QSharedPointer<SignalException> ex);
     void onMessageSentCompleted(QSharedPointer<SignalException> ex, quint64 messageId);
@@ -73,6 +75,7 @@ protected:
 
 protected:
     ConnectionPrivate* _connection;
+    Qt::HANDLE _threadId;
 };
 
 }}}

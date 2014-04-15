@@ -76,10 +76,6 @@ void WebSocketTransport::send(QString data)
         {
             _connection->emitLogMessage("Written bytes does not equals given bytes", SignalR::Warning);
         }
-        else
-        {
-            _connection->changeState(_connection->getState(), SignalR::Connected);
-        }
     }
 }
 
@@ -107,14 +103,17 @@ const QString &WebSocketTransport::getTransportType()
     return type;
 }
 
+void WebSocketTransport::lostConnection(ConnectionPrivate *)
+{
+    retry();
+}
+
 void WebSocketTransport::onConnected()
 {
-    if(!_started)
-    {
-        _started = true;
-        QSharedPointer<SignalException> e;
-        Q_EMIT transportStarted(e);
-    }
+    QSharedPointer<SignalException> e;
+
+    Q_EMIT transportStarted(e);
+    _started = true;
 }
 
 void WebSocketTransport::onDisconnected()
@@ -219,12 +218,14 @@ void WebSocketTransport::onError(QAbstractSocket::SocketError)
 
 void WebSocketTransport::onTextMessageReceived(QString str)
 {
+    _connection->emitLogMessage("WebSocket: Message received", SignalR::Debug);
+
     _keepAliveTimer.stop();
     bool timedOut = false, disconnected = false;
     quint64 messageId = 0;
     _connection->updateLastKeepAlive();
 
-     if(_connection->getState() != SignalR::Connected)
+    if(_connection->getState() != SignalR::Connected)
         _connection->changeState(_connection->getState(), SignalR::Connected);
 
     QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, str, &timedOut, &disconnected, &messageId);

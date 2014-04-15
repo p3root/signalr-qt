@@ -50,10 +50,10 @@ Client::~Client()
 
 void Client::start()
 {
-    _connection = new HubConnection("http://192.168.1.69:9098/signalr");
+    _connection = new HubConnection("http://vservbuild:9098/signalr");
     _connection->setIgnoreSslErrors(true);
     _connection->setReconnectWaitTime(3);
-    _monitor = _connection->createHeartbeatMonitor();
+    _monitor = &_connection->getHeartbeatMonitor();
 
     _transport = new AutoTransport();
 
@@ -105,19 +105,22 @@ void Client::onStateChanged(SignalR::State oldState, SignalR::State newState)
 
     if(newState == SignalR::Connected)
     {
-        _monitor->start();
         HubCallback* callback = new HubCallback(0);
         connect(callback, SIGNAL(messageReceived(HubCallback*,QVariant)), this, SLOT(answerReceived(HubCallback*,QVariant)));
         HubProxy* prox = _connection->getByName("Chat");
         prox->invoke("Send", QString("message"), callback);
 
-        QFuture<int> res = QtConcurrent::run(Client::test, _connection);
-        res.waitForFinished();
+       // QFuture<int> res = QtConcurrent::run(Client::test, _connection);
+        //res.waitForFinished();
     }
     else if(newState == SignalR::Disconnected)
     {
-        _monitor->stop();
         disconnect(this, SLOT(answerReceived(HubCallback*,QVariant)));
+    }
+    else if(newState == SignalR::Reconnecting)
+    {
+        QFuture<int> res = QtConcurrent::run(Client::test, _connection);
+        res.waitForFinished();
     }
 }
 
@@ -141,8 +144,10 @@ void Client::send(QString message)
 
 int Client::test(HubConnection *t)
 {
-    HubProxy* prox = t->getByName("Chat");
-    prox->invoke("Send", QString("message"));
+    //HubProxy* prox = t->getByName("Chat");
+   // prox->invoke("Send", QString("message"));
+
+    t->retry();
     return 0;
 }
 
@@ -166,8 +171,8 @@ QString Client::getStateAsText(SignalR::State state)
 void Client::timerTick()
 {
    // qDebug() << "start retry before retrytimer ticks";
-    HubProxy* prox = _connection->getByName("Chat");
-    prox->invoke("Send", QString("message"), 0);
+   // HubProxy* prox = _connection->getByName("Chat");
+   // prox->invoke("Send", QString("message"), 0);
 
 }
 

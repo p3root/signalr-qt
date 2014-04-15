@@ -34,6 +34,7 @@
 #include <QString>
 #include <QMetaType>
 #include "SignalR_global.h"
+#include <QSharedPointer>
 
 namespace P3 { namespace SignalR { namespace Client {
 
@@ -58,6 +59,7 @@ public:
         InternalServerError,
         SslHandshakeFailed,
         SignalRServerException,
+        UnkownContentError,
         UnkownError
     };
 
@@ -81,5 +83,6 @@ private:
 }}}
 
 Q_DECLARE_METATYPE(P3::SignalR::Client::SignalException*)
+Q_DECLARE_METATYPE(QSharedPointer<P3::SignalR::Client::SignalException>)
 
 #endif // SIGNALEXCEPTION_H

@@ -74,6 +74,7 @@ void HeartbeatMonitor::beat(double timeElapsed)
             {
                 _connection->emitLogMessage("Connection Timeout-Out", SignalR::Error);
                 _timedOut = true;
+                _connection->getTransport()->lostConnection(_connection);
             }
         }
         else if(timeElapsed >= _connection->getKeepAliveData().getTimeoutWarning())

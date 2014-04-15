@@ -52,7 +52,7 @@ void LongPollingTransport::start(QString)
 {
     connect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onPollHttpResponse(QString,QSharedPointer<SignalException>)));
 
-    _keepAliveTimer.setInterval(30*1000); //default on the signalr server is 110 sec, just to ensure not to run in a socket timeout
+    _keepAliveTimer.setInterval(120*1000); //default on the signalr server is 110 sec, just to ensure not to run in a socket timeout
 
     _connection->updateLastKeepAlive();
 
@@ -81,9 +81,7 @@ void LongPollingTransport::retry()
     HttpBasedTransport::retry();
 
     if(_retryTimerTimeout.isActive())
-    {
         startConnection();
-    }
 }
 
 const QString &LongPollingTransport::getTransportType()
@@ -246,12 +244,15 @@ void LongPollingTransport::onPostRequestCompleted(const QString &httpResponse, Q
 
     if(error.isNull() && !_connection->getConnectionToken().isEmpty())
     {
-        _started = true;
-
         startConnection();
 
         _connection->changeState(_connection->getState(), SignalR::Connected);
-        Q_EMIT transportStarted(error);
+
+        if(!_started)
+        {
+            Q_EMIT transportStarted(error);
+            _started = true;
+        }
     }
     else
     {
@@ -282,7 +283,7 @@ void LongPollingTransport::reconnectErrorRetry()
     disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
 
     _keepAliveTimer.start();
-    Q_EMIT transportStarted(_lastSignalException);
+    start("");
 
 }
 
@@ -294,7 +295,7 @@ void LongPollingTransport::reconnectErrorRetryWithStateChanging()
     _connection->changeState(SignalR::Connected, SignalR::Reconnecting);
 
     _keepAliveTimer.start();
-    Q_EMIT transportStarted(_lastSignalException);
+    start("");
 }
 
 void LongPollingTransport::errorRetryWithStateChanging()
@@ -310,7 +311,7 @@ void LongPollingTransport::errorStartRetry()
 {
     _retryTimerTimeout.stop();
     disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(errorStartRetry()));
-    Q_EMIT transportStarted(_lastSignalException);
+    start("");
 }
 
 }}}

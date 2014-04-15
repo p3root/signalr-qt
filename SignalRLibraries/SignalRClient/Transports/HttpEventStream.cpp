@@ -49,7 +49,10 @@ HttpEventStream::HttpEventStream(QUrl url, ConnectionPrivate *con) : _sock(0), _
 
 HttpEventStream::~HttpEventStream()
 {
+    _isAborting = true;
 
+    if(_sock->isOpen())
+        _sock->close();
 }
 
 void HttpEventStream::open()
@@ -102,7 +105,7 @@ void HttpEventStream::open()
         _sock = sslSocket;
         isSslSocket = true;
 #else
-     _sock = new QTcpSocket();
+        _sock = new QTcpSocket();
 #endif
     }
     else
@@ -117,6 +120,9 @@ void HttpEventStream::open()
     //setting the give proxy settings for the socket
     _sock->setProxy(_connection->getProxySettings());
 #endif
+
+    connect(_sock, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+    connect(_sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onSocketError(QAbstractSocket::SocketError)));
 
     //try to resolve the hostname
     QHostInfo info = QHostInfo::fromName(host);
@@ -176,99 +182,82 @@ void HttpEventStream::open()
 
 void HttpEventStream::close()
 {
-    _isAborting = true;
     if(_sock)
-        _sock->abort();
-}
-
-void HttpEventStream::run()
-{
-    open();
-    QSharedPointer<SignalException> error;
-
-    while(!_isAborting)
     {
-        //wait for the given connection timeout to get some data
-        //if this functions returns false, no keep alive is give from the signalr server
-        if(_sock->waitForReadyRead(_connection->getKeepAliveData().getTimeout()*1000))
-        {
-            if(!_sock->bytesAvailable())
-                continue;
-
-            if(!_isAborting && _sock->error() != 0)
-            {
-                if(_isFirstReponse)
-                {
-                    QString header = "";
-                    //parse headers
-                    while(!header.endsWith("\r\n\r\n"))
-                    {
-                        header += QString(_sock->read(1));
-                    }
-
-                    _isFirstReponse = false;
-                }
-
-                //parsing SSE package
-                QString pack = readPackage("");
-                if(!pack.isEmpty())
-                {
-                    Q_EMIT packetReady(pack, error);
-                }
-            }
-            else
-            {
-                if(!_isAborting)
-                {
-                    error = QSharedPointer<SignalException>(new SignalException(_sock->errorString(), SignalException::EventStreamSocketLost));
-                    Q_EMIT packetReady("", error);
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-        else
-        {
-            QAbstractSocket::SocketError socketError = _sock->error();
-            QString errorString = _sock->errorString();
-
-            if(!_isAborting)
-            {
-
-                switch(socketError)
-                {
-                case QAbstractSocket::SocketTimeoutError:
-                case QAbstractSocket::RemoteHostClosedError:
-                    error = QSharedPointer<SignalException>(new SignalException(errorString, SignalException::RemoteHostClosedConnection));
-                    _isAborting = true;
-                    break;
-                case QAbstractSocket::SslHandshakeFailedError:
-                    error = QSharedPointer<SignalException>(new SignalException(errorString, SignalException::SslHandshakeFailed));
-                    break;
-                default:
-                    error = QSharedPointer<SignalException>(new SignalException(errorString, SignalException::UnknownNetworkError));
-                    break;
-
-                }
-
-                Q_EMIT packetReady("", error);
-            }
-            else
-            {
-                break;
-            }
-        }
+        _sock->abort();
+        _sock->close();
     }
 
-    if(_sock->isOpen())
-        _sock->close();
-    _sock->deleteLater();
-    _sock = 0;
-
-    _isRunning = false;
+    onSocketError(QAbstractSocket::NetworkError);
 }
+
+#ifndef QT_NO_SSL
+void HttpEventStream::onSslErrors(const QList<QSslError> &errors)
+{
+    if(!_connection->ignoreSslErrors())
+        return;
+
+    QSslSocket *socket = reinterpret_cast<QSslSocket*>(_sock);
+    socket->ignoreSslErrors(errors);
+}
+#endif
+
+void HttpEventStream::onReadyRead()
+{
+    QSharedPointer<SignalException> error;
+
+    if(_isFirstReponse)
+    {
+        QString header = "";
+        //parse headers
+        while(!header.endsWith("\r\n\r\n"))
+        {
+            header += QString(_sock->read(1));
+        }
+
+        _isFirstReponse = false;
+    }
+
+    //parsing SSE package
+    QString pack = readPackage("");
+    if(!pack.isEmpty())
+    {
+        Q_EMIT packetReady(pack, error);
+    }
+}
+
+void HttpEventStream::onSocketError(QAbstractSocket::SocketError error)
+{
+    QAbstractSocket::SocketError socketError = error;
+    QString errorString = _sock->errorString();
+
+    if(!_isAborting)
+    {
+
+        QSharedPointer<SignalException> ex;
+        switch(socketError)
+        {
+        case QAbstractSocket::SocketTimeoutError:
+        case QAbstractSocket::RemoteHostClosedError:
+            ex = QSharedPointer<SignalException>(new SignalException(errorString, SignalException::RemoteHostClosedConnection));
+            _isAborting = true;
+            break;
+        case QAbstractSocket::SslHandshakeFailedError:
+            ex = QSharedPointer<SignalException>(new SignalException(errorString, SignalException::SslHandshakeFailed));
+            break;
+        case QAbstractSocket::NetworkError:
+            ex = QSharedPointer<SignalException>(new SignalException("Operation canceled", SignalException::OperationCanceled));
+            break;
+        default:
+            ex = QSharedPointer<SignalException>(new SignalException(errorString, SignalException::UnknownNetworkError));
+            break;
+
+        }
+
+        Q_EMIT packetReady("", ex);
+    }
+}
+
 
 QString HttpEventStream::readPackage(QString val)
 {
@@ -307,14 +296,5 @@ QString HttpEventStream::readPackage(QString val)
 
     return readPackage(val);
 }
-#ifndef QT_NO_SSL
-void HttpEventStream::onSslErrors(const QList<QSslError> &errors)
-{
-    if(!_connection->ignoreSslErrors())
-        return;
 
-    QSslSocket *socket = reinterpret_cast<QSslSocket*>(_sock);
-    socket->ignoreSslErrors(errors);
-}
-#endif
 }}}

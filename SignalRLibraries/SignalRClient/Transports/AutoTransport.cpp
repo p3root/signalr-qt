@@ -12,7 +12,7 @@ AutoTransport::AutoTransport() :
 {
     _transports = QList<ClientTransport*>();
     _transports.append(new WebSocketTransport());
-  //  _transports.append(new ServerSentEventsTransport());
+    _transports.append(new ServerSentEventsTransport());
     _transports.append(new LongPollingTransport());
 
     _index = 0;
@@ -71,13 +71,15 @@ void AutoTransport::start(QString data)
 
         _messages.clear();
     }
+
+    _transport = transport;
 }
 
 bool AutoTransport::abort(int timeoutMs)
 {
     if(_transport)
     {
-       return _transport->abort(timeoutMs);
+        return _transport->abort(timeoutMs);
     }
     return true;
 }
@@ -90,10 +92,23 @@ void AutoTransport::send(QString data)
         _messages.append(data);
 }
 
+void AutoTransport::lostConnection(ConnectionPrivate *con)
+{
+    if(_transport)
+        _transport->lostConnection(con);
+}
+
 void AutoTransport::retry()
 {
     if(_transport)
         _transport->retry();
+}
+
+bool AutoTransport::supportsKeepAlive()
+{
+    if(_transport)
+        return _transport->supportsKeepAlive();
+    return false;
 }
 
 const QString &AutoTransport::getTransportType()

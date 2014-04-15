@@ -30,12 +30,13 @@
 
 #include "ClientTransport.h"
 #include "Connection_p.h"
+#include <QThread>
 
 namespace P3 { namespace SignalR { namespace Client {
 
 ClientTransport::ClientTransport() : _connection(0)
 {
-
+    _threadId = QThread::currentThreadId();
 }
 
 ClientTransport::~ClientTransport(void)

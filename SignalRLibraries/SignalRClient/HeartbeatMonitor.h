@@ -51,7 +51,7 @@ public:
     void stop();
     void beat(double timeElapsed);
 
-public slots:
+private Q_SLOTS:
     void beat();
 
 private:

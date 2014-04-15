@@ -47,8 +47,10 @@ public:
     void start(QString data);
     void abort();
     void stop();
-    void lostConnection(Connection *);
+    void lostConnection(ConnectionPrivate *);
     void retry();
+
+    bool supportsKeepAlive() { return true; }
 
     const QString& getTransportType();
 
@@ -71,6 +73,7 @@ private:
     QString _url;
     bool _started;
     QTimer _retryTimerTimeout;
+    QSharedPointer<SignalException> _lastSignalException;
 
 };
 

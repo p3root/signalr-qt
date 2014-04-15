@@ -123,9 +123,9 @@ void Connection::onReceived(QVariant &data)
     Q_UNUSED(data);
 }
 
-const ClientTransport *Connection::getTransport() const
+ClientTransport *Connection::getTransport()
 {
-    const Q_D(Connection);
+    Q_D(Connection);
     return d->getTransport();
 }
 
@@ -219,10 +219,10 @@ const QSslConfiguration &Connection::getSslConfiguration()
     return d->getSslConfiguration();
 }
 
-HeartbeatMonitor *Connection::createHeartbeatMonitor()
+HeartbeatMonitor &Connection::getHeartbeatMonitor()
 {
     Q_D(Connection);
-    return d->createHeartbeatMonitor();
+    return d->getHeartbeatMonitor();
 }
 
 void Connection::onTransportStarted(QSharedPointer<SignalException>)

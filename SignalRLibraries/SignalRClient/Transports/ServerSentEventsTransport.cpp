@@ -75,13 +75,19 @@ void ServerSentEventsTransport::abort()
 
 void ServerSentEventsTransport::stop()
 {
-    _eventStream->close();
+    if(_eventStream)
+    {
+        _eventStream->close();
+        _eventStream->deleteLater();
+        _eventStream = 0;
+    }
 }
 
-void ServerSentEventsTransport::lostConnection(Connection *)
+void ServerSentEventsTransport::lostConnection(ConnectionPrivate *)
 {
-    // reconnect();
+    stop();
 }
+
 
 void ServerSentEventsTransport::retry()
 {
@@ -98,13 +104,10 @@ const QString &ServerSentEventsTransport::getTransportType()
 void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<SignalException> error)
 {
     bool timedOut = false, disconnected = false;
+    _lastSignalException = error;
 
     if(data == "data: initialized")
     {
-        if(_started)
-        {
-            Q_EMIT transportStarted(error);
-        }
         _connection->changeState(_connection->getState(), SignalR::Connected);
 
     }
@@ -138,7 +141,7 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
         data = data.remove(0, data.indexOf("data: ")+5);
         _connection->getKeepAliveData().setLastKeepAlive(QDateTime::currentDateTimeUtc());
 
-        _connection->emitLogMessage("SSE: KeepAlive received", SignalR::Debug);
+        _connection->emitLogMessage("SSE: Message received", SignalR::Debug);
         QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, data, &timedOut, &disconnected);
 
         if(!e.isNull())
@@ -157,10 +160,14 @@ void ServerSentEventsTransport::connected(QSharedPointer<SignalException> error)
 {
     if(!_started)
     {
+        _connection->updateLastKeepAlive();
+
+        if(!_started)
+            Q_EMIT transportStarted(error);
+
         _started = true;
-        Q_EMIT transportStarted(error);
     }
-    else if(error)
+    else if(!error.isNull())
     {
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
         _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
@@ -173,7 +180,7 @@ void ServerSentEventsTransport::connected(QSharedPointer<SignalException> error)
         return;
     }
 
-    if(!error.isNull())
+    if(error.isNull())
     {
         connect(_eventStream, SIGNAL(packetReady(QString,QSharedPointer<SignalException>)), this, SLOT(packetReceived(QString,QSharedPointer<SignalException>)));
     }
@@ -185,8 +192,7 @@ void ServerSentEventsTransport::reconnectTimerTick()
     disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
     closeEventStream();
 
-    if(_connection->getState() == SignalR::Connected)
-        _connection->changeState(_connection->getState(), SignalR::Reconnecting);
+    _connection->changeState(_connection->getState(), SignalR::Reconnecting);
 
     start("");
 }
@@ -196,8 +202,7 @@ void ServerSentEventsTransport::closeEventStream()
     if(!_eventStream)
         return;
 
-    if(_eventStream->isRunning())
-        _eventStream->close();
+    _eventStream->close();
     _eventStream->deleteLater();
     _eventStream = 0;
 }
@@ -210,7 +215,7 @@ void ServerSentEventsTransport::startEventStream()
 
     connect(_eventStream, SIGNAL(connected(QSharedPointer<SignalException>)), this, SLOT(connected(QSharedPointer<SignalException>)));
 
-    _eventStream->start();
+    _eventStream->open();
 
 }
 
