@@ -233,4 +233,9 @@ bool HttpBasedTransport::abort(int timeoutMs)
     return true;
 }
 
+void HttpBasedTransport::lostConnection(ConnectionPrivate *)
+{
+    _httpClient->abort(true);
+}
+
 }}}

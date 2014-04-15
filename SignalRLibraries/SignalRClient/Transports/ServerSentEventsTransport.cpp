@@ -83,8 +83,9 @@ void ServerSentEventsTransport::stop()
     }
 }
 
-void ServerSentEventsTransport::lostConnection(ConnectionPrivate *)
+void ServerSentEventsTransport::lostConnection(ConnectionPrivate *con)
 {
+    HttpBasedTransport::lostConnection(con);
     stop();
 }
 

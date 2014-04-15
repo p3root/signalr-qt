@@ -58,6 +58,8 @@ public:
     void send(QString data);
     bool abort(int timeoutMs = 0);
 
+    void lostConnection(ConnectionPrivate *con);
+
     virtual void retry();
 
     void tryDequeueNextWorkItem();

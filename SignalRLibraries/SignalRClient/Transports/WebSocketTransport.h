@@ -35,8 +35,6 @@ private Q_SLOTS:
     void onTextMessageReceived(QString);
     void onPong(quint64, QByteArray);
 
-    void keepAliveTimerTimeout();
-
     void reconnectTimerTick();
 
 #ifndef QT_NO_SSL
@@ -45,7 +43,6 @@ private Q_SLOTS:
 
 private:
     QWebSocket *_webSocket;
-    QTimer _keepAliveTimer;
     bool _started;
     QTimer _retryTimerTimeout;
 };

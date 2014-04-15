@@ -9,8 +9,6 @@ WebSocketTransport::WebSocketTransport() :
     HttpBasedTransport(),
     _webSocket(0)
 {
-    connect(&_keepAliveTimer, SIGNAL(timeout()), this, SLOT(keepAliveTimerTimeout()));
-    _keepAliveTimer.setSingleShot(true);
     _started = false;
 }
 
@@ -58,10 +56,6 @@ void WebSocketTransport::start(QString)
 
         connect(_webSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(onIgnoreSsl(QList<QSslError>)));
 
-        _keepAliveTimer.stop();
-        _keepAliveTimer.setInterval(_connection->getKeepAliveData().getTimeout()*1000);
-        _keepAliveTimer.start();
-
         _webSocket->open(url);
     }
 
@@ -103,8 +97,9 @@ const QString &WebSocketTransport::getTransportType()
     return type;
 }
 
-void WebSocketTransport::lostConnection(ConnectionPrivate *)
+void WebSocketTransport::lostConnection(ConnectionPrivate *con)
 {
+    HttpBasedTransport::lostConnection(con);
     retry();
 }
 
@@ -118,7 +113,6 @@ void WebSocketTransport::onConnected()
 
 void WebSocketTransport::onDisconnected()
 {
-    _keepAliveTimer.stop();
     if(!_webSocket)
     {
         return;
@@ -220,7 +214,6 @@ void WebSocketTransport::onTextMessageReceived(QString str)
 {
     _connection->emitLogMessage("WebSocket: Message received", SignalR::Debug);
 
-    _keepAliveTimer.stop();
     bool timedOut = false, disconnected = false;
     quint64 messageId = 0;
     _connection->updateLastKeepAlive();
@@ -236,27 +229,11 @@ void WebSocketTransport::onTextMessageReceived(QString str)
     }
 
     Q_EMIT onMessageSentCompleted(e, messageId);
-    _keepAliveTimer.start();
 }
 
 void WebSocketTransport::onPong(quint64, QByteArray)
 {
     _connection->emitLogMessage("on pong", SignalR::Debug);
-}
-
-void WebSocketTransport::keepAliveTimerTimeout()
-{
-    if(_webSocket->state() == QAbstractSocket::ConnectedState)
-        _webSocket->close();
-    else
-    {
-        _webSocket->deleteLater();
-        _webSocket = 0;
-
-        connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
-        _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
-        _retryTimerTimeout.start();
-    }
 }
 
 }}}
