@@ -34,6 +34,7 @@
 #include <QString>
 #include "SignalException.h"
 #include <QObject>
+#include <QSharedPointer>
 
 
 namespace P3  { namespace SignalR { namespace Client {
@@ -61,11 +62,11 @@ public:
     virtual const QString& getTransportType() = 0;
 
 Q_SIGNALS:
-    void transportStarted(SignalException* ex);
-    void onMessageSentCompleted(SignalException* ex, quint64 messageId);
+    void transportStarted(QSharedPointer<SignalException> ex);
+    void onMessageSentCompleted(QSharedPointer<SignalException> ex, quint64 messageId);
 
 private Q_SLOTS:
-    virtual void negotiateCompleted(QString data, SignalException* ex) = 0;
+    virtual void negotiateCompleted(QString data, QSharedPointer<SignalException> ex) = 0;
 
 protected:
     virtual void setConnectionPrivate(ConnectionPrivate* con);

@@ -25,8 +25,8 @@ public:
     const QString &getTransportType();
 
 private Q_SLOTS:
-    void onTransportStated(SignalException *e);
-    void onMessageSent(SignalException *ex, quint64 messageId);
+    void onTransportStated(QSharedPointer<SignalException> e);
+    void onMessageSent(QSharedPointer<SignalException> ex, quint64 messageId);
 
 private:
     QList<ClientTransport*> _transports;

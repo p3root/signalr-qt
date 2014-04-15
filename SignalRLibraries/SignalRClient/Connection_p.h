@@ -90,7 +90,7 @@ public:
 
     bool ensureReconnecting();
 
-    void onError(SignalException exp);
+    void onError(QSharedPointer<SignalException> exp);
 
     virtual void onReceived(QVariant &data);
     void setGroupsToken(const QString &token) { _groupsToken = token; }
@@ -138,8 +138,8 @@ private Q_SLOTS:
     void onSendData(const QString &data);
 
 private Q_SLOTS:
-    void transportStarted(SignalException *ex);
-    void transportMessageSent(SignalException *ex, quint64 messageId);
+    void transportStarted(QSharedPointer<SignalException> ex);
+    void transportMessageSent(QSharedPointer<SignalException> ex, quint64 messageId);
 
 private:
     QString _host;

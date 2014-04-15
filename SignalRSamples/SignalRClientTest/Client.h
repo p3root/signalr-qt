@@ -59,7 +59,7 @@ private Q_SLOTS:
     void timerTick();
 
     void onMethodCalled(const QString& method, const QVariantList &args);
-    void onError(SignalException);
+    void onError(QSharedPointer<SignalException>);
     void onStateChanged(SignalR::State oldState, SignalR::State newState);
     void answerReceived(HubCallback*, QVariant);
     void onLogMessage(QString, int severity);
@@ -68,6 +68,8 @@ private Q_SLOTS:
 
 private:
     static int test(HubConnection* t);
+
+    QString getStateAsText(SignalR::State);
 
 private:
     QTimer _timer;

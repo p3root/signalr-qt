@@ -78,7 +78,7 @@ void ConnectionPrivate::start(ClientTransport* transport, bool autoReconnect)
     _transport = transport;
     _autoReconnect = autoReconnect;
 
-    connect(transport, SIGNAL(onMessageSentCompleted(SignalException*, quint64)), this, SLOT(transportMessageSent(SignalException*, quint64)));
+    connect(transport, SIGNAL(onMessageSentCompleted(QSharedPointer<SignalException>, quint64)), this, SLOT(transportMessageSent(QSharedPointer<SignalException>, quint64)));
 
     if(changeState(SignalR::Disconnected, SignalR::Connecting))
     {
@@ -109,17 +109,18 @@ const QString &ConnectionPrivate::getConnectionId() const
 bool ConnectionPrivate::changeState(SignalR::State oldState, SignalR::State newState)
 {
     Q_Q(Connection);
+
+    if(_state != newState)
+        Q_EMIT q->stateChanged(oldState, newState);
     q->onStateChanged(oldState, newState);
 
     if(_state == oldState)
     {
         _state = newState;
-
-        Q_EMIT q->stateChanged(oldState, newState);
-
         return true;
     }
 
+    _state = newState;
     return false;
 
 }
@@ -152,7 +153,7 @@ void ConnectionPrivate::setAdditionalQueryString(QList<QPair<QString, QString> >
     _additionalQueryString = lst;
 }
 
-void ConnectionPrivate::onError(SignalException error)
+void ConnectionPrivate::onError(QSharedPointer<SignalException> error)
 {
     Q_Q(Connection);
     Q_EMIT q->errorOccured(error);
@@ -241,7 +242,8 @@ void ConnectionPrivate::negotiateCompleted(const NegotiateResponse* negotiateRes
 
     if( !(negotiateResponse->protocolVersion == "1.3" || negotiateResponse->protocolVersion == "1.2"))
     {
-        onError(SignalException("Invalid protocol version", SignalException::InvalidProtocolVersion));
+        QSharedPointer<SignalException> invalidProtocol = QSharedPointer<SignalException>(new SignalException("Invalid protocol version", SignalException::InvalidProtocolVersion));
+        onError(invalidProtocol);
         stop();
     }
     else
@@ -258,7 +260,7 @@ void ConnectionPrivate::negotiateCompleted(const NegotiateResponse* negotiateRes
             _webSocketsUrl = negotiateResponse->webSocketsUrl;
         _protocolVersion = negotiateResponse->protocolVersion;
         // disconnect(this, SLOT(transportStarted(SignalException*)));
-        connect(_transport, SIGNAL(transportStarted(SignalException*)), this, SLOT(transportStarted(SignalException*)), Qt::UniqueConnection);
+        connect(_transport, SIGNAL(transportStarted(QSharedPointer<SignalException>)), this, SLOT(transportStarted(QSharedPointer<SignalException>)), Qt::UniqueConnection);
         _transport->start("");
     }
 }
@@ -279,10 +281,10 @@ void ConnectionPrivate::onSendData(const QString &data)
     _transport->send(data);
 }
 
-void ConnectionPrivate::transportStarted(SignalException* error)
+void ConnectionPrivate::transportStarted(QSharedPointer<SignalException> error)
 {
     Q_Q(Connection);
-    if(!error)
+    if(error.isNull())
     {
         if(_state == SignalR::Reconnecting)
             changeState(SignalR::Reconnecting, SignalR::Connected);
@@ -293,19 +295,21 @@ void ConnectionPrivate::transportStarted(SignalException* error)
     {
         if(_autoReconnect)
         {
-            if(changeState(SignalR::Disconnected, SignalR::Connecting))
+            if(getState() == SignalR::Disconnected)
             {
+                changeState(SignalR::Disconnected, SignalR::Connecting);
                 _transport->negotiate();
             }
-            else if(changeState(SignalR::Connected, SignalR::Reconnecting))
+            else if(getState() == SignalR::Connected)
+            {
+                changeState(SignalR::Connected, SignalR::Reconnecting);
+                _transport->start("");
+            }
+            else if(getState() == SignalR::Reconnecting)
             {
                 _transport->start("");
             }
-            else if(changeState(SignalR::Reconnecting, SignalR::Connecting))
-            {
-                _transport->start("");
-            }
-            else if(changeState(SignalR::Connecting, SignalR::Reconnecting))
+            else if(getState() == SignalR::Connecting)//changeState(SignalR::Connecting, SignalR::Reconnecting))
             {
                 _transport->start("");
             }
@@ -313,7 +317,7 @@ void ConnectionPrivate::transportStarted(SignalException* error)
         else
         {
 
-            onError(*error);
+            onError(error);
             stop();
         }
     }
@@ -321,7 +325,7 @@ void ConnectionPrivate::transportStarted(SignalException* error)
     q->onTransportStarted(error);
 }
 
-void ConnectionPrivate::transportMessageSent(SignalException *ex, quint64 messageId)
+void ConnectionPrivate::transportMessageSent(QSharedPointer<SignalException> ex, quint64 messageId)
 {
     Q_Q(Connection);
     q->onMessageSentCompleted(ex, messageId);

@@ -65,8 +65,8 @@ public:
     bool isGetInProgress() { return _getInProgress; }
 
 Q_SIGNALS:
-    void getRequestCompleted(const QString& httpResponse, SignalException* error);
-    void postRequestCompleted(const QString& httpResponse, SignalException* error);
+    void getRequestCompleted(const QString& httpResponse, QSharedPointer<SignalException> error);
+    void postRequestCompleted(const QString& httpResponse, QSharedPointer<SignalException> error);
 
 private Q_SLOTS:
     void requestFinished(QNetworkReply* reply);

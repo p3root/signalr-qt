@@ -59,18 +59,23 @@ private:
     void startConnection();
 
 private Q_SLOTS:
-    void onPollHttpResponse(const QString& httpResponse, SignalException *error);
-    void onPostRequestCompleted(const QString& httpResponse, SignalException *error);
+    void onPollHttpResponse(const QString& httpResponse, QSharedPointer<SignalException> error);
+    void onPostRequestCompleted(const QString& httpResponse, QSharedPointer<SignalException> error);
 
     void keepAliveTimerTimeout();
     void errorRetryTimer();
     void reconnectErrorRetry();
 
+    void reconnectErrorRetryWithStateChanging();
+    void errorRetryWithStateChanging();
+
+    void errorStartRetry();
+
 private:
     bool _started;
     QString _url;
     QTimer _keepAliveTimer;
-    SignalException *_lastSignalException;
+    QSharedPointer<SignalException> _lastSignalException;
     QTimer _retryTimerTimeout;
 
 };

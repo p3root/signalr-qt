@@ -62,8 +62,8 @@ public:
     void run();
 
 Q_SIGNALS:
-    void packetReady(QString packet, SignalException *ex);
-    void connected(SignalException*);
+    void packetReady(QString packet, QSharedPointer<SignalException> ex);
+    void connected(QSharedPointer<SignalException>);
 
 private:
     void open();

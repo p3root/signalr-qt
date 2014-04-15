@@ -35,9 +35,9 @@
 
 Client::Client(QCoreApplication &app)
 {
-    _timer.setSingleShot(true);
+    //_timer.setSingleShot(true);
     _timer.setInterval(5000);
-    //_timer.start();
+    _timer.start();
     connect(&_timer, SIGNAL(timeout()), this, SLOT(timerTick()));
     connect(&app, SIGNAL(aboutToQuit()), SLOT(stop()));
 }
@@ -61,7 +61,7 @@ void Client::start()
 
     connect(proxy, SIGNAL(hubMethodCalled(QString,QVariantList)), this, SLOT(onMethodCalled(QString,QVariantList)));
 
-    connect(_connection, SIGNAL(errorOccured(SignalException)), this, SLOT(onError(SignalException)));
+    connect(_connection, SIGNAL(errorOccured(QSharedPointer<SignalException>)), this, SLOT(onError(QSharedPointer<SignalException>)));
     connect(_connection, SIGNAL(stateChanged(SignalR::State,SignalR::State)), this, SLOT(onStateChanged(SignalR::State,SignalR::State)));
     connect(_connection, SIGNAL(logMessage(QString,int)), this, SLOT(onLogMessage(QString,int)));
 
@@ -94,14 +94,14 @@ void Client::onMethodCalled(const QString &method, const QVariantList &args)
     qDebug() << method << " " << args;
 }
 
-void Client::onError(SignalException error)
+void Client::onError(QSharedPointer<SignalException> error)
 {
-     qDebug() << error.what();
+     qDebug() << error->what();
 }
 
 void Client::onStateChanged(SignalR::State oldState, SignalR::State newState)
 {
-    qDebug()  << "state changed: " << oldState << " -> " << newState << " << " << _connection->getConnectionId();
+    qDebug()  << "state changed: " << getStateAsText(oldState) << " -> " << getStateAsText(newState) << " << " << _connection->getConnectionId();
 
     if(newState == SignalR::Connected)
     {
@@ -146,8 +146,28 @@ int Client::test(HubConnection *t)
     return 0;
 }
 
+QString Client::getStateAsText(SignalR::State state)
+{
+
+    if(state == SignalR::Connected)
+        return "Connected";
+    else if(state == SignalR::Connecting)
+        return "Connecting";
+    else if(state == SignalR::Disconnected)
+        return "Disconnected";
+    else if(state == SignalR::Disconnecting)
+        return "Disconnecting";
+    else if(state == SignalR::Reconnecting)
+        return "Reconnecting";
+    return "UNKOWN";
+
+}
+
 void Client::timerTick()
 {
-    qDebug() << "start retry before retrytimer ticks";
+   // qDebug() << "start retry before retrytimer ticks";
+    HubProxy* prox = _connection->getByName("Chat");
+    prox->invoke("Send", QString("message"), 0);
+
 }
 

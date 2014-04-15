@@ -95,7 +95,7 @@ const QString &ServerSentEventsTransport::getTransportType()
     return type;
 }
 
-void ServerSentEventsTransport::packetReceived(QString data, SignalException *error)
+void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<SignalException> error)
 {
     bool timedOut = false, disconnected = false;
 
@@ -103,21 +103,18 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
     {
         if(_started)
         {
-            Q_EMIT transportStarted(0);
+            Q_EMIT transportStarted(error);
         }
         _connection->changeState(_connection->getState(), SignalR::Connected);
 
     }
-    else if(error != 0)
+    else if(!error.isNull())
     {
         if(_connection->ensureReconnecting())
         {
             connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
             _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
             _retryTimerTimeout.start();
-
-            if(_connection->getState() == SignalR::Connected)
-                _connection->changeState(_connection->getState(), SignalR::Reconnecting);
 
             logReconnectMessage();
             return;
@@ -128,18 +125,13 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
             _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
             _retryTimerTimeout.start();
 
-            if(_connection->getState() == SignalR::Connected)
-                _connection->changeState(_connection->getState(), SignalR::Reconnecting);
-
             logReconnectMessage();
             return;
         }
         else
         {
-            _connection->onError(*error);
+            _connection->onError(error);
         }
-
-        delete error;
     }
     else
     {
@@ -147,11 +139,11 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
         _connection->getKeepAliveData().setLastKeepAlive(QDateTime::currentDateTimeUtc());
 
         _connection->emitLogMessage("SSE: KeepAlive received", SignalR::Debug);
-        SignalException *e = TransportHelper::processMessages(_connection, data, &timedOut, &disconnected);
+        QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, data, &timedOut, &disconnected);
 
-        if(e)
+        if(!e.isNull())
         {
-            _connection->onError(*e);
+            _connection->onError(e);
         }
     }
 
@@ -161,7 +153,7 @@ void ServerSentEventsTransport::packetReceived(QString data, SignalException *er
     }
 }
 
-void ServerSentEventsTransport::connected(SignalException *error)
+void ServerSentEventsTransport::connected(QSharedPointer<SignalException> error)
 {
     if(!_started)
     {
@@ -174,16 +166,16 @@ void ServerSentEventsTransport::connected(SignalException *error)
         _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
         _retryTimerTimeout.start();
 
-        _connection->onError(*error);
+        _connection->onError(error);
 
         logReconnectMessage();
 
         return;
     }
 
-    if(!error)
+    if(!error.isNull())
     {
-        connect(_eventStream, SIGNAL(packetReady(QString,SignalException*)), this, SLOT(packetReceived(QString,SignalException*)));
+        connect(_eventStream, SIGNAL(packetReady(QString,QSharedPointer<SignalException>)), this, SLOT(packetReceived(QString,QSharedPointer<SignalException>)));
     }
 }
 
@@ -192,6 +184,10 @@ void ServerSentEventsTransport::reconnectTimerTick()
     _retryTimerTimeout.stop();
     disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
     closeEventStream();
+
+    if(_connection->getState() == SignalR::Connected)
+        _connection->changeState(_connection->getState(), SignalR::Reconnecting);
+
     start("");
 }
 
@@ -212,7 +208,7 @@ void ServerSentEventsTransport::startEventStream()
 
     _eventStream = new HttpEventStream(_url,_connection);
 
-    connect(_eventStream, SIGNAL(connected(SignalException*)), this, SLOT(connected(SignalException*)));
+    connect(_eventStream, SIGNAL(connected(QSharedPointer<SignalException>)), this, SLOT(connected(QSharedPointer<SignalException>)));
 
     _eventStream->start();
 

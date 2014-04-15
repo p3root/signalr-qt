@@ -72,9 +72,9 @@ QString TransportHelper::getReceiveQueryString(ConnectionPrivate* connection, QS
     return qs;
 }
 
-SignalException *TransportHelper::processMessages(ConnectionPrivate* connection, QString raw, bool* timedOut, bool* disconnected, quint64 *messageId)
+QSharedPointer<SignalException> TransportHelper::processMessages(ConnectionPrivate* connection, QString raw, bool* timedOut, bool* disconnected, quint64 *messageId)
 {
-    SignalException *e = 0;
+    QSharedPointer<SignalException> e;
     QVariant var = QextJson::parse(raw);
     if(var.convert(QVariant::Map))
     {
@@ -125,7 +125,7 @@ SignalException *TransportHelper::processMessages(ConnectionPrivate* connection,
             connection->emitLogMessage(errorMessage, SignalR::Error);
             connection->emitLogMessage(raw, SignalR::Debug);
 
-            e = new SignalException(errorMessage, SignalException::SignalRServerException);
+            e = QSharedPointer<SignalException>(new SignalException(errorMessage, SignalException::SignalRServerException));
         }
 
         if(*disconnected)

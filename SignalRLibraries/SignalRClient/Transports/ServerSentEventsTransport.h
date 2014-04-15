@@ -53,8 +53,8 @@ public:
     const QString& getTransportType();
 
 private Q_SLOTS:
-    void packetReceived(QString packet, SignalException *ex);
-    void connected(SignalException* ex);
+    void packetReceived(QString packet, QSharedPointer<SignalException> ex);
+    void connected(QSharedPointer<SignalException> ex);
 
     void reconnectTimerTick();
 

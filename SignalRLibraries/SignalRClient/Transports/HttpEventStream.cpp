@@ -57,6 +57,8 @@ void HttpEventStream::open()
     if(_isRunning)
         return;
 
+    QSharedPointer<SignalException> error;
+
     _isRunning = true;
 
     _isAborting = false;
@@ -155,17 +157,19 @@ void HttpEventStream::open()
                 //write data to socket
                 os.flush();
 
-                Q_EMIT connected(0);
+                Q_EMIT connected(error);
             }
             else
             {
-                Q_EMIT connected(new SignalException(_sock->errorString(), SignalException::ConnectionRefusedError));
+                error = QSharedPointer<SignalException>(new SignalException(_sock->errorString(), SignalException::ConnectionRefusedError));
+                Q_EMIT connected(error);
             }
         }
     }
     else
     {
-        Q_EMIT connected(new SignalException(info.errorString(), SignalException::ConnectionRefusedError));
+        error = QSharedPointer<SignalException>(new SignalException(info.errorString(), SignalException::ConnectionRefusedError));
+        Q_EMIT connected(error);
     }
 
 }
@@ -180,6 +184,7 @@ void HttpEventStream::close()
 void HttpEventStream::run()
 {
     open();
+    QSharedPointer<SignalException> error;
 
     while(!_isAborting)
     {
@@ -208,14 +213,15 @@ void HttpEventStream::run()
                 QString pack = readPackage("");
                 if(!pack.isEmpty())
                 {
-                    Q_EMIT packetReady(pack, 0);
+                    Q_EMIT packetReady(pack, error);
                 }
             }
             else
             {
                 if(!_isAborting)
                 {
-                    Q_EMIT packetReady("", new SignalException(_sock->errorString(), SignalException::EventStreamSocketLost));
+                    error = QSharedPointer<SignalException>(new SignalException(_sock->errorString(), SignalException::EventStreamSocketLost));
+                    Q_EMIT packetReady("", error);
                 }
                 else
                 {
@@ -231,24 +237,23 @@ void HttpEventStream::run()
             if(!_isAborting)
             {
 
-                SignalException *ex = 0;
                 switch(socketError)
                 {
                 case QAbstractSocket::SocketTimeoutError:
                 case QAbstractSocket::RemoteHostClosedError:
-                    ex = new SignalException(errorString, SignalException::RemoteHostClosedConnection);
+                    error = QSharedPointer<SignalException>(new SignalException(errorString, SignalException::RemoteHostClosedConnection));
                     _isAborting = true;
                     break;
                 case QAbstractSocket::SslHandshakeFailedError:
-                    ex = new SignalException(errorString, SignalException::SslHandshakeFailed);
+                    error = QSharedPointer<SignalException>(new SignalException(errorString, SignalException::SslHandshakeFailed));
                     break;
                 default:
-                    ex = new SignalException(errorString, SignalException::UnknownNetworkError);
+                    error = QSharedPointer<SignalException>(new SignalException(errorString, SignalException::UnknownNetworkError));
                     break;
 
                 }
 
-                Q_EMIT packetReady("", ex);
+                Q_EMIT packetReady("", error);
             }
             else
             {

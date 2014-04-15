@@ -236,11 +236,13 @@ void HttpClient::getRequestFinished(QNetworkReply *reply)
 
     //_connection->emitLogMessage(data, Connection::Debug);
 
+    QSharedPointer<SignalException> signalException = QSharedPointer<SignalException>(0);
+
     if(reply->error() == QNetworkReply::NoError)
     {
         _currentConnections.removeOne(reply);
         reply->deleteLater();
-        Q_EMIT getRequestCompleted(data, 0);
+        Q_EMIT getRequestCompleted(data, signalException);
     }
 }
 
@@ -291,16 +293,16 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
                 ex = new SignalException(errorString, SignalException::UnkownError);
                 break;
         }
-
+        QSharedPointer<SignalException> signalException = QSharedPointer<SignalException>(ex);
         if(!_isAborting)
         {
             _currentConnections.removeOne(reply);
             reply->deleteLater();
 
             if (reply->operation() == QNetworkAccessManager::GetOperation) {
-                Q_EMIT getRequestCompleted("", ex);
+                Q_EMIT getRequestCompleted("", signalException);
             } else {
-                Q_EMIT postRequestCompleted("", ex);
+                Q_EMIT postRequestCompleted("", signalException);
             }
         }
     }
@@ -315,11 +317,13 @@ void HttpClient::postRequestFinished(QNetworkReply *reply)
 
     //_connection->emitLogMessage(data, Connection::Debug);
 
+    QSharedPointer<SignalException> signalException = QSharedPointer<SignalException>(0);
+
     if( reply->error() == QNetworkReply::NoError)
     {
         _currentConnections.removeOne(reply);
         reply->deleteLater();
-        Q_EMIT postRequestCompleted(data, 0);
+        Q_EMIT postRequestCompleted(data, signalException);
     }
 }
 

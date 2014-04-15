@@ -112,7 +112,8 @@ void WebSocketTransport::onConnected()
     if(!_started)
     {
         _started = true;
-        Q_EMIT transportStarted(0);
+        QSharedPointer<SignalException> e;
+        Q_EMIT transportStarted(e);
     }
 }
 
@@ -125,18 +126,18 @@ void WebSocketTransport::onDisconnected()
     }
     QAbstractSocket::SocketError er = _webSocket->error();
 
-    SignalException *error = 0;
+    QSharedPointer<SignalException> error;
 
     switch(er)
     {
     case QAbstractSocket::RemoteHostClosedError:
-        error = new SignalException(_webSocket->errorString(), SignalException::RemoteHostClosedConnection);
+        error = QSharedPointer<SignalException>(new SignalException(_webSocket->errorString(), SignalException::RemoteHostClosedConnection));
         break;
     case QAbstractSocket::ConnectionRefusedError:
-        error = new SignalException(_webSocket->errorString(), SignalException::ConnectionRefusedError);
+        error = QSharedPointer<SignalException>(new SignalException(_webSocket->errorString(), SignalException::ConnectionRefusedError));
         break;
     case QAbstractSocket::NetworkError:
-        error = new SignalException(_webSocket->errorString(), SignalException::UnknownNetworkError);
+        error = QSharedPointer<SignalException>(new SignalException(_webSocket->errorString(), SignalException::UnknownNetworkError));
         break;
     case QAbstractSocket::SocketAccessError:
     case QAbstractSocket::SocketResourceError:
@@ -155,19 +156,18 @@ void WebSocketTransport::onDisconnected()
     case QAbstractSocket::ProxyProtocolError:
     case QAbstractSocket::UnknownSocketError:
     case QAbstractSocket::HostNotFoundError:
-        error = new SignalException(_webSocket->errorString(), SignalException::UnkownError);
+        error = QSharedPointer<SignalException>(new SignalException(_webSocket->errorString(), SignalException::UnkownError));
         break;
     }
 
     if(_webSocket->state() == QAbstractSocket::ConnectedState)
         _webSocket->close();
 
-    _connection->onError(*error);
+    _connection->onError(error);
 
     if(_connection->ensureReconnecting())
     {
         _connection->emitLogMessage("WS: lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", SignalR::Debug);
-        _connection->changeState(SignalR::Connected, SignalR::Reconnecting);
 
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
         _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
@@ -177,7 +177,6 @@ void WebSocketTransport::onDisconnected()
     else if(_connection->getAutoReconnect())
     {
         _connection->emitLogMessage("WebSocket: lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", SignalR::Debug);
-        _connection->changeState(SignalR::Connected, SignalR::Reconnecting);
 
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
         _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
@@ -185,8 +184,6 @@ void WebSocketTransport::onDisconnected()
 
         return;
     }
-
-    delete error;
 }
 
 
@@ -194,6 +191,9 @@ void WebSocketTransport::reconnectTimerTick()
 {
     _retryTimerTimeout.stop();
     disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
+    _connection->changeState(SignalR::Connected, SignalR::Reconnecting);
+
+
     start("");
 }
 
@@ -224,13 +224,14 @@ void WebSocketTransport::onTextMessageReceived(QString str)
     quint64 messageId = 0;
     _connection->updateLastKeepAlive();
 
-    _connection->changeState(_connection->getState(), SignalR::Connected);
+     if(_connection->getState() != SignalR::Connected)
+        _connection->changeState(_connection->getState(), SignalR::Connected);
 
-    SignalException *e = TransportHelper::processMessages(_connection, str, &timedOut, &disconnected, &messageId);
+    QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, str, &timedOut, &disconnected, &messageId);
 
-    if(e)
+    if(!e.isNull())
     {
-        _connection->onError(*e);
+        _connection->onError(e);
     }
 
     Q_EMIT onMessageSentCompleted(e, messageId);

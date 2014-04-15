@@ -48,11 +48,11 @@ HttpBasedTransport::~HttpBasedTransport(void)
     _httpClient->deleteLater();
 }
 
-void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
+void HttpBasedTransport::negotiateCompleted(QString data, QSharedPointer<SignalException> ex)
 {
-    disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
+    disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(negotiateCompleted(QString,QSharedPointer<SignalException>)));
 
-    if(!ex)
+    if(ex.isNull())
     {
         const NegotiateResponse* res = TransportHelper::parseNegotiateHttpResponse(data);
 
@@ -69,14 +69,16 @@ void HttpBasedTransport::negotiateCompleted(QString data, SignalException *ex)
         if(_connection->getAutoReconnect())
         {
             _connection->emitLogMessage(QString("Negotiation failed, will try it again after %1s").arg(_connection->getReconnectWaitTime()), SignalR::Error);
-            _connection->onError(SignalException("Negotiation failed", ex->getType()));
+            QSharedPointer<SignalException> error = QSharedPointer<SignalException>(new SignalException("Negotiation failed", ex->getType()));
+            _connection->onError(error);
             connect(&_retryTimerTimeout, SIGNAL(timeout()), SLOT(retryNegotiation()));
             _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
             _retryTimerTimeout.start();
         }
         else
         {
-            _connection->onError(SignalException("Negotiation failed", SignalException::InvalidNegotiationValues));
+            QSharedPointer<SignalException> error = QSharedPointer<SignalException>(new SignalException("Negotiation failed", SignalException::InvalidNegotiationValues));
+            _connection->onError(error);
             _connection->stop();
         }
     }
@@ -105,8 +107,8 @@ void HttpBasedTransport::negotiate()
     QString url = _connection->getUrl() + "/negotiate?clientProtocol=1.3&connectionData=" + _connection->onSending();
     //url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
-    disconnect(this, SLOT(negotiateCompleted(QString,SignalException*)));
-    connect(_httpClient, SIGNAL(getRequestCompleted(QString,SignalException*)), this, SLOT(negotiateCompleted(QString,SignalException*)));
+    disconnect(this, SLOT(negotiateCompleted(QString,QSharedPointer<SignalException>)));
+    connect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(negotiateCompleted(QString,QSharedPointer<SignalException>)));
     _httpClient->get(url);
 }
 
@@ -131,7 +133,7 @@ void HttpBasedTransport::send(QString data)
     else
     {
         _sending = true;
-        connect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
+        connect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
         _httpClient->post(url, postData);
     }
 }
@@ -149,7 +151,7 @@ void HttpBasedTransport::tryDequeueNextWorkItem()
         // Nuke the work item
         _sendQueue.dequeue();
 
-        connect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
+        connect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
         _httpClient->post(workItem->url, workItem->postData);
     }
 }
@@ -169,40 +171,33 @@ void HttpBasedTransport::retry()
     }
 }
 
-void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, SignalException* error)
+void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, QSharedPointer<SignalException> error)
 {    
     Q_UNUSED(httpResponse);
     Q_UNUSED(error);
     bool timedOut = false, disconnected = false;
     quint64 messageId = 0;
 
-    if(!error)
+    if(error.isNull())
     {
         _connection->changeState(_connection->getState(), SignalR::Connected);
-        SignalException *e = TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected, &messageId);
-
-        if(e)
-        {
+        QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected, &messageId);
+        if(!e.isNull())
             error = e;
-        }
 
     }
 
-    disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,SignalException*)), this, SLOT(onSendHttpResponse(QString,SignalException*)));
+    disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
     tryDequeueNextWorkItem();
 
 
     Q_EMIT onMessageSentCompleted(error, messageId);
-
-    if(error)
-        delete error;
-
 }
 
 bool HttpBasedTransport::abort(int timeoutMs)
 {
     _retryTimerTimeout.stop();
-    disconnect(this, SLOT(onSendHttpResponse(QString,SignalException*)));
+    disconnect(this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
 
     QString url = _connection->getUrl() +
             "/abort";
@@ -218,7 +213,7 @@ bool HttpBasedTransport::abort(int timeoutMs)
         connect(&timeout, SIGNAL(timeout()), &loop, SLOT(quit()));
         timeout.start();
     }
-    connect(_httpClient,SIGNAL(postRequestCompleted(QString,SignalException*)), &loop, SLOT(quit()));
+    connect(_httpClient,SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), &loop, SLOT(quit()));
 
     _connection->emitLogMessage("starting abort request (" + _connection->getConnectionId() +")" , SignalR::Debug);
     _httpClient->post(url, QMap<QString, QString>());

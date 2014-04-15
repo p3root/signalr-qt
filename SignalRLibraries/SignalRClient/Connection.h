@@ -171,23 +171,23 @@ public:
 
 Q_SIGNALS:
     void stateChanged(SignalR::State old_state, SignalR::State new_state);
-    void errorOccured(SignalException error);
+    void errorOccured(QSharedPointer<SignalException> error);
     void onConnectionSlow();
     void logMessage(QString, int severity);
-    void messageSentCompleted(SignalException *ex);
+    void messageSentCompleted(QSharedPointer<SignalException> ex);
 
 protected:
     ConnectionPrivate * getConnectionPrivate() { return d_ptr; }
 
-    virtual void onTransportStarted(SignalException *);
-    virtual void onMessageSentCompleted(SignalException *, quint64 messageId);
+    virtual void onTransportStarted(QSharedPointer<SignalException>);
+    virtual void onMessageSentCompleted(QSharedPointer<SignalException>, quint64 messageId);
     virtual void onReceived(QVariant &data);
     virtual void onStateChanged(SignalR::State oldState, SignalR::State newState) { Q_UNUSED(oldState); Q_UNUSED(newState);}
     virtual QString onSending();
 
 private Q_SLOTS:
-    void transportStarted(SignalException *ex);
-    void transportMessageSent(SignalException *ex, quint64 messageId);
+    void transportStarted(QSharedPointer<SignalException> ex);
+    void transportMessageSent(QSharedPointer<SignalException> ex, quint64 messageId);
 
 protected:
     ConnectionPrivate * const d_ptr;

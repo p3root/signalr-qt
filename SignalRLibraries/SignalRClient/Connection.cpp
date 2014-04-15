@@ -225,23 +225,23 @@ HeartbeatMonitor *Connection::createHeartbeatMonitor()
     return d->createHeartbeatMonitor();
 }
 
-void Connection::onTransportStarted(SignalException *)
+void Connection::onTransportStarted(QSharedPointer<SignalException>)
 {
 
 }
 
-void Connection::onMessageSentCompleted(SignalException *, quint64)
+void Connection::onMessageSentCompleted(QSharedPointer<SignalException>, quint64)
 {
 
 }
 
-void Connection::transportStarted(SignalException* error)
+void Connection::transportStarted(QSharedPointer<SignalException> error)
 {
     Q_D(Connection);
     d->transportStarted(error);
 }
 
-void Connection::transportMessageSent(SignalException *ex, quint64 messageId)
+void Connection::transportMessageSent(QSharedPointer<SignalException> ex, quint64 messageId)
 {
     Q_D(Connection);
     d->transportMessageSent(ex, messageId);

@@ -52,7 +52,7 @@ public:
     HttpBasedTransport();
     virtual ~HttpBasedTransport(void);
 
-    void negotiateCompleted(QString data, SignalException* ex);
+    void negotiateCompleted(QString data, QSharedPointer<SignalException> ex);
     virtual void onNegotiatenCompleted(const NegotiateResponse& res);
     void negotiate();
     void send(QString data);
@@ -78,7 +78,7 @@ protected:
     void setConnectionPrivate(ConnectionPrivate *connection);
 
 private Q_SLOTS:
-    void onSendHttpResponse(const QString& httpResponse, SignalException* error);
+    void onSendHttpResponse(const QString& httpResponse, QSharedPointer<SignalException> error);
     void retryNegotiation();
     void retryPost();
 };
