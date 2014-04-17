@@ -175,6 +175,8 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, QShared
 {    
     Q_UNUSED(httpResponse);
     Q_UNUSED(error);
+    disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
+
     bool timedOut = false, disconnected = false;
     quint64 messageId = 0;
 
@@ -187,17 +189,18 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, QShared
 
     }
 
-    disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
     tryDequeueNextWorkItem();
 
-
-    Q_EMIT onMessageSentCompleted(error, messageId);
+    if(messageId != 0 || !error.isNull())
+        Q_EMIT onMessageSentCompleted(error, messageId);
+    else
+        _connection->emitLogMessage("MessageId 0 received", SignalR::Warning);
 }
 
 bool HttpBasedTransport::abort(int timeoutMs)
 {
     _retryTimerTimeout.stop();
-    disconnect(this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
+     disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
 
     QString url = _connection->getUrl() +
             "/abort";
@@ -235,7 +238,7 @@ bool HttpBasedTransport::abort(int timeoutMs)
 
 void HttpBasedTransport::lostConnection(ConnectionPrivate *)
 {
-    _httpClient->abort(true);
+    _httpClient->abort(false);
 }
 
 }}}

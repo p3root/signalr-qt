@@ -33,6 +33,7 @@
 
 #include <QMutex>
 #include <QTimer>
+#include <SignalR.h>
 #include "SignalR_global.h"
 
 

@@ -40,7 +40,6 @@ HeartbeatMonitor::HeartbeatMonitor(ConnectionPrivate *con, QMutex *stateLocker)
     _locker = stateLocker;
     _timedOut = false;
     _hasBeenWarned = false;
-
 }
 
 void HeartbeatMonitor::start()

@@ -194,39 +194,50 @@ void HubProxy::onReceive(const QVariant &var)
                 curMethod.remove(0, 1); //remove open brace
                 curMethod.remove(curMethod.count()-1, 1); //remove close brace
 
-                QStringList params = curMethod.split(','); //split params
+                int paramCount = 0;
+                QStringList params;
 
-                QStringList tmpParams;
-                foreach(QString param, params)
+                if(curMethod.size() != 0)
                 {
-                    tmpParams << param.replace(";", ",");
-                }
-                params = tmpParams;
+                    params = curMethod.split(','); //split params
 
-                if(params.count() != args.count())
-                {
-                    _connection->getConnectionPrivate()->emitLogMessage("Invalid size in give and needed args found, hubMethodCalled will be emited", SignalR::Debug);
-                    Q_EMIT hubMethodCalled(method, args);
-                    return;
-                }
-
-                //i have no fucking idea why I cannot pass template class as args in QMetaObject::invoke
-                //so i just stringify it an pass it to the method as a string
-                int x = 0;
-                foreach(QVariant arg, args)
-                {
-                    if(arg.type() == QVariant::Map
-                            || arg.type() == QVariant::List)
+                    QStringList tmpParams;
+                    foreach(QString param, params)
                     {
-                        args[x] = QextJson::stringify(arg);
+                        tmpParams << param.replace(";", ",");
                     }
-                    x++;
+                    params = tmpParams;
+
+                    if(params.count() != args.count())
+                    {
+                        _connection->getConnectionPrivate()->emitLogMessage("Invalid size in give and needed args found, hubMethodCalled will be emited", SignalR::Debug);
+                        Q_EMIT hubMethodCalled(method, args);
+                        return;
+                    }
+
+                    //i have no fucking idea why I cannot pass template class as args in QMetaObject::invoke
+                    //so i just stringify it an pass it to the method as a string
+                    int x = 0;
+                    foreach(QVariant arg, args)
+                    {
+                        if(arg.type() == QVariant::Map
+                                || arg.type() == QVariant::List)
+                        {
+                            args[x] = QextJson::stringify(arg);
+                        }
+                        x++;
+                    }
+
+                    paramCount = params.length();
                 }
 
                 bool retVal = true;
 
-                switch(params.length())
+                switch(paramCount)
                 {
+                case 0:
+                    retVal = QMetaObject::invokeMethod(_objectToInvoke, method.toStdString().c_str());
+                    break;
                 case 1:
                     retVal = QMetaObject::invokeMethod(_objectToInvoke, method.toStdString().c_str(),
                                                        getGenericArgument(params[0], args[0].toString()));

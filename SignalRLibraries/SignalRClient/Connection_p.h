@@ -164,6 +164,7 @@ private:
     SignalR::State _state;
 
     HeartbeatMonitor *_monitor;
+    QMutex *_stateLocker;
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy _proxySettings;

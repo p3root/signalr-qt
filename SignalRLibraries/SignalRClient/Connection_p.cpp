@@ -48,6 +48,8 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
     _host = host;
     _state = SignalR::Disconnected;
 
+    _stateLocker = new QMutex(QMutex::Recursive);
+
     qRegisterMetaType<SignalException>("SignalException");
     qRegisterMetaType<SignalR::State>("State");
     qRegisterMetaType<SignalR::State>("SignalR::State");
@@ -129,6 +131,7 @@ void ConnectionPrivate::retry()
 
 SignalR::State ConnectionPrivate::getState()
 {
+    QMutexLocker l(_stateLocker);
     return _state;
 }
 
@@ -140,14 +143,16 @@ const QString &ConnectionPrivate::getConnectionId() const
 void ConnectionPrivate::changeState(SignalR::State oldState, SignalR::State newState)
 {
     Q_Q(Connection);
+    QMutexLocker l(_stateLocker);
 
-    if(_state != newState)
+    SignalR::State currentState = _state;
+    _state = newState;
+
+    if(currentState != newState)
     {
         Q_EMIT q->stateChanged(oldState, newState);
         q->onStateChanged(oldState, newState);
     }
-
-    _state = newState;
 }
 
 bool ConnectionPrivate::ensureReconnecting()
@@ -187,7 +192,7 @@ void ConnectionPrivate::onError(QSharedPointer<SignalException> error)
 void ConnectionPrivate::onReceived(QVariant &data)
 {
     Q_Q(Connection);
-    Q_EMIT q->onReceived(data);
+    q->onReceived(data);
 }
 
 ClientTransport *ConnectionPrivate::getTransport()
@@ -250,6 +255,8 @@ void ConnectionPrivate::connectionSlow()
 
 bool ConnectionPrivate::stop(int timeoutMs)
 {
+    QMutexLocker l(_stateLocker);
+
     changeState(_state, SignalR::Disconnecting);
     bool abort = _transport->abort(timeoutMs);
     _transport->deleteLater();

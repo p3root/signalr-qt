@@ -63,8 +63,11 @@ friend class HubProxy;
 
 protected:
     virtual HubProxy* newHubProxy(const QString &name, QObject *objectToInvoke=0);
-private:
+
+protected:
     QMap<QString, HubProxy*> _hubs;
+
+private:
     QMap<QString, HubCallback*> _callbacks;
 
 };
