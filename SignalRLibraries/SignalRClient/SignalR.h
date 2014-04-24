@@ -19,6 +19,7 @@ public:
 
     enum LogSeverity
     {
+        Trace,
         Debug,
         Info,
         Warning,

@@ -61,7 +61,7 @@ void ServerSentEventsTransport::start(QString)
         urlAppend = "reconnect";
     _url = _connection->getUrl() + "/"+urlAppend;
 
-    _url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
+    _url += TransportHelper::getReceiveQueryString(_connection, "", getTransportType());
 
     startEventStream();
 }
@@ -143,6 +143,7 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
         _connection->getKeepAliveData().setLastKeepAlive(QDateTime::currentDateTimeUtc());
 
         _connection->emitLogMessage("SSE: Message received", SignalR::Debug);
+        _connection->emitLogMessage("SSE Message " + data, SignalR::Trace);
         QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, data, &timedOut, &disconnected);
 
         if(!e.isNull())

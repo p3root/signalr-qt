@@ -234,7 +234,7 @@ void HttpClient::getRequestFinished(QNetworkReply *reply)
 
     QString data = QString(reply->readAll());
 
-    //_connection->emitLogMessage(data, Connection::Debug);
+    _connection->emitLogMessage(data, SignalR::Trace);
 
     QSharedPointer<SignalException> signalException = QSharedPointer<SignalException>(0);
 
@@ -260,38 +260,74 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
     {
         SignalException* ex = 0;
 
+
         switch(error)
         {
-            case 1:
-                ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
-                break;
-            case 2:
-                ex = new SignalException(errorString, SignalException::RemoteHostClosedConnection);
-                break;
-            case 3:
-                ex = new SignalException(errorString, SignalException::HostNotFoundError);
-                break;
-            case 4:
-                ex = new SignalException(errorString, SignalException::SocketOperationTimedOut);
-                break;
-            case 5:
-                ex = new SignalException(errorString, SignalException::OperationCanceled);
-                break;
-            case 99:
-                ex = new SignalException(errorString, SignalException::UnknownNetworkError);
-                break;
-            case 203:
-                ex = new SignalException(errorString, SignalException::ContentNotFoundError);
-                break;
-            case 204:
-                ex = new SignalException(errorString, SignalException::ServerRequiresAuthorization);
-                break;
-            case 299:
-                ex = new SignalException(errorString, SignalException::UnkownContentError);
-                break;
-            default:
-                ex = new SignalException(errorString, SignalException::UnkownError);
-                break;
+        case QNetworkReply::ConnectionRefusedError:
+            ex = new SignalException(errorString, SignalException::ConnectionRefusedError);
+            break;
+        case QNetworkReply::RemoteHostClosedError:
+            ex = new SignalException(errorString, SignalException::RemoteHostClosedConnection);
+            break;
+        case QNetworkReply::HostNotFoundError:
+            ex = new SignalException(errorString, SignalException::HostNotFoundError);
+            break;
+        case QNetworkReply::TimeoutError:
+            ex = new SignalException(errorString, SignalException::SocketOperationTimedOut);
+            break;
+        case QNetworkReply::OperationCanceledError:
+            ex = new SignalException(errorString, SignalException::OperationCanceled);
+            break;
+        case QNetworkReply::SslHandshakeFailedError:
+            ex = new SignalException(errorString, SignalException::SslHandshakeFailed);
+            break;
+        case QNetworkReply::TemporaryNetworkFailureError:
+        case QNetworkReply::UnknownNetworkError:
+            ex = new SignalException(errorString, SignalException::UnknownNetworkError);
+            break;
+
+        case QNetworkReply::ProxyConnectionRefusedError:
+            ex = new SignalException(errorString, SignalException::ProxyConnectionRefusedError);
+            break;
+        case QNetworkReply::ProxyConnectionClosedError:
+            ex = new SignalException(errorString, SignalException::ProxyConnectionClosedError);
+            break;
+        case QNetworkReply::ProxyNotFoundError:
+            ex = new SignalException(errorString, SignalException::ProxyNotFoundError);
+            break;
+        case QNetworkReply::ProxyTimeoutError:
+            ex = new SignalException(errorString, SignalException::ProxyTimeoutError);
+            break;
+        case QNetworkReply::ProxyAuthenticationRequiredError:
+            ex = new SignalException(errorString, SignalException::ProxyAuthenticationRequiredError);
+            break;
+        case QNetworkReply::UnknownProxyError:
+            ex = new SignalException(errorString, SignalException::UnknownProxyError);
+            break;
+
+
+        case QNetworkReply::ContentNotFoundError:
+            ex = new SignalException(errorString, SignalException::ContentNotFoundError);
+            break;
+        case QNetworkReply::AuthenticationRequiredError:
+            ex = new SignalException(errorString, SignalException::ServerRequiresAuthorization);
+            break;
+        case QNetworkReply::ContentReSendError:
+        case QNetworkReply::ContentOperationNotPermittedError:
+        case QNetworkReply::ContentAccessDenied:
+        case QNetworkReply::UnknownContentError:
+            ex = new SignalException(errorString, SignalException::UnkownContentError);
+            break;
+
+        case QNetworkReply::ProtocolUnknownError:
+        case QNetworkReply::ProtocolInvalidOperationError:
+        case QNetworkReply::ProtocolFailure:
+            ex = new SignalException(errorString, SignalException::UnkownProtocolError);
+            break;
+
+        default:
+            ex = new SignalException(errorString, SignalException::UnkownError);
+            break;
         }
         QSharedPointer<SignalException> signalException = QSharedPointer<SignalException>(ex);
         if(!_isAborting)
@@ -315,7 +351,7 @@ void HttpClient::postRequestFinished(QNetworkReply *reply)
 
     QString data = QString(reply->readAll());
 
-    //_connection->emitLogMessage(data, Connection::Debug);
+    _connection->emitLogMessage(data, SignalR::Trace);
 
     QSharedPointer<SignalException> signalException = QSharedPointer<SignalException>(0);
 

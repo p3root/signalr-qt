@@ -50,7 +50,7 @@ Client::~Client()
 
 void Client::start()
 {
-    _connection = new HubConnection("http://vservbuild:9098/signalr");
+    _connection = new HubConnection("http://192.168.1.69:9098/signalr");
     _connection->setIgnoreSslErrors(true);
     _connection->setReconnectWaitTime(3);
     _monitor = &_connection->getHeartbeatMonitor();

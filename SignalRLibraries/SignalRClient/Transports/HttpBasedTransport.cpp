@@ -117,7 +117,7 @@ void HttpBasedTransport::send(QString data)
     QString url = _connection->getUrl() +
             "/send";
 
-    url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
+    url += TransportHelper::getReceiveQueryString(_connection, "", getTransportType());
 
     QMap<QString, QString> postData;
     postData.insert("data",data);
@@ -194,7 +194,10 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, QShared
     if(messageId != 0 || !error.isNull())
         Q_EMIT onMessageSentCompleted(error, messageId);
     else
+    {
         _connection->emitLogMessage("MessageId 0 received", SignalR::Warning);
+        Q_EMIT onMessageSentCompleted(error, messageId);
+    }
 }
 
 bool HttpBasedTransport::abort(int timeoutMs)
@@ -205,7 +208,7 @@ bool HttpBasedTransport::abort(int timeoutMs)
     QString url = _connection->getUrl() +
             "/abort";
 
-    url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
+    url += TransportHelper::getReceiveQueryString(_connection, "", getTransportType());
 
     QEventLoop loop;
     QTimer timeout;

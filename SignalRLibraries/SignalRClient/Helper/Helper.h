@@ -41,7 +41,7 @@ class Helper
 public:
     Helper();
 
-    static QString encode(QString val);
+    static QString encode(const QString &val);
     static QString getEncodedQueryString(QUrl, ConnectionPrivate *con);
 };
 

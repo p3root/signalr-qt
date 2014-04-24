@@ -43,24 +43,50 @@ class SIGNALR_EXPORT SignalException : public std::exception
 public:
     enum SignalExceptionType
     {
+        //0-10 Negotiaten errors
         InvalidNegotiationValues = 0,
-        InvalidProtocolVersion,
-        EventStreamSocketLost,
-        CouldNotEstablishConnection,
+        InvalidProtocolVersion = 10,
+
+        //15 SSE Errors and WS errors
+        EventStreamSocketLost = 15,
+
+        //20-30 SignalR Server errors
+        CouldNotEstablishConnection=20,
         ConnectionRefusedError,
         ServerClosedConnection,
         ServerRequiresAuthorization,
         SocketOperationTimedOut,
         RemoteHostClosedConnection,
-        ContentNotFoundError,
         HostNotFoundError,
-        OperationCanceled,
-        UnknownNetworkError,
+        ContentNotFoundError,
         InternalServerError,
-        SslHandshakeFailed,
-        SignalRServerException,
-        UnkownContentError,
-        UnkownError
+        SslHandshakeFailed=30,
+
+        //31-35 network layer errors
+        UnknownNetworkError=31,
+
+        //35-40 a proxy error occured
+        ProxyConnectionRefusedError=35,
+        ProxyConnectionClosedError,
+        ProxyNotFoundError,
+        ProxyTimeoutError,
+        ProxyAuthenticationRequiredError,
+        UnknownProxyError=40,
+
+        //41-50 Timeout errors
+        OperationCanceled=41,
+
+        //51-60 SignalR Server exceptions - no state change
+        UnkownContentError=51,
+
+        //100 SignalR Server returns a well-formed .net exception
+        SignalRServerException=100,
+
+        //150 Protocol Errors
+        UnkownProtocolError=150,
+
+        //200 All different errors that are currently not handled
+        UnkownError=200
     };
 
     SignalException();

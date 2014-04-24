@@ -48,7 +48,7 @@ TransportHelper::~TransportHelper(void)
 QString TransportHelper::getReceiveQueryString(ConnectionPrivate* connection, QString data, QString transport)
 {
     QString connectionTokenKey = "connectionToken";
-    QString conData = "&" + connectionTokenKey + "=" + QString(Helper::encode(connection->getConnectionToken()));
+    QString conData = "&" + connectionTokenKey + "=" + QString(connection->getConnectionToken());
     QString qs = "?transport=" + transport + conData;
 
     QString messageId = connection->getMessageId();
@@ -92,6 +92,7 @@ QSharedPointer<SignalException> TransportHelper::processMessages(ConnectionPriva
         {
             if(map["D"].value<int>() == 1)
             {
+                connection->emitLogMessage("Received message to disconnect from SignalR Server", SignalR::Warning);
                 *disconnected = true;
             }
         }
@@ -104,6 +105,14 @@ QSharedPointer<SignalException> TransportHelper::processMessages(ConnectionPriva
         if(map.contains("C"))
         {
             connection->setMessageId(map["C"].toString());
+        }
+
+        if(map.contains("S"))
+        {
+            if(messageId)
+            {
+                *messageId = map["S"].toULongLong();
+            }
         }
 
         if(map.contains("I") && !map.contains("M"))
@@ -142,12 +151,7 @@ QSharedPointer<SignalException> TransportHelper::processMessages(ConnectionPriva
                     *messageId = map["I"].toULongLong();
                 }
 
-                if(lst.count() == 0)
-                {
-                    QVariant empty;
-                    connection->onReceived(empty);
-                }
-                else
+                if(lst.count() != 0)
                 {
                     foreach(QVariant cur, lst)
                     {
