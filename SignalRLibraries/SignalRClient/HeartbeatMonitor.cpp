@@ -48,7 +48,7 @@ void HeartbeatMonitor::start()
         return;
 
     connect(&_timer, SIGNAL(timeout()), this, SLOT(beat()));
-    int tick = _connection->getKeepAliveData().getCheckInterval() * 1000;
+    int tick = _connection->getKeepAliveData()->getCheckInterval() * 1000;
     _timer.setInterval(tick);
     _timer.start();
 }
@@ -67,7 +67,7 @@ void HeartbeatMonitor::beat(double timeElapsed)
 
     if(_connection->getState() == SignalR::Connected)
     {
-        if(timeElapsed >= _connection->getKeepAliveData().getTimeout())
+        if(timeElapsed >= _connection->getKeepAliveData()->getTimeout())
         {
             if(!_timedOut)
             {
@@ -76,7 +76,7 @@ void HeartbeatMonitor::beat(double timeElapsed)
                 _connection->getTransport()->lostConnection(_connection);
             }
         }
-        else if(timeElapsed >= _connection->getKeepAliveData().getTimeoutWarning())
+        else if(timeElapsed >= _connection->getKeepAliveData()->getTimeoutWarning())
         {
             if(!_hasBeenWarned)
             {
@@ -98,13 +98,13 @@ void HeartbeatMonitor::beat()
     if(!checkKeepAliveData())
         return;
 
-    double timeElapsed = QDateTime::currentDateTimeUtc().secsTo(_connection->getKeepAliveData().getLastKeepAlive()) * -1;
+    double timeElapsed = QDateTime::currentDateTimeUtc().secsTo(_connection->getKeepAliveData()->getLastKeepAlive()) * -1;
     beat(timeElapsed);
 }
 
 bool HeartbeatMonitor::checkKeepAliveData()
 {
-    if(!&_connection->getKeepAliveData())
+    if(!_connection->getKeepAliveData())
     {
         return false;
     }

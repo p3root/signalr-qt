@@ -82,7 +82,7 @@ public:
     void presetCount(quint64 preset);
 
     bool getAutoReconnect() const;
-    KeepAliveData& getKeepAliveData();
+    KeepAliveData* getKeepAliveData();
 
     void updateLastKeepAlive();
     void connectionSlow();
@@ -164,7 +164,7 @@ private:
     SignalR::State _state;
 
     HeartbeatMonitor *_monitor;
-    QMutex *_stateLocker;
+    QMutex _stateLocker;
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy _proxySettings;

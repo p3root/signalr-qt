@@ -140,7 +140,7 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
     else
     {
         data = data.remove(0, data.indexOf("data: ")+5);
-        _connection->getKeepAliveData().setLastKeepAlive(QDateTime::currentDateTimeUtc());
+        _connection->getKeepAliveData()->setLastKeepAlive(QDateTime::currentDateTimeUtc());
 
         _connection->emitLogMessage("SSE: Message received", SignalR::Debug);
         _connection->emitLogMessage("SSE Message " + data, SignalR::Trace);

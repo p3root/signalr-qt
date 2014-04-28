@@ -82,7 +82,6 @@ private:
     QTcpSocket *_sock;
     bool _isFirstReponse;
     bool _isAborting;
-    QMutex _mutex;
     QUrl _url;
     bool _isRunning;
 

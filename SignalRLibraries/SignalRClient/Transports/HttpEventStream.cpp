@@ -45,6 +45,7 @@ HttpEventStream::HttpEventStream(QUrl url, ConnectionPrivate *con) : _sock(0), _
 {
     _connection = con;
     _isRunning = false;
+    _isAborting = false;
 }
 
 HttpEventStream::~HttpEventStream()

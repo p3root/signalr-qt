@@ -43,12 +43,11 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
     _transport(0),
     _count(0),
     _keepAliveData(0),
+    _stateLocker(QMutex::Recursive),
     q_ptr(connection)
 {
     _host = host;
     _state = SignalR::Disconnected;
-
-    _stateLocker = new QMutex(QMutex::Recursive);
 
     qRegisterMetaType<SignalException>("SignalException");
     qRegisterMetaType<SignalR::State>("State");
@@ -67,7 +66,7 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
 
 ConnectionPrivate::~ConnectionPrivate()
 {
-
+    delete _keepAliveData;
 }
 
 void ConnectionPrivate::start(bool autoReconnect)
@@ -131,7 +130,7 @@ void ConnectionPrivate::retry()
 
 SignalR::State ConnectionPrivate::getState()
 {
-    QMutexLocker l(_stateLocker);
+    QMutexLocker l(&_stateLocker);
     return _state;
 }
 
@@ -143,7 +142,7 @@ const QString &ConnectionPrivate::getConnectionId() const
 void ConnectionPrivate::changeState(SignalR::State oldState, SignalR::State newState)
 {
     Q_Q(Connection);
-    QMutexLocker l(_stateLocker);
+    QMutexLocker l(&_stateLocker);
 
     SignalR::State currentState = _state;
     _state = newState;
@@ -236,9 +235,9 @@ bool ConnectionPrivate::getAutoReconnect() const
     return _autoReconnect;
 }
 
-KeepAliveData &ConnectionPrivate::getKeepAliveData()
+KeepAliveData *ConnectionPrivate::getKeepAliveData()
 {
-    return *_keepAliveData;
+    return _keepAliveData;
 }
 
 void ConnectionPrivate::updateLastKeepAlive()
@@ -255,7 +254,7 @@ void ConnectionPrivate::connectionSlow()
 
 bool ConnectionPrivate::stop(int timeoutMs)
 {
-    QMutexLocker l(_stateLocker);
+    QMutexLocker l(&_stateLocker);
 
     changeState(_state, SignalR::Disconnecting);
     bool abort = _transport->abort(timeoutMs);
@@ -284,6 +283,7 @@ void ConnectionPrivate::negotiateCompleted(const NegotiateResponse* negotiateRes
     {
         if(negotiateResponse->keepAliveTimeout > 0)
         {
+            delete _keepAliveData;
             _keepAliveData = new KeepAliveData(negotiateResponse->keepAliveTimeout, negotiateResponse->transportConnectTimeout);
         }
         setConnectionState(*negotiateResponse);
