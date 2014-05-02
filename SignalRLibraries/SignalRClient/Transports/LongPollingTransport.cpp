@@ -60,7 +60,7 @@ void LongPollingTransport::start(QString)
     if(_started)
         conOrRecon = "reconnect";
     QString connectUrl = _connection->getUrl() + "/" +conOrRecon;
-    connectUrl += TransportHelper::getReceiveQueryString(_connection, "", getTransportType());
+    connectUrl += TransportHelper::getReceiveQueryString(_connection, getTransportType());
 
     connect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), SLOT(onPostRequestCompleted(QString,QSharedPointer<SignalException>)));
     _httpClient->post(connectUrl, QMap<QString, QString>());
@@ -96,7 +96,7 @@ const QString &LongPollingTransport::getTransportType()
 void LongPollingTransport::startConnection()
 {
     _url = _connection->getUrl() + "/poll";
-    _url += TransportHelper::getReceiveQueryString(_connection, "", getTransportType());
+    _url += TransportHelper::getReceiveQueryString(_connection, getTransportType());
     connect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onPollHttpResponse(QString,QSharedPointer<SignalException>)));
     _httpClient->get(_url);
     _keepAliveTimer.start();

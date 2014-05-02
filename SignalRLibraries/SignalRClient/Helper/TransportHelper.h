@@ -50,7 +50,7 @@ public:
     ~TransportHelper(void);
 
 
-    static QString getReceiveQueryString(ConnectionPrivate *connection, QString data, QString transport);
+    static QString getReceiveQueryString(ConnectionPrivate *connection, QString transport);
     static QSharedPointer<SignalException> processMessages(ConnectionPrivate *connection, QString raw, bool* timedOut, bool* disconnected, quint64 *messageId=0);
 
 

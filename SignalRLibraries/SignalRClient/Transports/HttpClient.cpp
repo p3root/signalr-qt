@@ -110,7 +110,7 @@ void HttpClient::get(QString url)
     }
 
 
-    _connection->emitLogMessage("starting get request (" + _connection->getConnectionId() +")" , SignalR::Debug);
+    _connection->emitLogMessage("starting get request (" + _connection->getConnectionId() + "), active connections: " + QString::number(_currentConnections.size()+1), SignalR::Debug);
     QNetworkReply *getReply = _man->get(req);
 
 #ifndef QT_NO_SSL
@@ -169,7 +169,7 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
 #endif
     }
 
-    _connection->emitLogMessage("starting post request (" + _connection->getConnectionId() +")", SignalR::Debug);
+    _connection->emitLogMessage("starting post request (" + _connection->getConnectionId() +"), active connections: " + QString::number(_currentConnections.size()+1), SignalR::Debug);
 
     QNetworkReply *postReply = _man->post(req, QByteArray().append(queryString));
 

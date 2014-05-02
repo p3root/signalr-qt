@@ -61,7 +61,7 @@ void ServerSentEventsTransport::start(QString)
         urlAppend = "reconnect";
     _url = _connection->getUrl() + "/"+urlAppend;
 
-    _url += TransportHelper::getReceiveQueryString(_connection, "", getTransportType());
+    _url += TransportHelper::getReceiveQueryString(_connection, getTransportType());
 
     startEventStream();
 }
@@ -120,6 +120,8 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
             _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
             _retryTimerTimeout.start();
 
+            _connection->onError(error);
+
             logReconnectMessage();
             return;
         }
@@ -128,6 +130,8 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
             connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
             _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
             _retryTimerTimeout.start();
+
+            _connection->onError(error);
 
             logReconnectMessage();
             return;

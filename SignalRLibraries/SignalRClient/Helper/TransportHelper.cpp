@@ -45,7 +45,7 @@ TransportHelper::~TransportHelper(void)
 {
 }
 
-QString TransportHelper::getReceiveQueryString(ConnectionPrivate* connection, QString data, QString transport)
+QString TransportHelper::getReceiveQueryString(ConnectionPrivate* connection, QString transport)
 {
     QString connectionTokenKey = "connectionToken";
     QString conData = "&" + connectionTokenKey + "=" + QString(connection->getConnectionToken());
@@ -64,9 +64,9 @@ QString TransportHelper::getReceiveQueryString(ConnectionPrivate* connection, QS
         qs += "&groupsToken=" + groupsToken;
     }
 
-    if(!data.isEmpty())
+    if(!connection->onSending().isEmpty())
     {
-        qs += "&connectionData=" + data;
+        qs += "&connectionData=" + connection->onSending();
     }
 
     return qs;

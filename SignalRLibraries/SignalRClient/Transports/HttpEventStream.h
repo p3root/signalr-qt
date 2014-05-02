@@ -85,7 +85,7 @@ private:
     QUrl _url;
     bool _isRunning;
 
-    QString readPackage(QString);
+    QString readPackage(QString val="");
 
 };
 

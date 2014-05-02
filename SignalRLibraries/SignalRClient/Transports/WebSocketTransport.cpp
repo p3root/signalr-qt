@@ -35,7 +35,7 @@ void WebSocketTransport::start(QString)
         if(_started)
             conOrRecon = "reconnect";
         QString connectUrl = _connection->getWebSocketsUrl() + "/" +conOrRecon;
-        connectUrl += TransportHelper::getReceiveQueryString(_connection, "", getTransportType());
+        connectUrl += TransportHelper::getReceiveQueryString(_connection, getTransportType());
 
         QUrl url = QUrl(connectUrl);
 

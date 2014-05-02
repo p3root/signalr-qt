@@ -117,7 +117,7 @@ void HttpBasedTransport::send(QString data)
     QString url = _connection->getUrl() +
             "/send";
 
-    url += TransportHelper::getReceiveQueryString(_connection, "", getTransportType());
+    url += TransportHelper::getReceiveQueryString(_connection, getTransportType());
 
     QMap<QString, QString> postData;
     postData.insert("data",data);
@@ -208,7 +208,7 @@ bool HttpBasedTransport::abort(int timeoutMs)
     QString url = _connection->getUrl() +
             "/abort";
 
-    url += TransportHelper::getReceiveQueryString(_connection, "", getTransportType());
+    url += TransportHelper::getReceiveQueryString(_connection, getTransportType());
 
     QEventLoop loop;
     QTimer timeout;
