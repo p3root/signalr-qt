@@ -277,7 +277,7 @@ QString HttpEventStream::readPackage(QString val)
         return "";
     }
 
-    packetSize = packetSize.trimmed();
+    packetSize = packetSize.remove(packetSize.length()-2, 2);
     int size = packetSize.toInt(&ok, 16);
 
     if(!ok)
@@ -307,10 +307,9 @@ QString HttpEventStream::readPackage(QString val)
 
     if(val.endsWith("\n\n\r\n"))
     {
-        return val.trimmed();
+        return val.remove(val.length()-4, 4);
     }
-
-    return readPackage(val);
+    return readPackage(val.remove(val.length()-2, 2));
 }
 
 }}}
