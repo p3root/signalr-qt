@@ -247,12 +247,12 @@ void HttpEventStream::onReadyRead()
         //build the package
         if(_packageBuffer.size() >= _curPackageLength && _curPackageLength > 0)
         {
-            _curPackage += QString::fromAscii(_packageBuffer.constData(), _curPackageLength+2);
+            _curPackage += QString::fromAscii(_packageBuffer.constData(), _curPackageLength);
 
             if(!_curPackage.endsWith("\n\n\r\n"))
                 _curPackage.remove(_curPackage.length()-2, 2); //remove last \r\n
 
-            _packageBuffer.remove(0, _curPackageLength+2);
+            _packageBuffer.remove(0, _curPackageLength);
             _curPackageLength = 0;
             isWorking = true;
         }
