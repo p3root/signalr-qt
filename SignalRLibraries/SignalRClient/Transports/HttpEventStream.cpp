@@ -41,6 +41,8 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
+#define PACKAGE_FINISHED "\r\n"
+
 HttpEventStream::HttpEventStream(QUrl url, ConnectionPrivate *con, QObject *parent) : QObject(parent), _sock(0), _isFirstReponse(true), _url(url)
 {
     _connection = con;
@@ -205,6 +207,7 @@ void HttpEventStream::onSslErrors(const QList<QSslError> &errors)
 
 void HttpEventStream::onReadyRead()
 {
+    disconnect(_sock, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     QSharedPointer<SignalException> error;
 
     _packageBuffer += _sock->readAll();
@@ -231,6 +234,12 @@ void HttpEventStream::onReadyRead()
             int index = _packageBuffer.indexOf("\r\n");
             QString size = QString(_packageBuffer).remove(index, _packageBuffer.length()-index);
 
+            if(size.isEmpty())
+            {
+                _packageBuffer.remove(0, 2);
+                continue;
+            }
+
             bool ok;
             _curPackageLength = size.toInt(&ok, 16);
 
@@ -247,26 +256,23 @@ void HttpEventStream::onReadyRead()
         //build the package
         if(_packageBuffer.size() >= _curPackageLength && _curPackageLength > 0)
         {
-            _curPackage += QString::fromAscii(_packageBuffer.constData(), _curPackageLength);
+            _curPackage += QString::fromLocal8Bit(_packageBuffer.constData(), _curPackageLength);
 
-            if(!_curPackage.endsWith("\n\n\r\n"))
-                _curPackage.remove(_curPackage.length()-2, 2); //remove last \r\n
+            if(_curPackage.endsWith("\n\n"))
+            {
+                _curPackage.remove(_curPackage.length()-2, 2); //remove last \n\n
+                Q_EMIT packetReady(_curPackage, error); //emit package and remove last \n\n\r\n
+                _curPackage = "";
+            }
 
             _packageBuffer.remove(0, _curPackageLength);
             _curPackageLength = 0;
             isWorking = true;
         }
 
-        if(_curPackage.endsWith("\n\n\r\n"))
-        {
-            //package done
-            Q_EMIT packetReady(_curPackage.remove(_curPackage.length()-4, 4), error); //emit package and remove last \n\n\r\n
-            _curPackage = "";
-            _curPackageLength = 0;
-            isWorking = true;
-        }
-
     }while(isWorking);
+
+    connect(_sock, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 }
 
 void HttpEventStream::onSocketError(QAbstractSocket::SocketError error)
