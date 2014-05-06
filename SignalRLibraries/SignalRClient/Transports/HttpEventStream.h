@@ -54,7 +54,7 @@ class HttpEventStream : public QObject
     Q_OBJECT
 
 public:
-    HttpEventStream(QUrl url, ConnectionPrivate* con);
+    HttpEventStream(QUrl url, ConnectionPrivate* con, QObject *parent);
     ~HttpEventStream();
 
     void close();
@@ -85,7 +85,9 @@ private:
     QUrl _url;
     bool _isRunning;
 
-    QString readPackage(QString val="");
+    QByteArray _packageBuffer;
+    QString _curPackage;
+    int _curPackageLength;
 
 };
 

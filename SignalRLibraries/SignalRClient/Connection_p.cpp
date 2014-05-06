@@ -310,7 +310,7 @@ HeartbeatMonitor &ConnectionPrivate::getHeartbeatMonitor()
     return *_monitor;
 }
 
-void ConnectionPrivate::onSendData(const QString &data)
+void ConnectionPrivate::onSendData(const QString data)
 {
     _transport->send(data);
 }

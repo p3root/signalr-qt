@@ -132,11 +132,11 @@ public:
     HeartbeatMonitor &getHeartbeatMonitor();
 
 Q_SIGNALS:
-    void sendData(const QString &data);
+    void sendData(const QString data);
     void startRetry();
 
 private Q_SLOTS:
-    void onSendData(const QString &data);
+    void onSendData(const QString data);
     void onRetry();
 
 private Q_SLOTS:

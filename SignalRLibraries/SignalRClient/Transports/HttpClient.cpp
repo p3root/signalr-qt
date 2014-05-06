@@ -54,11 +54,15 @@ HttpClient::HttpClient(ConnectionPrivate *con) : _isAborting(false), _man(0)
     _man->setProxy(_connection->getProxySettings());
 #endif
 
+    qRegisterMetaType<QMap<QString,QString> >("QMap<QString,QString>");
+
     _getMutex = new QMutex(QMutex::Recursive);
     _postMutex = new QMutex(QMutex::Recursive);
+    _connectionLock = new QMutex();
 
     connect(_man, SIGNAL(finished(QNetworkReply*)), SLOT(requestFinished(QNetworkReply*)));
     connect(_man, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), SLOT(onIgnoreSSLErros(QNetworkReply*,QList<QSslError>)));
+    connect(this, SIGNAL(doPost(QString,QMap<QString,QString>)), this, SLOT(onDoPost(QString,QMap<QString,QString>)));
 
     _postInProgress = false;
     _getInProgress = false;
@@ -69,6 +73,7 @@ HttpClient::~HttpClient()
     delete _man;
     delete _getMutex;
     delete _postMutex;
+    delete _connectionLock;
 }
 
 void HttpClient::get(QString url)
@@ -119,10 +124,18 @@ void HttpClient::get(QString url)
 
     _getInProgress = true;
 
-    _currentConnections.append(getReply);
+    {
+        QMutexLocker cl(_connectionLock);
+        _currentConnections.append(getReply);
+    }
 }
 
 void HttpClient::post(QString url, QMap<QString, QString> arguments)
+{
+    Q_EMIT doPost(url, arguments);
+}
+
+void HttpClient::onDoPost(QString url, QMap<QString, QString> arguments)
 {
     QMutexLocker l(_postMutex);
     Q_UNUSED(l);
@@ -178,11 +191,16 @@ void HttpClient::post(QString url, QMap<QString, QString> arguments)
 #endif
 
     _postInProgress = true;
-    _currentConnections.append(postReply);
+    {
+        QMutexLocker cl(_connectionLock);
+        _currentConnections.append(postReply);
+    }
 }
 
 void HttpClient::abort(bool dontEmitSignal)
 {
+    QMutexLocker l(_connectionLock);
+
     _isAborting = dontEmitSignal;
 
     foreach(QNetworkReply *reply, _currentConnections)
@@ -198,7 +216,10 @@ void HttpClient::requestFinished(QNetworkReply *reply)
 
     if(error == QNetworkReply::OperationCanceledError && _isAborting)
     {
-        _currentConnections.removeOne(reply);
+        {
+            QMutexLocker l(_connectionLock);
+            _currentConnections.removeOne(reply);
+        }
         reply->deleteLater();
         _postInProgress = false;
         _getInProgress = false;
@@ -240,7 +261,10 @@ void HttpClient::getRequestFinished(QNetworkReply *reply)
 
     if(reply->error() == QNetworkReply::NoError)
     {
-        _currentConnections.removeOne(reply);
+        {
+            QMutexLocker l(_connectionLock);
+            _currentConnections.removeOne(reply);
+        }
         reply->deleteLater();
         Q_EMIT getRequestCompleted(data, signalException);
     }
@@ -332,7 +356,10 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
         QSharedPointer<SignalException> signalException = QSharedPointer<SignalException>(ex);
         if(!_isAborting)
         {
-            _currentConnections.removeOne(reply);
+            {
+                QMutexLocker l(_connectionLock);
+                _currentConnections.removeOne(reply);
+            }
             reply->deleteLater();
 
             if (reply->operation() == QNetworkAccessManager::GetOperation) {
@@ -357,7 +384,10 @@ void HttpClient::postRequestFinished(QNetworkReply *reply)
 
     if( reply->error() == QNetworkReply::NoError)
     {
-        _currentConnections.removeOne(reply);
+        {
+            QMutexLocker l(_connectionLock);
+            _currentConnections.removeOne(reply);
+        }
         reply->deleteLater();
         Q_EMIT postRequestCompleted(data, signalException);
     }

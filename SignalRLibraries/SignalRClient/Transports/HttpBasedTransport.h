@@ -37,6 +37,7 @@
 #include <QTimer>
 #include <QMap>
 #include "Transports/NegotiateResponse.h"
+#include <QEventLoop>
 
 namespace P3 { namespace SignalR { namespace Client {
 
@@ -76,11 +77,12 @@ private:
     bool _sending;
     QTimer _retryTimerTimeout;
 
+
 protected:
     void setConnectionPrivate(ConnectionPrivate *connection);
 
 private Q_SLOTS:
-    void onSendHttpResponse(const QString& httpResponse, QSharedPointer<SignalException> error);
+    void onSendHttpResponse(const QString httpResponse, QSharedPointer<SignalException> error);
     void retryNegotiation();
     void retryPost();
 };

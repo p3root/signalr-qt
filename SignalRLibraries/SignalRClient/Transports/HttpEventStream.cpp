@@ -41,10 +41,11 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-HttpEventStream::HttpEventStream(QUrl url, ConnectionPrivate *con) : _sock(0), _isFirstReponse(true), _url(url)
+HttpEventStream::HttpEventStream(QUrl url, ConnectionPrivate *con, QObject *parent) : QObject(parent), _sock(0), _isFirstReponse(true), _url(url)
 {
     _connection = con;
     _isRunning = false;
+    _curPackageLength = 0;
 }
 
 HttpEventStream::~HttpEventStream()
@@ -145,7 +146,7 @@ void HttpEventStream::open()
                 //prepare init http request
                 os << QByteArray().append(getRequest);
                 os << "Host: " << host << ":" << port << "\r\n";
-                os << "User-Agent: SignalR.Client\r\n";
+                os << "User-Agent: SignalR-Qt.Client\r\n";
                 os << "Accept: text/event-stream\r\n";
 
                 //add additional http headers
@@ -204,29 +205,68 @@ void HttpEventStream::onSslErrors(const QList<QSslError> &errors)
 
 void HttpEventStream::onReadyRead()
 {
-    //disconnect(_sock, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     QSharedPointer<SignalException> error;
 
-    if(_isFirstReponse)
-    {
-        QString header = "";
-        //parse headers
-        while(!header.endsWith("\r\n\r\n"))
-        {
-            header += QString(_sock->read(1));
-        }
+    _packageBuffer += _sock->readAll();
 
+    //read http header
+    if(_isFirstReponse && _packageBuffer.contains("\r\n\r\n"))
+    {
+        int index = _packageBuffer.indexOf("\r\n\r\n"); //remove all http header from buffer
+        _packageBuffer.remove(0, index+4);
         _isFirstReponse = false;
     }
-
-    //parsing SSE package
-    QString pack = readPackage();
-    if(!pack.isEmpty())
+    else if(_isFirstReponse)
     {
-        Q_EMIT packetReady(pack, error);
+        return;
     }
 
-    //connect(_sock, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+    bool isWorking = false;
+
+    do
+    {
+        //read package
+        if(_packageBuffer.contains("\r\n") && _curPackageLength == 0)
+        {
+            int index = _packageBuffer.indexOf("\r\n");
+            QString size = QString(_packageBuffer).remove(index, _packageBuffer.length()-index);
+
+            bool ok;
+            _curPackageLength = size.toInt(&ok, 16);
+
+            _packageBuffer.remove(0, index+2);
+            isWorking = true;
+        }
+        else
+        {
+            _curPackageLength = 0;
+            isWorking = false;
+            break;
+        }
+
+        //build the package
+        if(_packageBuffer.size() >= _curPackageLength && _curPackageLength > 0)
+        {
+            _curPackage += QString::fromAscii(_packageBuffer.constData(), _curPackageLength+2);
+
+            if(!_curPackage.endsWith("\n\n\r\n"))
+                _curPackage.remove(_curPackage.length()-2, 2); //remove last \r\n
+
+            _packageBuffer.remove(0, _curPackageLength+2);
+            _curPackageLength = 0;
+            isWorking = true;
+        }
+
+        if(_curPackage.endsWith("\n\n\r\n"))
+        {
+            //package done
+            Q_EMIT packetReady(_curPackage.remove(_curPackage.length()-4, 4), error); //emit package and remove last \n\n\r\n
+            _curPackage = "";
+            _curPackageLength = 0;
+            isWorking = true;
+        }
+
+    }while(isWorking);
 }
 
 void HttpEventStream::onSocketError(QAbstractSocket::SocketError error)
@@ -259,57 +299,6 @@ void HttpEventStream::onSocketError(QAbstractSocket::SocketError error)
 
         Q_EMIT packetReady("", ex);
     }
-}
-
-
-QString HttpEventStream::readPackage(QString val)
-{
-    QString packetLine;
-    int count = 0;
-    bool ok;
-
-    QString packetSize = QString(_sock->readLine());
-
-    if(!packetSize.endsWith("\r\n"))
-    {
-        _sock->readAll();
-        _connection->emitLogMessage("Could not read SSE package length", SignalR::Warning);
-        return "";
-    }
-
-    packetSize = packetSize.remove(packetSize.length()-2, 2);
-    int size = packetSize.toInt(&ok, 16);
-
-    if(!ok)
-        return "";
-
-    while(packetLine.length() < size+2)
-    {
-        char chr;
-        if(_sock->getChar(&chr))
-        {
-            packetLine += chr;
-        }
-        else
-        {
-            if(count > 10)
-            {
-                _sock->readAll();
-                _connection->emitLogMessage("Could not read SSE package content", SignalR::Warning);
-                return "";
-            }
-            _sock->waitForReadyRead(100);
-            count++;
-        }
-    }
-
-    val += packetLine;
-
-    if(val.endsWith("\n\n\r\n"))
-    {
-        return val.remove(val.length()-4, 4);
-    }
-    return readPackage(val.remove(val.length()-2, 2));
 }
 
 }}}

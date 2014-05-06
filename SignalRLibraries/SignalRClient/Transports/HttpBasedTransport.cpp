@@ -146,13 +146,12 @@ void HttpBasedTransport::tryDequeueNextWorkItem()
     if(_sending)
     {
         // Grab the next work item from the queue
-        SendQueueItem* workItem = _sendQueue.front();
-
-        // Nuke the work item
-        _sendQueue.dequeue();
+        SendQueueItem* workItem = _sendQueue.dequeue();
 
         connect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
         _httpClient->post(workItem->url, workItem->postData);
+
+        delete workItem;
     }
 }
 
@@ -171,7 +170,7 @@ void HttpBasedTransport::retry()
     }
 }
 
-void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, QSharedPointer<SignalException> error)
+void HttpBasedTransport::onSendHttpResponse(const QString httpResponse, QSharedPointer<SignalException> error)
 {    
     Q_UNUSED(httpResponse);
     Q_UNUSED(error);
@@ -182,7 +181,8 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, QShared
 
     if(error.isNull())
     {
-        _connection->changeState(_connection->getState(), SignalR::Connected);
+        SignalR::State curState = _connection->getState();
+        _connection->changeState(curState, SignalR::Connected);
         QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected, &messageId);
         if(!e.isNull())
             error = e;
@@ -203,11 +203,10 @@ void HttpBasedTransport::onSendHttpResponse(const QString& httpResponse, QShared
 bool HttpBasedTransport::abort(int timeoutMs)
 {
     _retryTimerTimeout.stop();
-     disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
+    disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
 
     QString url = _connection->getUrl() +
             "/abort";
-
     url += TransportHelper::getReceiveQueryString(_connection, getTransportType());
 
     QEventLoop loop;

@@ -217,7 +217,7 @@ void ServerSentEventsTransport::startEventStream()
 {
     closeEventStream();
 
-    _eventStream = new HttpEventStream(_url,_connection);
+    _eventStream = new HttpEventStream(_url,_connection, this);
 
     connect(_eventStream, SIGNAL(connected(QSharedPointer<SignalException>)), this, SLOT(connected(QSharedPointer<SignalException>)));
 

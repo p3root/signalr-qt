@@ -67,9 +67,11 @@ public:
 Q_SIGNALS:
     void getRequestCompleted(const QString& httpResponse, QSharedPointer<SignalException> error);
     void postRequestCompleted(const QString& httpResponse, QSharedPointer<SignalException> error);
+    void doPost(QString url, QMap<QString, QString> args); //make post callable from every thread - abort was there some kind of evil
 
 private Q_SLOTS:
     void requestFinished(QNetworkReply* reply);
+    void onDoPost(QString url, QMap<QString, QString> args); //make post callable from every thread - abort was there some kind of evil
 
 #ifndef QT_NO_SSL
     void onIgnoreSSLErros(QNetworkReply *reply, QList<QSslError> error);
@@ -88,6 +90,7 @@ private:
     QNetworkAccessManager *_man;
     QMutex *_getMutex;
     QMutex *_postMutex;
+    QMutex *_connectionLock;
     ConnectionPrivate *_connection;
 
     QList<QNetworkReply*> _currentConnections;
