@@ -31,7 +31,9 @@
 #include "Client.h"
 
 #include <QCoreApplication>
-
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    #include <QtConcurrent/QtConcurrent>
+#endif
 
 Client::Client(QCoreApplication &app)
 {

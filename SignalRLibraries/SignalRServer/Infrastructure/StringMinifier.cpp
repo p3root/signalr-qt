@@ -68,7 +68,11 @@ QString StringMinifier::getStringFromInt(quint32 num)
 
     for(int x = BUFFER_MAX_SIZE - index; x > 0; x--)
     {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+        retVal.append(QString::fromLocal8Bit(buffer+index, 1));
+#else
         retVal.append(QString::fromAscii(buffer+index, 1));
+#endif
         index--;
     }
 
