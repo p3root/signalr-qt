@@ -112,6 +112,10 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
         _connection->changeState(_connection->getState(), SignalR::Connected);
 
     }
+    else if(data.startsWith("id:"))
+    {
+        //ignore the event
+    }
     else if(!error.isNull())
     {
         if(_connection->ensureReconnecting())

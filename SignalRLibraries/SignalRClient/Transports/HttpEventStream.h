@@ -86,8 +86,8 @@ private:
     bool _isRunning;
 
     QByteArray _packageBuffer;
-    QString _curPackage;
-    int _curPackageLength;
+    QByteArray _curPackage;
+    int _curPackageLeftToRead;
 
 };
 

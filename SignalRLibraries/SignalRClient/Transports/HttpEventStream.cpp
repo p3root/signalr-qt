@@ -47,7 +47,7 @@ HttpEventStream::HttpEventStream(QUrl url, ConnectionPrivate *con, QObject *pare
 {
     _connection = con;
     _isRunning = false;
-    _curPackageLength = 0;
+    _curPackageLeftToRead = 0;
 }
 
 HttpEventStream::~HttpEventStream()
@@ -207,72 +207,120 @@ void HttpEventStream::onSslErrors(const QList<QSslError> &errors)
 
 void HttpEventStream::onReadyRead()
 {
-    disconnect(_sock, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-    QSharedPointer<SignalException> error;
-
     _packageBuffer += _sock->readAll();
 
     //read http header
-    if(_isFirstReponse && _packageBuffer.contains("\r\n\r\n"))
+    if (_isFirstReponse)
     {
-        int index = _packageBuffer.indexOf("\r\n\r\n"); //remove all http header from buffer
-        _packageBuffer.remove(0, index+4);
-        _isFirstReponse = false;
-    }
-    else if(_isFirstReponse)
-    {
-        return;
-    }
+        int index = _packageBuffer.indexOf("\r\n\r\n");
 
-    bool isWorking = false;
-
-    do
-    {
-        //read package
-        if(_packageBuffer.contains("\r\n") && _curPackageLength == 0)
+        if (index != -1)
         {
-            int index = _packageBuffer.indexOf("\r\n");
-            QString size = QString(_packageBuffer).remove(index, _packageBuffer.length()-index);
+            //remove all http header from buffer
+            QString headerString = QString(_packageBuffer.left(index+4));
+            QStringList headers = headerString.split("\r\n");
 
-            if(size.isEmpty())
+            QString statusCode = headers[0];
+            QStringList statusCodeSplit = statusCode.split(" ");
+
+            int code = statusCodeSplit[1].toInt();
+
+            QSharedPointer<SignalException> error;
+
+            //TODO: be more precisely about the status codes
+            //http://www.w3.org/TR/2012/CR-eventsource-20121211/ (5 Processing model lists the status codes for SSE)
+            if(code >= 200 || code <= 299)
             {
-                _packageBuffer.remove(0, 2);
-                continue;
+                //status ok, do nothing
+            }
+            else if(code >= 300 || code <= 399)
+            {
+                //status redirect, i think sse should not send a redirect
+            }
+            else if(code >= 400 || code <= 499)
+            {
+                //client error
+                error = QSharedPointer<SignalException>(new SignalException(statusCodeSplit[2], SignalException::UnkownError));
+            }
+            else if(code >= 500 || code <= 599)
+            {
+                //server error
+                error = QSharedPointer<SignalException>(new SignalException(statusCodeSplit[2], SignalException::InternalServerError));
             }
 
-            bool ok;
-            _curPackageLength = size.toInt(&ok, 16);
+            if(!error.isNull())
+            {
+                Q_EMIT packetReady("", error);
+                disconnect(_sock, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 
-            _packageBuffer.remove(0, index+2);
-            isWorking = true;
+                if(_sock->isOpen())
+                    _sock->close();
+            }
+
+            _packageBuffer.remove(0, index+4);
+            _isFirstReponse = false;
         }
         else
         {
-            _curPackageLength = 0;
-            isWorking = false;
-            break;
+            // http header is not completly available yet
+            return;
+        }
+    }
+
+    bool isWorking = false;
+    do
+    {
+        if (_curPackageLeftToRead == 0)
+        {
+            int index = _packageBuffer.indexOf("\r\n");
+            if (index == 0)
+            {
+                _packageBuffer.remove(0, 2);
+                isWorking = true;
+                continue;
+            }
+            else if (index != -1)
+            {
+                QString size(_packageBuffer.left(index));
+                bool ok;
+                _curPackageLeftToRead = size.toInt(&ok, 16);
+
+                if (!ok)
+                {
+                    // TODO: how to handle?
+                }
+                _packageBuffer.remove(0, index+2);
+                isWorking = true;
+            }
+            else
+            {
+                // no line break available, wait for more data
+                isWorking = false;
+                continue;
+            }
         }
 
         //build the package
-        if(_packageBuffer.size() >= _curPackageLength && _curPackageLength > 0)
+        if (_curPackageLeftToRead > 0 && !_packageBuffer.isEmpty())
         {
-            _curPackage += QString::fromLocal8Bit(_packageBuffer.constData(), _curPackageLength);
+            int bytesToUse = std::min(_packageBuffer.size(), _curPackageLeftToRead);
+            _curPackage.append(_packageBuffer.constData(), bytesToUse);
 
-            if(_curPackage.endsWith("\n\n"))
+            _packageBuffer.remove(0, bytesToUse);
+            _curPackageLeftToRead -= bytesToUse;
+
+            if (_curPackageLeftToRead == 0 && _curPackage.endsWith("\n\n"))
             {
                 _curPackage.remove(_curPackage.length()-2, 2); //remove last \n\n
-                Q_EMIT packetReady(_curPackage, error); //emit package and remove last \n\n\r\n
-                _curPackage = "";
+
+                Q_EMIT packetReady(QString::fromUtf8(_curPackage), QSharedPointer<SignalException>());
+                _curPackage.clear();
             }
 
-            _packageBuffer.remove(0, _curPackageLength);
-            _curPackageLength = 0;
             isWorking = true;
         }
 
-    }while(isWorking);
-
-    connect(_sock, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+    } while (isWorking);
 }
 
 void HttpEventStream::onSocketError(QAbstractSocket::SocketError error)
