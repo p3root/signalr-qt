@@ -54,8 +54,16 @@ HttpEventStream::~HttpEventStream()
 {
     _isAborting = true;
 
-    if(_sock->isOpen())
-        _sock->close();
+    if(_sock)
+    {
+        disconnect(_sock, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+        disconnect(_sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onSocketError(QAbstractSocket::SocketError)));
+
+        if(_sock->isOpen())
+            _sock->close();
+        _sock->deleteLater();
+        _sock = 0;
+    }
 }
 
 void HttpEventStream::open()
@@ -189,9 +197,11 @@ void HttpEventStream::close()
     {
         _sock->abort();
         _sock->close();
-    }
+        _sock->deleteLater();
+        _sock = 0;
 
-    onSocketError(QAbstractSocket::NetworkError);
+        onSocketError(QAbstractSocket::NetworkError);
+    }
 }
 
 #ifndef QT_NO_SSL
@@ -229,23 +239,23 @@ void HttpEventStream::onReadyRead()
 
             //TODO: be more precisely about the status codes
             //http://www.w3.org/TR/2012/CR-eventsource-20121211/ (5 Processing model lists the status codes for SSE)
-            if(code >= 200 || code <= 299)
+            if(code >= 200 && code <= 299)
             {
                 //status ok, do nothing
             }
-            else if(code >= 300 || code <= 399)
+            else if(code >= 300 && code <= 399)
             {
                 //status redirect, i think sse should not send a redirect
             }
-            else if(code >= 400 || code <= 499)
+            else if(code >= 400 && code <= 499)
             {
                 //client error
-                error = QSharedPointer<SignalException>(new SignalException(statusCodeSplit[2], SignalException::UnkownError));
+                error = QSharedPointer<SignalException>(new SignalException(statusCodeSplit[2], SignalException::EventStreamInitFailed));
             }
-            else if(code >= 500 || code <= 599)
+            else if(code >= 500 && code <= 599)
             {
                 //server error
-                error = QSharedPointer<SignalException>(new SignalException(statusCodeSplit[2], SignalException::InternalServerError));
+                error = QSharedPointer<SignalException>(new SignalException(statusCodeSplit[2], SignalException::EventStreamInitFailed));
             }
 
             if(!error.isNull())
@@ -255,6 +265,10 @@ void HttpEventStream::onReadyRead()
 
                 if(_sock->isOpen())
                     _sock->close();
+                _sock->deleteLater();
+                _sock = 0;
+                _packageBuffer.clear();
+                return;
             }
 
             _packageBuffer.remove(0, index+4);
@@ -270,6 +284,7 @@ void HttpEventStream::onReadyRead()
     bool isWorking = false;
     do
     {
+        //isWorking = false;
         if (_curPackageLeftToRead == 0)
         {
             int index = _packageBuffer.indexOf("\r\n");
@@ -326,7 +341,7 @@ void HttpEventStream::onReadyRead()
 void HttpEventStream::onSocketError(QAbstractSocket::SocketError error)
 {
     QAbstractSocket::SocketError socketError = error;
-    QString errorString = _sock->errorString();
+    QString errorString = _sock ? _sock->errorString() : "";
 
     if(!_isAborting)
     {

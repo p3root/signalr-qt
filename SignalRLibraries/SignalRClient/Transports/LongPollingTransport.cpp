@@ -229,7 +229,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, QShar
 
     if(disconnected)
     {
-        _connection->stop();
+        _connection->stop(2000);
     }
     else if(!serverError && !_connection->getConnectionToken().isEmpty())
     {

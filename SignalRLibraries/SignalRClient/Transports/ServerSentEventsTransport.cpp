@@ -86,13 +86,20 @@ void ServerSentEventsTransport::stop()
 void ServerSentEventsTransport::lostConnection(ConnectionPrivate *con)
 {
     HttpBasedTransport::lostConnection(con);
-    stop();
+    retry();
 }
 
 
 void ServerSentEventsTransport::retry()
 {
-    stop();
+    disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
+    _retryTimerTimeout.stop();
+
+    if(_eventStream)
+    {
+        _eventStream->deleteLater();
+        _eventStream = 0;
+    }
     startEventStream();
 }
 
@@ -120,22 +127,22 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
     {
         if(_connection->ensureReconnecting())
         {
+            _connection->onError(error);
+
             connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
             _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
             _retryTimerTimeout.start();
-
-            _connection->onError(error);
 
             logReconnectMessage();
             return;
         }
         else if(_connection->getAutoReconnect())
         {
+            _connection->onError(error);
+
             connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
             _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
             _retryTimerTimeout.start();
-
-            _connection->onError(error);
 
             logReconnectMessage();
             return;
@@ -162,7 +169,7 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
 
     if(disconnected)
     {
-        _connection->stop();
+        _connection->stop(2000);
     }
 }
 
@@ -179,11 +186,11 @@ void ServerSentEventsTransport::connected(QSharedPointer<SignalException> error)
     }
     else if(!error.isNull())
     {
+        _connection->onError(error);
+
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
         _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
         _retryTimerTimeout.start();
-
-        _connection->onError(error);
 
         logReconnectMessage();
 
@@ -192,6 +199,7 @@ void ServerSentEventsTransport::connected(QSharedPointer<SignalException> error)
 
     if(error.isNull())
     {
+        disconnect(_eventStream, SIGNAL(packetReady(QString,QSharedPointer<SignalException>)), this, SLOT(packetReceived(QString,QSharedPointer<SignalException>)));
         connect(_eventStream, SIGNAL(packetReady(QString,QSharedPointer<SignalException>)), this, SLOT(packetReceived(QString,QSharedPointer<SignalException>)));
     }
 }

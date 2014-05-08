@@ -49,6 +49,7 @@ public:
 
         //15 SSE Errors and WS errors
         EventStreamSocketLost = 15,
+        EventStreamInitFailed,
 
         //20-30 SignalR Server errors
         CouldNotEstablishConnection=20,

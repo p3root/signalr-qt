@@ -254,18 +254,22 @@ void ConnectionPrivate::connectionSlow()
 
 bool ConnectionPrivate::stop(int timeoutMs)
 {
+    if(_state == SignalR::Disconnected || _state == SignalR::Disconnecting)
+        return true;
+
     QMutexLocker l(&_stateLocker);
 
     changeState(_state, SignalR::Disconnecting);
     bool abort = _transport->abort(timeoutMs);
     _transport->deleteLater();
     _transport = 0;
-    changeState(_state, SignalR::Disconnected);
 
     _connectionId = "";
     _connectionToken = "";
 
     _monitor->stop();
+
+    changeState(_state, SignalR::Disconnected);
 
     return abort;
 }

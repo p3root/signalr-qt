@@ -40,6 +40,7 @@ HeartbeatMonitor::HeartbeatMonitor(ConnectionPrivate *con, QMutex *stateLocker)
     _locker = stateLocker;
     _timedOut = false;
     _hasBeenWarned = false;
+    connect(this, SIGNAL(stopCrossThread()), this, SLOT(onStop()));
 }
 
 void HeartbeatMonitor::start()
@@ -55,7 +56,7 @@ void HeartbeatMonitor::start()
 
 void HeartbeatMonitor::stop()
 {
-    _timer.stop();
+    Q_EMIT stopCrossThread();;
 }
 
 void HeartbeatMonitor::beat(double timeElapsed)
@@ -100,6 +101,11 @@ void HeartbeatMonitor::beat()
 
     double timeElapsed = QDateTime::currentDateTimeUtc().secsTo(_connection->getKeepAliveData()->getLastKeepAlive()) * -1;
     beat(timeElapsed);
+}
+
+void HeartbeatMonitor::onStop()
+{
+    _timer.stop();
 }
 
 bool HeartbeatMonitor::checkKeepAliveData()

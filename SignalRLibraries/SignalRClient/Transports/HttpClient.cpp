@@ -58,7 +58,7 @@ HttpClient::HttpClient(ConnectionPrivate *con) : _isAborting(false), _man(0)
 
     _getMutex = new QMutex(QMutex::Recursive);
     _postMutex = new QMutex(QMutex::Recursive);
-    _connectionLock = new QMutex();
+    _connectionLock = new QMutex(QMutex::Recursive);
 
     connect(_man, SIGNAL(finished(QNetworkReply*)), SLOT(requestFinished(QNetworkReply*)));
     connect(_man, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), SLOT(onIgnoreSSLErros(QNetworkReply*,QList<QSslError>)));

@@ -52,8 +52,13 @@ public:
     void stop();
     void beat(double timeElapsed);
 
+Q_SIGNALS:
+    void stopCrossThread();
+
+
 private Q_SLOTS:
     void beat();
+    void onStop();
 
 private:
     bool checkKeepAliveData();
