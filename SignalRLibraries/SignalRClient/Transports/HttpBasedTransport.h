@@ -76,6 +76,7 @@ private:
     QQueue<SendQueueItem*> _sendQueue;
     bool _sending;
     QTimer _retryTimerTimeout;
+    QTimer _postTimer;
 
 
 protected:
@@ -85,6 +86,7 @@ private Q_SLOTS:
     void onSendHttpResponse(const QString httpResponse, QSharedPointer<SignalException> error);
     void retryNegotiation();
     void retryPost();
+    void cancelPost();
 };
 
 }}}

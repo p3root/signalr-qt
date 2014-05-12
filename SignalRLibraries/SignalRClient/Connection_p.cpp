@@ -54,6 +54,7 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
     qRegisterMetaType<SignalR::State>("SignalR::State");
     qRegisterMetaType<QSharedPointer<SignalException> >("QSharedPointer<SignalException>");
     _reconnectWaitTime = 5;
+    _postTimeoutMs = 60*3*1000; //3 min
 
 #ifndef QT_NO_SSL
     _sslConfiguration = QSslConfiguration::defaultConfiguration();
@@ -192,6 +193,16 @@ void ConnectionPrivate::onReceived(QVariant &data)
 {
     Q_Q(Connection);
     q->onReceived(data);
+}
+
+void ConnectionPrivate::setGroupsToken(const QString &token)
+{
+    _groupsToken = token;
+}
+
+void ConnectionPrivate::setMessageId(const QString &messageId)
+{
+    _messageId = messageId;
 }
 
 ClientTransport *ConnectionPrivate::getTransport()

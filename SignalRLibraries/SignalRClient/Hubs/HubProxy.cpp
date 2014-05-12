@@ -140,19 +140,19 @@ QVariant HubProxy::syncInvoke(const QString &method, const QVariantList &param, 
         if(callback->isFinished() || !timer.isActive())
             break;
     }
+
+    bool isTimerActive = timer.isActive();
     if(ok)
-    {
-        if(!timer.isActive())
-        {
-            *ok = false;
-        }
-        else
-        {
-            *ok = true;
-        }
-    }
+        *ok = isTimerActive;
+
     QVariant data = callback->data();
-    delete callback;
+    ///////////////////////////////////////////
+    // MEMORY LEAK!
+    // deleting the callback at this point may not be safe as it is not
+    // guaranteed that it will not be called later after a timeout occured
+    if (isTimerActive)
+        delete callback;
+    ///////////////////////////////////////////
     return data;
 }
 

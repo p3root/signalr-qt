@@ -169,6 +169,9 @@ public:
 
     HeartbeatMonitor &getHeartbeatMonitor();
 
+    int getPostTimeoutMs();
+    void setPostTimeOutMs(int timeoutMs);
+
 Q_SIGNALS:
     void stateChanged(SignalR::State old_state, SignalR::State new_state);
     void errorOccured(QSharedPointer<SignalException> error);

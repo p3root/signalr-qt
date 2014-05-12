@@ -61,6 +61,8 @@ public:
 
     void abort(bool abort = true);
 
+    void abortPost();
+
     bool isPostInProgress() { return _postInProgress; }
     bool isGetInProgress() { return _getInProgress; }
 

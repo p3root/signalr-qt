@@ -85,6 +85,7 @@ void ServerSentEventsTransport::stop()
 
 void ServerSentEventsTransport::lostConnection(ConnectionPrivate *con)
 {
+    _connection->changeState(SignalR::Connected, SignalR::Reconnecting);
     HttpBasedTransport::lostConnection(con);
     retry();
 }

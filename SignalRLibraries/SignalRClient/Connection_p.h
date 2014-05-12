@@ -93,8 +93,8 @@ public:
     void onError(QSharedPointer<SignalException> exp);
 
     virtual void onReceived(QVariant &data);
-    void setGroupsToken(const QString &token) { _groupsToken = token; }
-    void setMessageId(const QString &messageId) { _messageId = messageId; }
+    void setGroupsToken(const QString &token);
+    void setMessageId(const QString &messageId);
     void setConnectionState(NegotiateResponse negotiateResponse);
     virtual QString onSending();
 
@@ -129,6 +129,9 @@ public:
     const QSslConfiguration &getSslConfiguration() { return _sslConfiguration; }
 #endif
 
+    int getPostTimeoutMs() { return _postTimeoutMs; }
+    void setPostTimeOutMs(int timeoutMs) { _postTimeoutMs = timeoutMs; }
+
     HeartbeatMonitor &getHeartbeatMonitor();
 
 Q_SIGNALS:
@@ -162,6 +165,7 @@ private:
     QString _webSocketsUrl;
     QString _protocolVersion;
     SignalR::State _state;
+    int _postTimeoutMs;
 
     HeartbeatMonitor *_monitor;
     QMutex _stateLocker;

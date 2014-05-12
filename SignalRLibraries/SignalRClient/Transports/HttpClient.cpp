@@ -209,6 +209,18 @@ void HttpClient::abort(bool dontEmitSignal)
     }
 }
 
+void HttpClient::abortPost()
+{
+    QMutexLocker l(_connectionLock);
+    Q_UNUSED(l);
+
+    foreach(QNetworkReply *reply, _currentConnections)
+    {
+        if(reply->operation() == QNetworkAccessManager::PostOperation)
+            reply->abort();
+    }
+}
+
 void HttpClient::requestFinished(QNetworkReply *reply)
 {
     QNetworkReply::NetworkError error = reply->error();

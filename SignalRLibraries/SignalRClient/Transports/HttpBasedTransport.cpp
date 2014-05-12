@@ -39,7 +39,6 @@ HttpBasedTransport::HttpBasedTransport() :
     ClientTransport(),
     _sending(false)
 {
-
 }
 
 
@@ -97,6 +96,12 @@ void HttpBasedTransport::retryPost()
     tryDequeueNextWorkItem();
 }
 
+void HttpBasedTransport::cancelPost()
+{
+    _connection->emitLogMessage("Cancelling Post request", SignalR::Warning);
+    _httpClient->abortPost();
+}
+
 void HttpBasedTransport::onNegotiatenCompleted(const NegotiateResponse &)
 {
 
@@ -135,6 +140,7 @@ void HttpBasedTransport::send(QString data)
         _sending = true;
         connect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
         _httpClient->post(url, postData);
+        _postTimer.start();
     }
 }
 
@@ -159,6 +165,10 @@ void HttpBasedTransport::setConnectionPrivate(ConnectionPrivate *connection)
 {
     ClientTransport::setConnectionPrivate(connection);
     _httpClient = new HttpClient(connection);
+
+
+    _postTimer.setInterval(connection->getPostTimeoutMs());
+    connect(&_postTimer, SIGNAL(timeout()), this, SLOT(cancelPost()));
 }
 
 void HttpBasedTransport::retry()
@@ -174,6 +184,9 @@ void HttpBasedTransport::onSendHttpResponse(const QString httpResponse, QSharedP
 {    
     Q_UNUSED(httpResponse);
     Q_UNUSED(error);
+
+    _postTimer.stop();
+
     disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
 
     bool timedOut = false, disconnected = false;
@@ -186,7 +199,6 @@ void HttpBasedTransport::onSendHttpResponse(const QString httpResponse, QSharedP
         QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected, &messageId);
         if(!e.isNull())
             error = e;
-
     }
 
     tryDequeueNextWorkItem();

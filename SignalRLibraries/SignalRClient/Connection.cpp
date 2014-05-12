@@ -225,6 +225,18 @@ HeartbeatMonitor &Connection::getHeartbeatMonitor()
     return d->getHeartbeatMonitor();
 }
 
+int Connection::getPostTimeoutMs()
+{
+    Q_D(Connection);
+    return d->getPostTimeoutMs();
+}
+
+void Connection::setPostTimeOutMs(int timeoutMs)
+{
+    Q_D(Connection);
+    d->setPostTimeOutMs(timeoutMs);
+}
+
 void Connection::onTransportStarted(QSharedPointer<SignalException>)
 {
 
