@@ -58,6 +58,7 @@ public:
 
     void get(QString url);
     void post(QString url, QMap<QString, QString> arguments);
+    QString postSync(QString url, QMap<QString, QString> args, QSharedPointer<SignalException> &error, int timeoutMs = 5000);
 
     void abort(bool abort = true);
 

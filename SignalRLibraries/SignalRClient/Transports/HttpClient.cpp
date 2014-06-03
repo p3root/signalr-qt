@@ -78,6 +78,8 @@ HttpClient::~HttpClient()
 
 void HttpClient::get(QString url)
 {
+    if(_isAborting)
+        return;
     QMutexLocker l(_getMutex);
     Q_UNUSED(l);
 
@@ -132,7 +134,96 @@ void HttpClient::get(QString url)
 
 void HttpClient::post(QString url, QMap<QString, QString> arguments)
 {
+    if(_isAborting)
+        return;
+    _postInProgress = true;
     Q_EMIT doPost(url, arguments);
+}
+
+QString HttpClient::postSync(QString url, QMap<QString, QString> arguments, QSharedPointer<SignalException> &error, int timeoutMs)
+{
+    Q_UNUSED(error);
+    QString queryString;
+    QMap<QString, QString>::iterator it = arguments.begin();
+    while(it != arguments.end())
+    {
+        queryString.append(QString("%1=%2&").arg(it.key(), Helper::encode(it.value())));
+        ++it;
+    }
+
+    queryString.remove(queryString.length()-1, 1);
+
+    QUrl decodedUrl(url);
+    int port = decodedUrl.port();
+
+    if(port < 0 && decodedUrl.scheme().toLower() == "http")
+        port = 80;
+    else if(port < 0 && decodedUrl.scheme().toLower() == "https")
+        port = 443;
+
+    QString encodedUrl =decodedUrl.scheme() +"://"+ decodedUrl.host() + ":" + QString::number(port) + decodedUrl.path() +"?"+ Helper::getEncodedQueryString(decodedUrl, _connection);
+    QUrl reqUrl = QUrl();
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    reqUrl.setUrl(QByteArray().append(encodedUrl));
+#else
+    reqUrl.setEncodedUrl(QByteArray().append(encodedUrl));
+#endif
+
+    QNetworkRequest req = QNetworkRequest(reqUrl);
+    req.setRawHeader("User-Agent", "SignalR-Qt.Client");
+    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    for(int i = 0; i < _connection->getAdditionalHttpHeaders().size(); i++)
+    {
+        QString first = QString(_connection->getAdditionalHttpHeaders().at(i).first);
+        QString second = QString(_connection->getAdditionalHttpHeaders().at(i).second);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+        req.setRawHeader(first.toHtmlEscaped().toLatin1(), second.toHtmlEscaped().toLatin1());
+#else
+        req.setRawHeader(first.toAscii(), second.toAscii());
+#endif
+    }
+
+    _connection->emitLogMessage("starting sync post request (" + _connection->getConnectionId() +")", SignalR::Debug);
+    QNetworkAccessManager *networkMgr = new QNetworkAccessManager();
+    QNetworkReply *postReply = networkMgr->post(req, QByteArray().append(queryString));
+    QTimer t;
+    t.setInterval(timeoutMs);
+    t.start();
+
+#ifndef QT_NO_SSL
+    postReply->setSslConfiguration(_connection->getSslConfiguration());
+#endif
+
+    QEventLoop loop;
+
+    QObject::connect(postReply, SIGNAL(finished()), &loop, SLOT(quit()));
+    QObject::connect(&t, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+    loop.exec();
+
+    QNetworkReply::NetworkError er = postReply->error();
+    QString response = "";
+
+    if(postReply->isFinished() && er == QNetworkReply::NoError) //post completed
+    {
+        response = QString(postReply->readAll());
+    }
+    else if(!postReply->isFinished()) //timed out
+    {
+        error = QSharedPointer<SignalException>(new SignalException(postReply->errorString(), SignalException::OperationCanceled));
+    }
+    else //other error
+    {
+        error = QSharedPointer<SignalException>(new SignalException(postReply->errorString(), SignalException::UnkownError));
+    }
+
+    delete postReply;
+    delete networkMgr;
+
+    _connection->emitLogMessage("sync post request finished(" + _connection->getConnectionId() +")", SignalR::Debug);
+    return response;
 }
 
 void HttpClient::onDoPost(QString url, QMap<QString, QString> arguments)
@@ -370,7 +461,8 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
         {
             {
                 QMutexLocker l(_connectionLock);
-                _currentConnections.removeOne(reply);
+                if(_currentConnections.contains(reply))
+                    _currentConnections.removeOne(reply);
             }
             reply->deleteLater();
 

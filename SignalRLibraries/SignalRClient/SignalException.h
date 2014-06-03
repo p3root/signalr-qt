@@ -87,7 +87,9 @@ public:
         UnkownProtocolError=150,
 
         //200 All different errors that are currently not handled
-        UnkownError=200
+        UnkownError=200,
+
+        NoError = 300
     };
 
     SignalException();

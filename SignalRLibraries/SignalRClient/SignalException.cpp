@@ -34,7 +34,7 @@ namespace P3 { namespace SignalR { namespace Client {
 
 SignalException::SignalException() : _message("")
 {
-    _type = UnkownError;
+    _type = NoError;
     _innerException = 0;
 }
 

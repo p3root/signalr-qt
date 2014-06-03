@@ -66,6 +66,7 @@ public:
 Q_SIGNALS:
     void transportStarted(QSharedPointer<SignalException> ex);
     void onMessageSentCompleted(QSharedPointer<SignalException> ex, quint64 messageId);
+    void abortCompleted(bool state);
 
 private Q_SLOTS:
     virtual void negotiateCompleted(QString data, QSharedPointer<SignalException> ex) = 0;
