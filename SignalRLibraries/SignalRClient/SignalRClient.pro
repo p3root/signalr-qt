@@ -31,7 +31,8 @@ SOURCES += \
         HeartbeatMonitor.cpp \
         Transports/WebSocketTransport.cpp \
         Transports/AutoTransport.cpp \
-        Connection_p.cpp
+        Connection_p.cpp\
+    Transports/HttpEventStreamParser.cpp
 
 PUBLIC_HEADERS +=  \
         Transports/HttpBasedTransport.h \
@@ -56,7 +57,8 @@ PRIVATE_HEADERS +=  \
         Helper/Helper.h \
         Transports/HttpClient.h \
         KeepAliveData.h \
-        Connection_p.h
+        Connection_p.h \
+        Transports/HttpEventStreamParser.h
 
 HEADERS += $$PUBLIC_HEADERS \
            $$PRIVATE_HEADERS

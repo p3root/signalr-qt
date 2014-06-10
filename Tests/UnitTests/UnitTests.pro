@@ -16,7 +16,15 @@ TEMPLATE = app
 
 
 SOURCES += \
-    tst_stringminifier.cpp
+    HttpEventStreamParserTest.cpp \
+    main.cpp \
+    StringMinifierTest.cpp
+
+
+HEADERS += \
+    HttpEventStreamParserTest.h \
+    StringMinifierTest.h
+
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../SignalRLibraries/SignalRClient/release/ -lSignalRClient
@@ -53,3 +61,4 @@ else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/ -lQextJson
 
 INCLUDEPATH += $$PWD/../../ThirdParty/QtExtJson
 DEPENDPATH += $$PWD/../../ThirdParty/QtExtJson
+

@@ -1,28 +1,4 @@
-#include <QString>
-#include <QtTest>
-
-#include "SignalRServer.h"
-#include "Infrastructure/IStringMinifier.h"
-#include "Infrastructure/StringMinifier.h"
-
-
-using namespace P3::SignalR::Server;
-
-
-class StringMinifierTest : public QObject
-{
-    Q_OBJECT
-
-public:
-    StringMinifierTest();
-
-private Q_SLOTS:
-    void minify();
-    void unmify();
-
-private:
-    StringMinifier *_minifier;
-};
+#include <StringMinifierTest.h>
 
 StringMinifierTest::StringMinifierTest()
 {
@@ -46,7 +22,3 @@ void StringMinifierTest::unmify()
 
     QCOMPARE(test, result);
 }
-
-QTEST_APPLESS_MAIN(StringMinifierTest)
-
-#include "tst_stringminifier.moc"

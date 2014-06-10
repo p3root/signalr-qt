@@ -65,9 +65,6 @@ Q_SIGNALS:
     void packetReady(QString packet, QSharedPointer<SignalException> ex);
     void connected(QSharedPointer<SignalException>);
 
-private:
-
-
 private Q_SLOTS:
 
 #ifndef QT_NO_SSL
@@ -80,15 +77,11 @@ private Q_SLOTS:
 private:
     ConnectionPrivate* _connection;
     QTcpSocket *_sock;
-    bool _isFirstReponse;
     bool _isAborting;
     QUrl _url;
     bool _isRunning;
 
-    QByteArray _packageBuffer;
-    QByteArray _curPackage;
-    int _curPackageLeftToRead;
-
+    class HttpEventStreamParser *_parser;
 };
 
 }}}
