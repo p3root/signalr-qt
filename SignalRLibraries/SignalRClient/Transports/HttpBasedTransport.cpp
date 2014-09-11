@@ -39,12 +39,14 @@ HttpBasedTransport::HttpBasedTransport() :
     ClientTransport(),
     _sending(false)
 {
+    _httpClient = 0;
 }
 
 
 HttpBasedTransport::~HttpBasedTransport(void)
 {
     _httpClient->deleteLater();
+    _httpClient = 0;
 }
 
 void HttpBasedTransport::negotiateCompleted(QString data, QSharedPointer<SignalException> ex)
@@ -164,8 +166,11 @@ void HttpBasedTransport::tryDequeueNextWorkItem()
 void HttpBasedTransport::setConnectionPrivate(ConnectionPrivate *connection)
 {
     ClientTransport::setConnectionPrivate(connection);
+    if(_httpClient) {
+        _httpClient->deleteLater();
+        _httpClient = 0;
+    }
     _httpClient = new HttpClient(connection);
-
 
     _postTimer.setInterval(connection->getPostTimeoutMs());
     connect(&_postTimer, SIGNAL(timeout()), this, SLOT(cancelPost()));
@@ -232,40 +237,6 @@ bool HttpBasedTransport::abort(int timeoutMs)
         return true;
     }
     return false;
-
-
-    /*_httpClient->abortPost();
-
-    QEventLoop loop;
-    QTimer timeout;
-    if(timeoutMs > 0)
-    {
-        timeout.setInterval(timeoutMs);
-        timeout.setSingleShot(true);
-        connect(&timeout, SIGNAL(timeout()), &loop, SLOT(quit()));
-        timeout.start();
-    }
-    connect(_httpClient,SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), &loop, SLOT(quit()));
-
-    _connection->emitLogMessage("starting abort request (" + _connection->getConnectionId() +")" , SignalR::Debug);
-    _httpClient->post(url, QMap<QString, QString>());
-
-    //not the prettiest way, but I found no other solution
-    while(true)
-    {
-        loop.processEvents(QEventLoop::AllEvents, 200);
-
-        if((!timeout.isActive() && timeoutMs > 0) || !_httpClient->isPostInProgress())
-            break;
-    }
-    _httpClient->abort(true);
-
-    if(!timeout.isActive() && timeoutMs > 0) {
-        Q_EMIT abortCompleted(false);
-        return false;
-    }
-    Q_EMIT abortCompleted(true);
-    return true;*/
 }
 
 void HttpBasedTransport::lostConnection(ConnectionPrivate *)

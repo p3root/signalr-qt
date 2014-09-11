@@ -64,6 +64,7 @@ public:
 Q_SIGNALS:
     void packetReady(QString packet, QSharedPointer<SignalException> ex);
     void connected(QSharedPointer<SignalException>);
+    void restartConnection();
 
 private Q_SLOTS:
 
@@ -80,6 +81,7 @@ private:
     bool _isAborting;
     QUrl _url;
     bool _isRunning;
+    bool _connected;
 
     class HttpEventStreamParser *_parser;
 };

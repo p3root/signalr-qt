@@ -1,5 +1,4 @@
 #include "HttpEventStreamParser.h"
-#include <QStringList>
 
 namespace P3 { namespace SignalR { namespace Client {
 
@@ -38,7 +37,13 @@ bool HttpEventStreamParser::next(HttpEventStreamParserResult &result)
         QStringList statusCodeSplit =  QString(_packageBuffer.left(index+4)).split("\r\n")[0].split(" ");
         if (hasHttpErrorCode(statusCodeSplit, result))
         {
+            QString data = QString::fromUtf8(_packageBuffer);
+            _packageBuffer.remove(0, index+8);
+            data = QString::fromUtf8(_packageBuffer);
+            index = data.indexOf("\r\n");
+            data = data.remove(index, data.count() - index);
             _packageBuffer.clear();
+            result.packet = QByteArray().append(data);
             return true;
         }
 
@@ -72,6 +77,15 @@ bool HttpEventStreamParser::hasHttpErrorCode(const QStringList& statusCodeSplit,
 {
     int code = statusCodeSplit[1].toInt();
 
+    QString statusName = statusCodeSplit[2];
+    if(statusCodeSplit.size() > 3) {
+        statusName = "";
+        for(int i = 2; i < statusCodeSplit.size(); i++) {
+            statusName += statusCodeSplit[i];
+            statusName += " ";
+        }
+    }
+
     //TODO: be more precisely about the status codes
     //http://www.w3.org/TR/2012/CR-eventsource-20121211/ (5 Processing model lists the status codes for SSE)
     if(code >= 200 && code <= 299)
@@ -85,12 +99,12 @@ bool HttpEventStreamParser::hasHttpErrorCode(const QStringList& statusCodeSplit,
     else if(code >= 400 && code <= 499)
     {
         //client error
-        result.error = QSharedPointer<SignalException>(new SignalException(statusCodeSplit[2], SignalException::EventStreamInitFailed));
+        result.error = QSharedPointer<SignalException>(new SignalException(statusName, SignalException::EventStreamInitFailed));
     }
     else if(code >= 500 && code <= 599)
     {
         //server error
-        result.error = QSharedPointer<SignalException>(new SignalException(statusCodeSplit[2], SignalException::EventStreamInitFailed));
+        result.error = QSharedPointer<SignalException>(new SignalException(statusName, SignalException::EventStreamInitFailed));
     }
 
     return !result.error.isNull();

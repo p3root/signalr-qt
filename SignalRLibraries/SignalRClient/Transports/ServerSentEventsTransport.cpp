@@ -159,7 +159,6 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
         _connection->getKeepAliveData()->setLastKeepAlive(QDateTime::currentDateTimeUtc());
 
         _connection->emitLogMessage("SSE: Message received", SignalR::Debug);
-        _connection->emitLogMessage("SSE Message " + data, SignalR::Trace);
         QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, data, &timedOut, &disconnected);
 
         if(!e.isNull())
@@ -189,6 +188,11 @@ void ServerSentEventsTransport::connected(QSharedPointer<SignalException> error)
     {
         _connection->onError(error);
 
+        if(_started) { //if we try to reconnect, and can not connect...just give a shit and make a new connection
+            _connection->stop(1000);
+            return;
+        }
+
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
         _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
         _retryTimerTimeout.start();
@@ -216,6 +220,11 @@ void ServerSentEventsTransport::reconnectTimerTick()
     start("");
 }
 
+void ServerSentEventsTransport::restartConnection()
+{
+    _connection->stop(1000);
+}
+
 void ServerSentEventsTransport::closeEventStream()
 {
     if(!_eventStream)
@@ -233,7 +242,7 @@ void ServerSentEventsTransport::startEventStream()
     _eventStream = new HttpEventStream(_url,_connection, this);
 
     connect(_eventStream, SIGNAL(connected(QSharedPointer<SignalException>)), this, SLOT(connected(QSharedPointer<SignalException>)));
-
+    connect(_eventStream, SIGNAL(restartConnection()), this, SLOT(restartConnection()));
     _eventStream->open();
 
 }
