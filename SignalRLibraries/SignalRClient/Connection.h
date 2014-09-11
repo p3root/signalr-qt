@@ -178,6 +178,7 @@ Q_SIGNALS:
     void onConnectionSlow();
     void logMessage(QString, int severity);
     void messageSentCompleted(QSharedPointer<SignalException> ex);
+    void exceptionReceived(QString message, QString stackTrace);
 
 protected:
     ConnectionPrivate * getConnectionPrivate() { return d_ptr; }

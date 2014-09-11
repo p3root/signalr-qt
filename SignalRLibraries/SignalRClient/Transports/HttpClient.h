@@ -82,7 +82,7 @@ private Q_SLOTS:
 
 private:
     void getRequestFinished(QNetworkReply *reply);
-    void replyError(QNetworkReply::NetworkError, QNetworkReply *reply);
+    void replyError(QNetworkReply::NetworkError, QNetworkReply *reply, QString method="");
 
     void postRequestFinished(QNetworkReply *reply);
 
