@@ -59,7 +59,6 @@ private Q_SLOTS:
     void connected(QSharedPointer<SignalException> ex);
 
     void reconnectTimerTick();
-    void restartConnection();
 
 
 private:

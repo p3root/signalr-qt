@@ -169,7 +169,6 @@ private:
 
     HeartbeatMonitor *_monitor;
     QMutex _stateLocker;
-    QMutex *_messageIdLocker;
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy _proxySettings;

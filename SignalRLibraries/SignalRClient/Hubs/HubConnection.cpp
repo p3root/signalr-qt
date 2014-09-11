@@ -106,10 +106,8 @@ void HubConnection::onReceived(QVariant &data)
     {
         QVariantMap map = data.value<QVariantMap>();
 
-        if(map.contains("E")) {
-            Q_EMIT exceptionReceived(map["E"].toString(), map["T"].toString());
-        }
-        else if(map.contains("H")) //if message is from hub, search hub and write message to it
+        //if message is from hub, search hub and write message to it
+        if(map.contains("H"))
         {
             QVariant hub = map["H"];
 

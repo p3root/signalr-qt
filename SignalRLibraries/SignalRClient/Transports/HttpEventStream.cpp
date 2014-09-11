@@ -49,7 +49,6 @@ HttpEventStream::HttpEventStream(QUrl url, ConnectionPrivate *con, QObject *pare
     _connection = con;
     _isRunning = false;
     _parser = new HttpEventStreamParser();
-    _connected = false;
 }
 
 HttpEventStream::~HttpEventStream()
@@ -158,12 +157,10 @@ void HttpEventStream::open()
                 QString getRequest = QString("%1 %2 %3").arg("GET", _url.path() +"?"+ Helper::getEncodedQueryString(_url, _connection), "HTTP/1.1\r\n");
 
                 //prepare init http request
-                os << getRequest;
+                os << QByteArray().append(getRequest);
                 os << "Host: " << host << ":" << port << "\r\n";
                 os << "User-Agent: SignalR-Qt.Client\r\n";
                 os << "Accept: text/event-stream\r\n";
-
-
 
                 //add additional http headers
                 for(int i = 0; i < _connection->getAdditionalHttpHeaders().size(); i++)
@@ -176,11 +173,11 @@ void HttpEventStream::open()
                     os << "\r\n";
                 }
 
-                 _connection->emitLogMessage(getRequest, SignalR::Trace);
-
                 os << "\r\n";
                 //write data to socket
                 os.flush();
+
+                Q_EMIT connected(error);
             }
             else
             {
@@ -228,23 +225,7 @@ void HttpEventStream::onReadyRead()
     HttpEventStreamParserResult result;
     while(_parser->next(result))
     {
-        QString data = QString::fromUtf8(result.packet);
-
-        _connection->emitLogMessage("SSE Received: " + data + " (Status " + (!result.error.isNull() ? result.error->getMessage() : "Ok")+")", SignalR::Trace);
-
-        if(data == "data: initialized") {
-            _connected = true;
-             Q_EMIT connected(result.error);
-        }
-        else if(data == "The ConnectionId is in the incorrect format.") {
-            Q_EMIT restartConnection();
-        }
-        else if(!_connected) {
-            Q_EMIT connected(result.error);
-        }
-        else {
-            Q_EMIT packetReady(data, result.error);
-        }
+        Q_EMIT packetReady(QString::fromUtf8(result.packet), result.error);
 
         if(!result.error.isNull())
         {

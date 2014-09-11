@@ -48,7 +48,6 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
 {
     _host = host;
     _state = SignalR::Disconnected;
-    _messageIdLocker = new QMutex(QMutex::Recursive);
 
     qRegisterMetaType<SignalException>("SignalException");
     qRegisterMetaType<SignalR::State>("State");
@@ -69,7 +68,6 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
 ConnectionPrivate::~ConnectionPrivate()
 {
     delete _keepAliveData;
-    delete _messageIdLocker;
 }
 
 void ConnectionPrivate::start(bool autoReconnect)
@@ -204,7 +202,6 @@ void ConnectionPrivate::setGroupsToken(const QString &token)
 
 void ConnectionPrivate::setMessageId(const QString &messageId)
 {
-    QMutexLocker l(_messageIdLocker);
     _messageId = messageId;
 }
 
@@ -230,8 +227,8 @@ const QString &ConnectionPrivate::getGroupsToken() const
 
 const QString &ConnectionPrivate::getMessageId() const
 {
-    QMutexLocker l(_messageIdLocker);
     return _messageId;
+
 }
 
 quint64 ConnectionPrivate::getNextCount()
@@ -280,7 +277,6 @@ bool ConnectionPrivate::stop(int timeoutMs)
 
     _connectionId = "";
     _connectionToken = "";
-    _messageId = "";
 
     _monitor->stop();
 

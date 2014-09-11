@@ -70,10 +70,6 @@ HttpClient::HttpClient(ConnectionPrivate *con) : _isAborting(false), _man(0)
 
 HttpClient::~HttpClient()
 {
-    disconnect(_man, SIGNAL(finished(QNetworkReply*)), this, SLOT(requestFinished(QNetworkReply*)));
-    disconnect(_man, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), this, SLOT(onIgnoreSSLErros(QNetworkReply*,QList<QSslError>)));
-    disconnect(this, SIGNAL(doPost(QString,QMap<QString,QString>)), this, SLOT(onDoPost(QString,QMap<QString,QString>)));
-
     delete _man;
     delete _getMutex;
     delete _postMutex;
@@ -341,7 +337,7 @@ void HttpClient::requestFinished(QNetworkReply *reply)
         if(error == QNetworkReply::NoError)
             getRequestFinished(reply);
         else
-            replyError(error, reply, "GET");
+            replyError(error, reply);
     }
     else if(operation == QNetworkAccessManager::PostOperation)
     {
@@ -351,7 +347,7 @@ void HttpClient::requestFinished(QNetworkReply *reply)
         if(error == QNetworkReply::NoError)
             postRequestFinished(reply);
         else
-            replyError(error, reply, "POST");
+            replyError(error, reply);
     }
 }
 
@@ -377,7 +373,7 @@ void HttpClient::getRequestFinished(QNetworkReply *reply)
     }
 }
 
-void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *reply, QString method)
+void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *reply)
 {
     if(!reply)
         return;
@@ -385,7 +381,7 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
     int error = (int)err;
     QString errorString = reply->errorString();
 
-    _connection->emitLogMessage("request error " + method + " - " + errorString + " " + QString::number(error), SignalR::Error);
+    _connection->emitLogMessage("request error " + errorString + " " + QString::number(error), SignalR::Error);
 
     if(error != QNetworkReply::NoError)
     {

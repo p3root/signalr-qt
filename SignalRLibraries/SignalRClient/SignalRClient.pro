@@ -8,18 +8,10 @@ QT += network
 
 QT -= gui
 
-CONFIG   += precompile_header
-
 TARGET = SignalRClient
 TEMPLATE = lib
 
-
-
-
 DEFINES += SIGNALR_LIBRARY
-
-# Use Precompiled headers (PCH)
-PRECOMPILED_HEADER  = PCH.h
 
 SOURCES += \
         Transports/LongPollingTransport.cpp\
@@ -39,7 +31,7 @@ SOURCES += \
         HeartbeatMonitor.cpp \
         Transports/WebSocketTransport.cpp \
         Transports/AutoTransport.cpp \
-        Connection_p.cpp \
+        Connection_p.cpp\
     Transports/HttpEventStreamParser.cpp
 
 PUBLIC_HEADERS +=  \
@@ -69,8 +61,7 @@ PRIVATE_HEADERS +=  \
         Transports/HttpEventStreamParser.h
 
 HEADERS += $$PUBLIC_HEADERS \
-           $$PRIVATE_HEADERS \
-
+           $$PRIVATE_HEADERS
 
 
 target.path = $$[QT_INSTALL_PREFIX]/lib
