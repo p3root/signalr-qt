@@ -30,6 +30,7 @@
 
 #ifndef HELPER_H
 #define HELPER_H
+
 #include <QtCore>
 
 namespace P3 { namespace SignalR { namespace Client {

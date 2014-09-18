@@ -14,12 +14,7 @@ TARGET = SignalRClient
 TEMPLATE = lib
 
 
-
-
 DEFINES += SIGNALR_LIBRARY
-
-# Use Precompiled headers (PCH)
-PRECOMPILED_HEADER  = PCH.h
 
 SOURCES += \
         Transports/LongPollingTransport.cpp\

@@ -44,15 +44,15 @@ public:
     ServerSentEventsTransport();
     ~ServerSentEventsTransport(void);
 
-    void start(QString data);
-    void abort();
+    void start(QString data) OVERRIDE_M;
+    bool abort(int timeoutMs=0) OVERRIDE_M;
     void stop();
-    void lostConnection(ConnectionPrivate *);
-    void retry();
+    void lostConnection(ConnectionPrivate *) OVERRIDE_M;
+    void retry() OVERRIDE_M;
 
-    bool supportsKeepAlive() { return true; }
+    bool supportsKeepAlive() OVERRIDE_M { return true; }
 
-    const QString& getTransportType();
+    const QString& getTransportType() OVERRIDE_M;
 
 private Q_SLOTS:
     void packetReceived(QString packet, QSharedPointer<SignalException> ex);

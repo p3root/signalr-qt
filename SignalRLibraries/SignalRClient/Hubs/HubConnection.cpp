@@ -67,6 +67,7 @@ HubProxy *HubConnection::createHubProxy(QString name, QObject *objectToInvoke)
 {
     if(_hubs.contains(name))
     {
+        _hubs[name]->addObjectToInvoke(objectToInvoke);
         return _hubs[name];
     }
     if(getState() != SignalR::Disconnected)

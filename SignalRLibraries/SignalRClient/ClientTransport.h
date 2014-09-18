@@ -35,6 +35,7 @@
 #include "SignalException.h"
 #include <QObject>
 #include <QSharedPointer>
+#include "SignalR.h"
 
 
 namespace P3  { namespace SignalR { namespace Client {

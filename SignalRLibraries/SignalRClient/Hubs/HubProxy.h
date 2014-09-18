@@ -75,10 +75,14 @@ Q_SIGNALS:
 private:
     QGenericArgument getGenericArgument(const QString &type, const QString &val);
 
+    void addObjectToInvoke(QObject *obj);
+
 private:
     HubConnection* _connection;
-    QObject *_objectToInvoke;
+    QList<QObject*> _objectsToInvoke;
     const QString _hubName;
+
+    friend class HubConnection;
 };
 
 }}}

@@ -2,7 +2,7 @@
 #define AUTOTRANSPORT_H
 
 #include "HttpBasedTransport.h"
-
+#include "SignalR.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
@@ -14,19 +14,19 @@ public:
     AutoTransport();
     ~AutoTransport();
 
-    void negotiate();
-    void onNegotiatenCompleted(const NegotiateResponse& res);
-    void start(QString connection);
-    bool abort(int timeoutMs = 0);
-    void send(QString data);
+    void negotiate() OVERRIDE_M;
+    void onNegotiatenCompleted(const NegotiateResponse& res) OVERRIDE_M;
+    void start(QString connection) OVERRIDE_M;
+    bool abort(int timeoutMs = 0) OVERRIDE_M;
+    void send(QString data) OVERRIDE_M;
 
-    void lostConnection(ConnectionPrivate *con);
+    void lostConnection(ConnectionPrivate *con) OVERRIDE_M;
 
-    void retry();
+    void retry() OVERRIDE_M;
 
-    bool supportsKeepAlive();
+    bool supportsKeepAlive() OVERRIDE_M;
 
-    const QString &getTransportType();
+    const QString &getTransportType() OVERRIDE_M;
 
 private Q_SLOTS:
     void onTransportStated(QSharedPointer<SignalException> e);

@@ -234,6 +234,7 @@ void HttpEventStream::onReadyRead()
 
         if(data == "data: initialized") {
             _connected = true;
+            _connection->changeState(_connection->getState(), SignalR::Connected);
              Q_EMIT connected(result.error);
         }
         else if(data == "The ConnectionId is in the incorrect format.") {

@@ -35,6 +35,7 @@
 #include "Helper/Helper.h"
 #include "Transports/AutoTransport.h"
 #include <QSharedPointer>
+#include <QThread>
 
 namespace P3 { namespace SignalR { namespace Client {
 

@@ -5,6 +5,16 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
+#if __cplusplus > 199711L
+    #define HAS_CPP11
+#endif
+
+#ifdef HAS_CPP11
+    #define OVERRIDE_M override
+#else
+    #define OVERRIDE_M
+#endif
+
 class SIGNALR_EXPORT SignalR
 {
 public:

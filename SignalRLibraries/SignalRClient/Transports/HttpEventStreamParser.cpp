@@ -1,4 +1,5 @@
 #include "HttpEventStreamParser.h"
+#include <QStringList>
 
 namespace P3 { namespace SignalR { namespace Client {
 

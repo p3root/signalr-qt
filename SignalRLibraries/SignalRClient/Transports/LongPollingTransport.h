@@ -47,13 +47,11 @@ public:
     LongPollingTransport();
     ~LongPollingTransport(void);
 
-    void start(QString connection);
-    void abort();
-    void stop();
+    void start(QString connection) OVERRIDE_M;
 
-    void retry();
+    void retry() OVERRIDE_M;
 
-    const QString& getTransportType();
+    const QString& getTransportType() OVERRIDE_M;
 
 private:
     void startConnection();

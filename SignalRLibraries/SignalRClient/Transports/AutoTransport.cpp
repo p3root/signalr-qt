@@ -100,8 +100,10 @@ void AutoTransport::lostConnection(ConnectionPrivate *con)
 
 void AutoTransport::retry()
 {
-    if(_transport)
+    if(_transport) {
+        _connection->emitLogMessage("Transport '" + _transport->getTransportType() +"' retry connect", SignalR::Info);
         _transport->retry();
+    }
 }
 
 bool AutoTransport::supportsKeepAlive()

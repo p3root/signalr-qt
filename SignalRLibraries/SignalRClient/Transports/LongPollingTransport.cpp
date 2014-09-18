@@ -66,16 +66,6 @@ void LongPollingTransport::start(QString)
     _httpClient->post(connectUrl, QMap<QString, QString>());
 }
 
-void LongPollingTransport::abort()
-{
-    _httpClient->abort();
-}
-
-void LongPollingTransport::stop()
-{
-    _httpClient->abort();
-}
-
 void LongPollingTransport::retry()
 {
     HttpBasedTransport::retry();

@@ -38,6 +38,7 @@
 #include <QMap>
 #include "Transports/NegotiateResponse.h"
 #include <QEventLoop>
+#include "SignalR.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
@@ -53,15 +54,15 @@ public:
     HttpBasedTransport();
     virtual ~HttpBasedTransport(void);
 
-    void negotiateCompleted(QString data, QSharedPointer<SignalException> ex);
+    void negotiateCompleted(QString data, QSharedPointer<SignalException> ex) OVERRIDE_M;
     virtual void onNegotiatenCompleted(const NegotiateResponse& res);
-    void negotiate();
-    void send(QString data);
-    bool abort(int timeoutMs = 0);
+    void negotiate() OVERRIDE_M;
+    void send(QString data) OVERRIDE_M;
+    virtual bool abort(int timeoutMs = 0) OVERRIDE_M;
 
-    void lostConnection(ConnectionPrivate *con);
+    void lostConnection(ConnectionPrivate *con) OVERRIDE_M;
 
-    virtual void retry();
+    virtual void retry() OVERRIDE_M;
 
     void tryDequeueNextWorkItem();
 private:    
@@ -80,7 +81,7 @@ private:
 
 
 protected:
-    void setConnectionPrivate(ConnectionPrivate *connection);
+    void setConnectionPrivate(ConnectionPrivate *connection) OVERRIDE_M;
 
 private Q_SLOTS:
     void onSendHttpResponse(const QString httpResponse, QSharedPointer<SignalException> error);

@@ -16,16 +16,16 @@ class SIGNALR_EXPORT WebSocketTransport : public HttpBasedTransport
 public:
     WebSocketTransport();
 
-    void start(QString data);
-    void send(QString data);
-    bool abort(int timeoutMs=0);
-    void retry();
+    void start(QString data) OVERRIDE_M;
+    void send(QString data) OVERRIDE_M;
+    bool abort(int timeoutMs=0) OVERRIDE_M;
+    void retry() OVERRIDE_M;
 
-    virtual const QString &getTransportType();
+    virtual const QString &getTransportType() OVERRIDE_M;
 
-    void lostConnection(ConnectionPrivate *con);
+    void lostConnection(ConnectionPrivate *con) OVERRIDE_M;
 
-    bool supportsKeepAlive() { return true; }
+    bool supportsKeepAlive() OVERRIDE_M { return true; }
 
 private Q_SLOTS:
     void onConnected();

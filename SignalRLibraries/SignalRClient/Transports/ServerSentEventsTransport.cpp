@@ -66,11 +66,13 @@ void ServerSentEventsTransport::start(QString)
     startEventStream();
 }
 
-void ServerSentEventsTransport::abort()
+bool ServerSentEventsTransport::abort(int timeoutMs)
 {
     _eventStream->close();
     _eventStream->deleteLater();
     _eventStream = 0;
+
+    return HttpBasedTransport::abort(timeoutMs);
 }
 
 void ServerSentEventsTransport::stop()
@@ -98,6 +100,7 @@ void ServerSentEventsTransport::retry()
 
     if(_eventStream)
     {
+        _eventStream->close();
         _eventStream->deleteLater();
         _eventStream = 0;
     }
@@ -156,6 +159,7 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
     else
     {
         data = data.remove(0, data.indexOf("data: ")+5);
+        _connection->changeState(_connection->getState(), SignalR::Connected);
         _connection->getKeepAliveData()->setLastKeepAlive(QDateTime::currentDateTimeUtc());
 
         _connection->emitLogMessage("SSE: Message received", SignalR::Debug);
@@ -184,14 +188,12 @@ void ServerSentEventsTransport::connected(QSharedPointer<SignalException> error)
 
         _started = true;
     }
+    else if(_started && error.isNull()) {
+        _retryTimerTimeout.stop();
+    }
     else if(!error.isNull())
     {
         _connection->onError(error);
-
-        if(_started) { //if we try to reconnect, and can not connect...just give a shit and make a new connection
-            _connection->stop(1000);
-            return;
-        }
 
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
         _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);

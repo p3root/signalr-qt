@@ -37,7 +37,7 @@ namespace P3 { namespace SignalR { namespace Client {
 
 HubProxy::HubProxy(HubConnection* connection, QString hubName, QObject *objectToInvoke) : _connection(connection), _hubName(hubName)
 {
-    _objectToInvoke = objectToInvoke;
+    _objectsToInvoke << objectToInvoke;
 }
 
 HubProxy::~HubProxy()
@@ -176,191 +176,200 @@ void HubProxy::onReceive(const QVariant &var)
 {
     QVariantMap qvl = var.toMap();
 
-    if(_objectToInvoke && qvl.contains(("M")) && qvl.contains("A"))
-    {
-        QString method = qvl["M"].toString();
-        method[0] = method[0].toLower();
-        QVariantList args = qvl["A"].toList();
-        const QMetaObject *meta = _objectToInvoke->metaObject();
-        bool invokeOk = false;
-
-        for(int i = meta->methodOffset(); i < meta->methodCount(); ++i)
-        {
-            QString curMethod = QString::fromLatin1(meta->method(i).signature());
-
-            if(curMethod.startsWith(method))
+    if(_objectsToInvoke.count() > 0) {
+#ifdef HAS_CPP11
+     for(QObject *objToInvoke : _objectsToInvoke) {
+#else
+     foreach(QObject *objToInvoke,_objectsToInvoke) {
+#endif
+            if(objToInvoke && qvl.contains(("M")) && qvl.contains("A"))
             {
-                curMethod.remove(0, method.length()); //remove method name
-                curMethod.remove(0, 1); //remove open brace
-                curMethod.remove(curMethod.count()-1, 1); //remove close brace
+                QString method = qvl["M"].toString();
+                method[0] = method[0].toLower();
+                QVariantList args = qvl["A"].toList();
+                const QMetaObject *meta = objToInvoke->metaObject();
+                bool invokeOk = false;
 
-                int paramCount = 0;
-                QStringList params;
-
-                if(curMethod.size() != 0)
+                for(int i = meta->methodOffset(); i < meta->methodCount(); ++i)
                 {
-                    params = curMethod.split(','); //split params
+                    QString curMethod = QString::fromLatin1(meta->method(i).signature());
 
-                    QStringList tmpParams;
-                    foreach(QString param, params)
+                    if(curMethod.startsWith(method))
                     {
-                        tmpParams << param.replace(";", ",");
-                    }
-                    params = tmpParams;
+                        curMethod.remove(0, method.length()); //remove method name
+                        curMethod.remove(0, 1); //remove open brace
+                        curMethod.remove(curMethod.count()-1, 1); //remove close brace
 
-                    if(params.count() != args.count())
-                    {
-                        _connection->getConnectionPrivate()->emitLogMessage("Invalid size in give and needed args found, hubMethodCalled will be emited", SignalR::Debug);
-                        Q_EMIT hubMethodCalled(method, args);
-                        return;
-                    }
+                        int paramCount = 0;
+                        QStringList params;
 
-                    //i have no fucking idea why I cannot pass template class as args in QMetaObject::invoke
-                    //so i just stringify it an pass it to the method as a string
-                    int x = 0;
-                    foreach(QVariant arg, args)
-                    {
-                        if(arg.type() == QVariant::Map
-                                || arg.type() == QVariant::List)
+                        if(curMethod.size() != 0)
                         {
-                            args[x] = QextJson::stringify(arg);
+                            params = curMethod.split(','); //split params
+
+                            QStringList tmpParams;
+                            foreach(QString param, params)
+                            {
+                                tmpParams << param.replace(";", ",");
+                            }
+                            params = tmpParams;
+
+                            if(params.count() != args.count())
+                            {
+                                _connection->getConnectionPrivate()->emitLogMessage("Invalid size in give and needed args found, hubMethodCalled will be emited", SignalR::Debug);
+                                Q_EMIT hubMethodCalled(method, args);
+                                return;
+                            }
+
+                            //i have no fucking idea why I cannot pass template class as args in QMetaObject::invoke
+                            //so i just stringify it an pass it to the method as a string
+                            int x = 0;
+                            foreach(QVariant arg, args)
+                            {
+                                if(arg.type() == QVariant::Map
+                                        || arg.type() == QVariant::List)
+                                {
+                                    args[x] = QextJson::stringify(arg);
+                                }
+                                x++;
+                            }
+
+                            paramCount = params.length();
                         }
-                        x++;
+
+                        bool retVal = true;
+
+                        switch(paramCount)
+                        {
+                            case 0:
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str());
+                                break;
+                            case 1:
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                                                   getGenericArgument(params[0], args[0].toString()));
+                                break;
+                            case 2:
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                                                   getGenericArgument(params[0], args[0].toString()),
+                                        getGenericArgument(params[1], args[1].toString()));
+                                break;
+                            case 3:
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                                                   getGenericArgument(params[0], args[0].toString()),
+                                        getGenericArgument(params[1], args[1].toString()),
+                                        getGenericArgument(params[2], args[2].toString()));
+                                break;
+                            case 4:
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                                                   getGenericArgument(params[0], args[0].toString()),
+                                        getGenericArgument(params[1], args[1].toString()),
+                                        getGenericArgument(params[2], args[2].toString()),
+                                        getGenericArgument(params[3], args[3].toString()));
+
+                                break;
+                            case 5:
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                                                   getGenericArgument(params[0], args[0].toString()),
+                                        getGenericArgument(params[1], args[1].toString()),
+                                        getGenericArgument(params[2], args[2].toString()),
+                                        getGenericArgument(params[3], args[3].toString()),
+                                        getGenericArgument(params[4], args[4].toString()));
+
+                                break;
+                            case 6:
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                                                   getGenericArgument(params[0], args[0].toString()),
+                                        getGenericArgument(params[1], args[1].toString()),
+                                        getGenericArgument(params[2], args[2].toString()),
+                                        getGenericArgument(params[3], args[3].toString()),
+                                        getGenericArgument(params[4], args[4].toString()),
+                                        getGenericArgument(params[5], args[5].toString()));
+
+                                break;
+                            case 7:
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                                                   getGenericArgument(params[0], args[0].toString()),
+                                        getGenericArgument(params[1], args[1].toString()),
+                                        getGenericArgument(params[2], args[2].toString()),
+                                        getGenericArgument(params[3], args[3].toString()),
+                                        getGenericArgument(params[4], args[4].toString()),
+                                        getGenericArgument(params[5], args[5].toString()),
+                                        getGenericArgument(params[6], args[6].toString()));
+
+                                break;
+                            case 8:
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                                                   getGenericArgument(params[0], args[0].toString()),
+                                        getGenericArgument(params[1], args[1].toString()),
+                                        getGenericArgument(params[2], args[2].toString()),
+                                        getGenericArgument(params[3], args[3].toString()),
+                                        getGenericArgument(params[4], args[4].toString()),
+                                        getGenericArgument(params[5], args[5].toString()),
+                                        getGenericArgument(params[6], args[6].toString()),
+                                        getGenericArgument(params[7], args[7].toString()));
+
+                                break;
+                            case 9:
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                                                   getGenericArgument(params[0], args[0].toString()),
+                                        getGenericArgument(params[1], args[1].toString()),
+                                        getGenericArgument(params[2], args[2].toString()),
+                                        getGenericArgument(params[3], args[3].toString()),
+                                        getGenericArgument(params[4], args[4].toString()),
+                                        getGenericArgument(params[5], args[5].toString()),
+                                        getGenericArgument(params[6], args[6].toString()),
+                                        getGenericArgument(params[7], args[7].toString()),
+                                        getGenericArgument(params[8], args[8].toString()));
+                                break;
+                            case 10:
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                                                   getGenericArgument(params[0], args[0].toString()),
+                                        getGenericArgument(params[1], args[1].toString()),
+                                        getGenericArgument(params[2], args[2].toString()),
+                                        getGenericArgument(params[3], args[3].toString()),
+                                        getGenericArgument(params[4], args[4].toString()),
+                                        getGenericArgument(params[5], args[5].toString()),
+                                        getGenericArgument(params[6], args[6].toString()),
+                                        getGenericArgument(params[7], args[7].toString()),
+                                        getGenericArgument(params[8], args[8].toString()),
+                                        getGenericArgument(params[9], args[9].toString()));
+                                break;
+                            default:
+                                _connection->getConnectionPrivate()->emitLogMessage("Not more then 10 params allow in dynamic invokation", SignalR::Debug);
+                                Q_EMIT hubMethodCalled(method, args);
+                                break;
+                        }
+
+                        if(retVal)
+                        {
+                            invokeOk = true;
+                        }
                     }
-
-                    paramCount = params.length();
                 }
-
-                bool retVal = true;
-
-                switch(paramCount)
+                if(!invokeOk)
                 {
-                case 0:
-                    retVal = QMetaObject::invokeMethod(_objectToInvoke, method.toStdString().c_str());
-                    break;
-                case 1:
-                    retVal = QMetaObject::invokeMethod(_objectToInvoke, method.toStdString().c_str(),
-                                                       getGenericArgument(params[0], args[0].toString()));
-                    break;
-                case 2:
-                    retVal = QMetaObject::invokeMethod(_objectToInvoke, method.toStdString().c_str(),
-                                                       getGenericArgument(params[0], args[0].toString()),
-                            getGenericArgument(params[1], args[1].toString()));
-                    break;
-                case 3:
-                    retVal = QMetaObject::invokeMethod(_objectToInvoke, method.toStdString().c_str(),
-                                                       getGenericArgument(params[0], args[0].toString()),
-                            getGenericArgument(params[1], args[1].toString()),
-                            getGenericArgument(params[2], args[2].toString()));
-                    break;
-                case 4:
-                    retVal = QMetaObject::invokeMethod(_objectToInvoke, method.toStdString().c_str(),
-                                                       getGenericArgument(params[0], args[0].toString()),
-                            getGenericArgument(params[1], args[1].toString()),
-                            getGenericArgument(params[2], args[2].toString()),
-                            getGenericArgument(params[3], args[3].toString()));
-
-                    break;
-                case 5:
-                    retVal = QMetaObject::invokeMethod(_objectToInvoke, method.toStdString().c_str(),
-                                                       getGenericArgument(params[0], args[0].toString()),
-                            getGenericArgument(params[1], args[1].toString()),
-                            getGenericArgument(params[2], args[2].toString()),
-                            getGenericArgument(params[3], args[3].toString()),
-                            getGenericArgument(params[4], args[4].toString()));
-
-                    break;
-                case 6:
-                    retVal = QMetaObject::invokeMethod(_objectToInvoke, method.toStdString().c_str(),
-                                                       getGenericArgument(params[0], args[0].toString()),
-                            getGenericArgument(params[1], args[1].toString()),
-                            getGenericArgument(params[2], args[2].toString()),
-                            getGenericArgument(params[3], args[3].toString()),
-                            getGenericArgument(params[4], args[4].toString()),
-                            getGenericArgument(params[5], args[5].toString()));
-
-                    break;
-                case 7:
-                    retVal = QMetaObject::invokeMethod(_objectToInvoke, method.toStdString().c_str(),
-                                                       getGenericArgument(params[0], args[0].toString()),
-                            getGenericArgument(params[1], args[1].toString()),
-                            getGenericArgument(params[2], args[2].toString()),
-                            getGenericArgument(params[3], args[3].toString()),
-                            getGenericArgument(params[4], args[4].toString()),
-                            getGenericArgument(params[5], args[5].toString()),
-                            getGenericArgument(params[6], args[6].toString()));
-
-                    break;
-                case 8:
-                    retVal = QMetaObject::invokeMethod(_objectToInvoke, method.toStdString().c_str(),
-                                                       getGenericArgument(params[0], args[0].toString()),
-                            getGenericArgument(params[1], args[1].toString()),
-                            getGenericArgument(params[2], args[2].toString()),
-                            getGenericArgument(params[3], args[3].toString()),
-                            getGenericArgument(params[4], args[4].toString()),
-                            getGenericArgument(params[5], args[5].toString()),
-                            getGenericArgument(params[6], args[6].toString()),
-                            getGenericArgument(params[7], args[7].toString()));
-
-                    break;
-                case 9:
-                    retVal = QMetaObject::invokeMethod(_objectToInvoke, method.toStdString().c_str(),
-                                                       getGenericArgument(params[0], args[0].toString()),
-                            getGenericArgument(params[1], args[1].toString()),
-                            getGenericArgument(params[2], args[2].toString()),
-                            getGenericArgument(params[3], args[3].toString()),
-                            getGenericArgument(params[4], args[4].toString()),
-                            getGenericArgument(params[5], args[5].toString()),
-                            getGenericArgument(params[6], args[6].toString()),
-                            getGenericArgument(params[7], args[7].toString()),
-                            getGenericArgument(params[8], args[8].toString()));
-                    break;
-                case 10:
-                    retVal = QMetaObject::invokeMethod(_objectToInvoke, method.toStdString().c_str(),
-                                                       getGenericArgument(params[0], args[0].toString()),
-                            getGenericArgument(params[1], args[1].toString()),
-                            getGenericArgument(params[2], args[2].toString()),
-                            getGenericArgument(params[3], args[3].toString()),
-                            getGenericArgument(params[4], args[4].toString()),
-                            getGenericArgument(params[5], args[5].toString()),
-                            getGenericArgument(params[6], args[6].toString()),
-                            getGenericArgument(params[7], args[7].toString()),
-                            getGenericArgument(params[8], args[8].toString()),
-                            getGenericArgument(params[9], args[9].toString()));
-                    break;
-                default:
-                    _connection->getConnectionPrivate()->emitLogMessage("Not more then 10 params allow in dynamic invokation", SignalR::Debug);
+                    _connection->getConnectionPrivate()->emitLogMessage("Could not dynamically invoke method", SignalR::Debug);
                     Q_EMIT hubMethodCalled(method, args);
-                    break;
                 }
-
-                if(retVal)
+            }
+            else
+            {
+                QVariantMap qvl = var.toMap();
+                if(qvl.contains(("M")) && qvl.contains("A"))
                 {
-                    invokeOk = true;
+                    QString method = qvl["M"].toString();
+                    QVariantList args = qvl["A"].toList();
+                    Q_EMIT hubMethodCalled(method, args);
+                }
+                else
+                {
+                    _connection->getConnectionPrivate()->emitLogMessage("HubProxy Message with no Method name called", SignalR::Warning);
                 }
             }
         }
-        if(!invokeOk)
-        {
-            _connection->getConnectionPrivate()->emitLogMessage("Could not dynamically invoke method", SignalR::Debug);
-            Q_EMIT hubMethodCalled(method, args);
-        }
-    }
-    else
-    {
-        QVariantMap qvl = var.toMap();
-        if(qvl.contains(("M")) && qvl.contains("A"))
-        {
-            QString method = qvl["M"].toString();
-            QVariantList args = qvl["A"].toList();
-            Q_EMIT hubMethodCalled(method, args);
-        }
-        else
-        {
-            _connection->getConnectionPrivate()->emitLogMessage("HubProxy Message with no Method name called", SignalR::Warning);
-        }
     }
 }
+
 
 void HubProxy::send(const QString &data, const QString &id, HubCallback *c)
 {
@@ -417,6 +426,12 @@ QGenericArgument HubProxy::getGenericArgument(const QString &type, const QString
 
     _connection->getConnectionPrivate()->emitLogMessage("getGenericArgument: no type found for " + type + " it will be seen as a QString", SignalR::Warning);
     return Q_ARG(QString, val);
+}
+
+void HubProxy::addObjectToInvoke(QObject *obj)
+{
+    if(obj)
+        _objectsToInvoke << obj;
 }
 
 }}}
