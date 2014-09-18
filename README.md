@@ -28,7 +28,7 @@ Tested on:
 
 Server
 =======
-still in work
+I am currently working very hard on an Server Implementation without Qt.
 
 LICENSE
 ======
