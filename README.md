@@ -28,7 +28,7 @@ Tested on:
 
 Server
 =======
-I am currently working very hard on an Server Implementation without Qt.
+See the following repository (https://github.com/p3root/signalr-cpp)
 
 LICENSE
 ======
