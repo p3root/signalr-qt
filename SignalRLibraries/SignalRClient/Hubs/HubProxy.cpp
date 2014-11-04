@@ -37,7 +37,7 @@ namespace P3 { namespace SignalR { namespace Client {
 
 HubProxy::HubProxy(HubConnection* connection, QString hubName, QObject *objectToInvoke) : _connection(connection), _hubName(hubName)
 {
-    _objectsToInvoke << objectToInvoke;
+    _objectsToInvoke.append(objectToInvoke);
 }
 
 HubProxy::~HubProxy()
@@ -177,6 +177,7 @@ void HubProxy::onReceive(const QVariant &var)
     QVariantMap qvl = var.toMap();
 
     if(_objectsToInvoke.count() > 0) {
+
 #ifdef HAS_CPP11
      for(QObject *objToInvoke : _objectsToInvoke) {
 #else
@@ -431,7 +432,7 @@ QGenericArgument HubProxy::getGenericArgument(const QString &type, const QString
 void HubProxy::addObjectToInvoke(QObject *obj)
 {
     if(obj)
-        _objectsToInvoke << obj;
+        _objectsToInvoke.append(obj);
 }
 
 }}}

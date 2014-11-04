@@ -11,7 +11,7 @@ AutoTransport::AutoTransport() :
     HttpBasedTransport()
 {
     _transports = QList<ClientTransport*>();
-    _transports.append(new WebSocketTransport());
+   // _transports.append(new WebSocketTransport());
     _transports.append(new ServerSentEventsTransport());
     _transports.append(new LongPollingTransport());
 

@@ -78,8 +78,8 @@ private:
     void addObjectToInvoke(QObject *obj);
 
 private:
-    HubConnection* _connection;
     QList<QObject*> _objectsToInvoke;
+    HubConnection* _connection;
     const QString _hubName;
 
     friend class HubConnection;

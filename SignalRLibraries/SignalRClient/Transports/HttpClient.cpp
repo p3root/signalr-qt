@@ -61,7 +61,9 @@ HttpClient::HttpClient(ConnectionPrivate *con) : _isAborting(false), _man(0)
     _connectionLock = new QMutex(QMutex::Recursive);
 
     connect(_man, SIGNAL(finished(QNetworkReply*)), SLOT(requestFinished(QNetworkReply*)));
-    connect(_man, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), SLOT(onIgnoreSSLErros(QNetworkReply*,QList<QSslError>)));
+#ifndef QT_NO_OPENSSL
+    connect(_man, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), this, SLOT(onIgnoreSSLErros(QNetworkReply*,QList<QSslError>)));
+#endif
     connect(this, SIGNAL(doPost(QString,QMap<QString,QString>)), this, SLOT(onDoPost(QString,QMap<QString,QString>)));
 
     _postInProgress = false;
@@ -192,6 +194,7 @@ QString HttpClient::postSync(QString url, QMap<QString, QString> arguments, QSha
     _connection->emitLogMessage("starting sync post request (" + _connection->getConnectionId() +")", SignalR::Debug);
     QNetworkAccessManager *networkMgr = new QNetworkAccessManager();
     QNetworkReply *postReply = networkMgr->post(req, QByteArray().append(queryString));
+
     QTimer t;
     t.setInterval(timeoutMs);
     t.start();
@@ -514,6 +517,8 @@ void HttpClient::onIgnoreSSLErros(QNetworkReply *reply, QList<QSslError> error)
 
     reply->ignoreSslErrors(error);
 }
+
+
 #endif
 
 }}}
