@@ -172,6 +172,9 @@ public:
     int getPostTimeoutMs();
     void setPostTimeOutMs(int timeoutMs);
 
+    const QString &getTid();
+    void setTid(const QString &tid);
+
 Q_SIGNALS:
     void stateChanged(SignalR::State old_state, SignalR::State new_state);
     void errorOccured(QSharedPointer<SignalException> error);

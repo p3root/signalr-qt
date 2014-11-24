@@ -69,6 +69,9 @@ QString TransportHelper::getReceiveQueryString(ConnectionPrivate* connection, QS
         qs += "&connectionData=" + connection->onSending();
     }
 
+    if(!connection->getTid().isEmpty())
+        qs += "&tid=" + connection->getTid();
+
     return qs;
 }
 

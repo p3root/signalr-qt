@@ -132,6 +132,9 @@ public:
     int getPostTimeoutMs() { return _postTimeoutMs; }
     void setPostTimeOutMs(int timeoutMs) { _postTimeoutMs = timeoutMs; }
 
+    const QString &getTid() { return _tid; }
+    void setTid(const QString &tid) { _tid = tid; }
+
     HeartbeatMonitor &getHeartbeatMonitor();
 
 Q_SIGNALS:
@@ -180,6 +183,7 @@ private:
     QSslConfiguration _sslConfiguration;
 #endif
 
+    QString _tid;
     Connection * const q_ptr;
 };
 

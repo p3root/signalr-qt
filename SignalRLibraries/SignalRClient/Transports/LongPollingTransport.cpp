@@ -41,6 +41,7 @@ LongPollingTransport::LongPollingTransport() :
     _started = false;
 
     connect(&_keepAliveTimer, SIGNAL(timeout()), this, SLOT(keepAliveTimerTimeout()));
+    _getOpen = false;
 }
 
 
@@ -50,10 +51,12 @@ LongPollingTransport::~LongPollingTransport(void)
 
 void LongPollingTransport::start(QString)
 {
-    connect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onPollHttpResponse(QString,QSharedPointer<SignalException>)));
+     disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onPollHttpResponse(QString,QSharedPointer<SignalException>)));
 
+    _httpClient->abortGet();
     _keepAliveTimer.setInterval(120*1000); //default on the signalr server is 110 sec, just to ensure not to run in a socket timeout
 
+    _connection->emitLogMessage("LP: Start Connect", SignalR::Trace);
     _connection->updateLastKeepAlive();
 
     QString conOrRecon = "connect";
@@ -62,18 +65,20 @@ void LongPollingTransport::start(QString)
     QString connectUrl = _connection->getUrl() + "/" +conOrRecon;
     connectUrl += TransportHelper::getReceiveQueryString(_connection, getTransportType());
 
-    connect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), SLOT(onPostRequestCompleted(QString,QSharedPointer<SignalException>)));
-    _httpClient->post(connectUrl, QMap<QString, QString>());
+    connect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), SLOT(onConnectRequestFinished(QString,QSharedPointer<SignalException>)));
+    _httpClient->get(connectUrl);
 }
 
 void LongPollingTransport::retry()
 {
+    _connection->emitLogMessage("LP: Starting Retry", SignalR::Trace);
     HttpBasedTransport::retry();
 
     //disconnect the signal cause we dont want to start the retry timer, we start the connection after the abort again
     disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onPollHttpResponse(QString,QSharedPointer<SignalException>)));
 
     _httpClient->abort(false);
+    _getOpen = false;
     startConnection();
 }
 
@@ -85,15 +90,21 @@ const QString &LongPollingTransport::getTransportType()
 
 void LongPollingTransport::startConnection()
 {
+    _connection->emitLogMessage("LP: Starting LongPoll", SignalR::Trace);
+
     _url = _connection->getUrl() + "/poll";
     _url += TransportHelper::getReceiveQueryString(_connection, getTransportType());
+    disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onPollHttpResponse(QString,QSharedPointer<SignalException>)));
     connect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onPollHttpResponse(QString,QSharedPointer<SignalException>)));
     _httpClient->get(_url);
     _keepAliveTimer.start();
+    _getOpen = true;
 }
 
 void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, QSharedPointer<SignalException> ex)
 {
+    _connection->emitLogMessage("LP: Finished LongPoll", SignalR::Trace);
+    _getOpen = false;
     _keepAliveTimer.stop();
     _lastSignalException = ex;
 
@@ -228,11 +239,12 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, QShar
 
 }
 
-void LongPollingTransport::onPostRequestCompleted(const QString &httpResponse, QSharedPointer<SignalException> error)
+void LongPollingTransport::onConnectRequestFinished(const QString &httpResponse, QSharedPointer<SignalException> error)
 {
+    _connection->emitLogMessage("LP: Finished Connect", SignalR::Trace);
     Q_UNUSED(httpResponse);
 
-    disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)),this, SLOT(onPostRequestCompleted(QString,QSharedPointer<SignalException>)));
+    disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)),this, SLOT(onConnectRequestFinished(QString,QSharedPointer<SignalException>)));
 
     if(error.isNull() && !_connection->getConnectionToken().isEmpty())
     {
@@ -259,6 +271,7 @@ void LongPollingTransport::onPostRequestCompleted(const QString &httpResponse, Q
 void LongPollingTransport::keepAliveTimerTimeout()
 {
     _httpClient->abort(false);
+    _connection->changeState(SignalR::Connected, SignalR::Reconnecting);
 }
 
 void LongPollingTransport::errorRetryTimer()

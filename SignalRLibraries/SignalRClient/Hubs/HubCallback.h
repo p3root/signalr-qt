@@ -43,13 +43,13 @@ class SIGNALR_EXPORT HubCallback : public QObject
 public:
     HubCallback(void* state, const QString name = "");
 
-    void* getState();
+    void* getState() const { return _state; }
     void raiseMessageReceived(QVariant);
 
-    bool isFinished() { return _finished; }
+    bool isFinished() const { return _finished; }
 
-    const QString &getName() { return _name; }
-    const QVariant data() { return _data; }
+    const QString &getName() const { return _name; }
+    const QVariant data() const { return _data; }
 
 Q_SIGNALS:
     void messageReceived(HubCallback*, QVariant);

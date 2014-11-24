@@ -58,7 +58,7 @@ private:
 
 private Q_SLOTS:
     void onPollHttpResponse(const QString& httpResponse, QSharedPointer<SignalException> error);
-    void onPostRequestCompleted(const QString& httpResponse, QSharedPointer<SignalException> error);
+    void onConnectRequestFinished(const QString& httpResponse, QSharedPointer<SignalException> error);
 
     void keepAliveTimerTimeout();
     void errorRetryTimer();
@@ -75,6 +75,7 @@ private:
     QTimer _keepAliveTimer;
     QSharedPointer<SignalException> _lastSignalException;
     QTimer _retryTimerTimeout;
+    bool _getOpen;
 
 };
 

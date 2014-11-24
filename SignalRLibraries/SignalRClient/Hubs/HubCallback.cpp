@@ -39,11 +39,6 @@ HubCallback::HubCallback(void* state, const QString name) : QObject()
     _finished = false;
 }
 
-void *HubCallback::getState()
-{
-    return _state;
-}
-
 void HubCallback::raiseMessageReceived(QVariant v)
 {
     _finished = true;

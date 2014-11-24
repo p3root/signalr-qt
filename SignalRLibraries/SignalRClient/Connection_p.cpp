@@ -64,6 +64,8 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
 
     connect(this, SIGNAL(sendData(QString)), this, SLOT(onSendData(QString)));
     connect(this, SIGNAL(startRetry()), this, SLOT(onRetry()));
+
+    _tid = "";
 }
 
 

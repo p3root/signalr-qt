@@ -237,6 +237,18 @@ void Connection::setPostTimeOutMs(int timeoutMs)
     d->setPostTimeOutMs(timeoutMs);
 }
 
+const QString &Connection::getTid()
+{
+    Q_D(Connection);
+    return d->getTid();
+}
+
+void Connection::setTid(const QString &tid)
+{
+    Q_D(Connection);
+    d->setTid(tid);
+}
+
 void Connection::onTransportStarted(QSharedPointer<SignalException>)
 {
 
