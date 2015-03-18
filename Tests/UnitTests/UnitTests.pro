@@ -17,13 +17,11 @@ TEMPLATE = app
 
 SOURCES += \
     HttpEventStreamParserTest.cpp \
-    main.cpp \
-    StringMinifierTest.cpp
+    main.cpp
 
 
 HEADERS += \
-    HttpEventStreamParserTest.h \
-    StringMinifierTest.h
+    HttpEventStreamParserTest.h
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
@@ -33,13 +31,6 @@ else:unix: LIBS += -L$$OUT_PWD/../../SignalRLibraries/SignalRClient/ -lSignalRCl
 
 INCLUDEPATH += $$PWD/../../SignalRLibraries/SignalRClient
 DEPENDPATH += $$PWD/../../SignalRLibraries/SignalRClient
-
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../SignalRLibraries/SignalRServer/release/ -lSignalRServer
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../SignalRLibraries/SignalRServer/debug/ -lSignalRServer
-else:unix: LIBS += -L$$OUT_PWD/../../SignalRLibraries/SignalRServer/ -lSignalRServer
-
-INCLUDEPATH += $$PWD/../../SignalRLibraries/SignalRServer
-DEPENDPATH += $$PWD/../../SignalRLibraries/SignalRServer
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtWebSockets/src/websockets/release/ -lQtWebSockets
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtWebSockets/src/websockets/debug/ -lQtWebSockets

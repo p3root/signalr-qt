@@ -193,8 +193,11 @@ void HubProxy::onReceive(const QVariant &var)
 
                 for(int i = meta->methodOffset(); i < meta->methodCount(); ++i)
                 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+                     QString curMethod = QString::fromLatin1(meta->method(i).methodSignature());
+#else
                     QString curMethod = QString::fromLatin1(meta->method(i).signature());
-
+#endif
                     if(curMethod.startsWith(method))
                     {
                         curMethod.remove(0, method.length()); //remove method name

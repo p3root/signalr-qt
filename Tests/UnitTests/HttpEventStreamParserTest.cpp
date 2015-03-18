@@ -5,7 +5,11 @@
 void HttpEventStreamParserTest::prepare(P3::SignalR::Client::HttpEventStreamParser &p, int httpStatusCode)
 {
     QString httpData = QString("HTTP/1.1 %1 OK\r\nCache-Control: no-cache\r\nPragma: no-cache\r\nTransfer-Encoding: chunked\r\nContent-Type: text/event-stream\r\nExpires: -1\r\nServer: Microsoft-IIS/7.5\r\nX-Content-Type-Options: nosniff\r\nX-AspNet-Version: 4.0.30319\r\nX-Powered-By: ASP.NET\r\nDate: Fri, 06 Jun 2014 06:33:53 GMT\r\n\r\n").arg(httpStatusCode);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    p.addData(httpData.toHtmlEscaped().toLatin1());
+#else
     p.addData(httpData.toAscii());
+#endif
 }
 
 void HttpEventStreamParserTest::testSinglePacket()

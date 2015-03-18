@@ -149,6 +149,12 @@ void WebSocketTransport::onDisconnected()
     case QAbstractSocket::ProxyProtocolError:
     case QAbstractSocket::UnknownSocketError:
     case QAbstractSocket::HostNotFoundError:
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    case QAbstractSocket::OperationError:
+    case QAbstractSocket::SslInternalError:
+    case QAbstractSocket::SslInvalidUserDataError:
+    case QAbstractSocket::TemporaryError:
+#endif
         error = QSharedPointer<SignalException>(new SignalException(_webSocket->errorString(), SignalException::UnkownError));
         break;
     }
