@@ -55,7 +55,7 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
     qRegisterMetaType<SignalR::State>("State");
     qRegisterMetaType<SignalR::State>("SignalR::State");
     qRegisterMetaType<QSharedPointer<SignalException> >("QSharedPointer<SignalException>");
-    _reconnectWaitTime = 5;
+    _reconnectWaitTime = 5000;
     _postTimeoutMs = 60*3*1000; //3 min
 
 #ifndef QT_NO_SSL
@@ -152,6 +152,8 @@ void ConnectionPrivate::changeState(SignalR::State oldState, SignalR::State newS
 
     SignalR::State currentState = _state;
     _state = newState;
+
+    emitLogMessage(QString("Change state from %1 to %2").arg(translateState(oldState), translateState(newState)), SignalR::Debug);
 
     if(currentState != newState)
     {
@@ -331,6 +333,24 @@ HeartbeatMonitor &ConnectionPrivate::getHeartbeatMonitor()
 {
     return *_monitor;
 }
+
+QString ConnectionPrivate::translateState(SignalR::State state)
+{
+    switch(state) {
+        case SignalR::Connecting:
+            return "Connecting";
+        case SignalR::Connected:
+            return "Connected";
+        case SignalR::Reconnecting:
+            return "Reconnecting";
+        case SignalR::Disconnecting:
+            return "Disconnecting";
+        case SignalR::Disconnected:
+            return "Disconnected";
+    }
+    return "N/A";
+}
+
 
 void ConnectionPrivate::onSendData(const QString data)
 {

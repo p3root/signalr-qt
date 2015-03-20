@@ -51,9 +51,10 @@ LongPollingTransport::~LongPollingTransport(void)
 
 void LongPollingTransport::start(QString)
 {
-     disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onPollHttpResponse(QString,QSharedPointer<SignalException>)));
+    disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onPollHttpResponse(QString,QSharedPointer<SignalException>)));
 
     _httpClient->abortGet();
+    _keepAliveTimer.stop();
     _keepAliveTimer.setInterval(120*1000); //default on the signalr server is 110 sec, just to ensure not to run in a socket timeout
 
     _connection->emitLogMessage("LP: Start Connect", SignalR::Trace);
@@ -143,10 +144,10 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, QShar
 
                     //_started = false;
 
-                    _connection->emitLogMessage("LP: Lost connection, trying to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", SignalR::Debug);
+                    _connection->emitLogMessage("LP: Lost connection, trying to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "ms", SignalR::Debug);
 
                     connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetryWithStateChanging()));
-                    _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
+                    _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
                     _retryTimerTimeout.start();
 
                     return;
@@ -156,9 +157,10 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, QShar
                 {
                     serverError = false;
                     _connection->emitLogMessage("LP: Connection was closed due to a client timeout", SignalR::Warning);
+                    _connection->changeState(_connection->getState(), SignalR::Reconnecting);
 
                     connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(errorRetryTimer()));
-                    _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
+                    _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
                     _retryTimerTimeout.start();
 
                     return;
@@ -166,20 +168,14 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, QShar
                 else
                 {
                     _connection->emitLogMessage("LP: Unknown error (" + ex->getMessage() + ")", SignalR::Error);
+                    _connection->changeState(_connection->getState(), SignalR::Reconnecting);
 
                     connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
-                    _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
+                    _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
                     _retryTimerTimeout.start();
 
                     return;
                 }
-
-                if(serverError)
-                {
-                    Q_EMIT transportStarted(ex);
-                    _keepAliveTimer.start();
-                }
-
             }
             else
             {
@@ -198,24 +194,25 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, QShar
                 else
                 {
                     _connection->emitLogMessage("LP: Unkown error (" + ex->getMessage() + ")", SignalR::Error);
+                    _connection->changeState(_connection->getState(), state);
                 }
 
                 if(_connection->ensureReconnecting())
                 {
-                    _connection->emitLogMessage("LP: Lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", SignalR::Debug);
+                    _connection->emitLogMessage("LP: Lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "ms", SignalR::Debug);
 
                     connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
-                    _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
+                    _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
                     _retryTimerTimeout.start();
 
                     return;
                 }
                 else if(_connection->getAutoReconnect())
                 {
-                    _connection->emitLogMessage("LP: Lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", SignalR::Debug);
+                    _connection->emitLogMessage("LP: Lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "ms", SignalR::Debug);
 
                     connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
-                    _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
+                    _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
                     _retryTimerTimeout.start();
 
                     return;
@@ -230,8 +227,16 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, QShar
 
     if(disconnected)
     {
+        _connection->emitLogMessage("LP: SignalR Server said we should disconnect, and open a new connection if we want", SignalR::Info);
         _connection->stop(2000);
     }
+    else if(timedOut)
+    {
+        _connection->emitLogMessage("LP: SignalR timed out, we should reconnect", SignalR::Info);
+        _connection->changeState(_connection->getState(), SignalR::Reconnecting);
+        start("");
+    }
+
     else if(!serverError && !_connection->getConnectionToken().isEmpty())
     {
         startConnection();
@@ -263,7 +268,7 @@ void LongPollingTransport::onConnectRequestFinished(const QString &httpResponse,
         _connection->onError(error);
         _lastSignalException = error;
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(errorStartRetry()));
-        _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
+        _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
         _retryTimerTimeout.start();
     }
 }
@@ -287,7 +292,6 @@ void LongPollingTransport::reconnectErrorRetry()
     _retryTimerTimeout.stop();
     disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
 
-    _keepAliveTimer.start();
     start("");
 
 }

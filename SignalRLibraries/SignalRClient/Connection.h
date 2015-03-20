@@ -155,7 +155,7 @@ public:
 #endif
 
     int getReconnectWaitTime();
-    void setReconnectWaitTime(int timeInSeconds);
+    void setReconnectWaitTime(int timeInMilliseconds);
 
     const QString &getProtocolVersion();
 

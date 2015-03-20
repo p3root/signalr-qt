@@ -183,10 +183,10 @@ int Connection::getReconnectWaitTime()
     return d->getReconnectWaitTime();
 }
 
-void Connection::setReconnectWaitTime(int timeInSeconds)
+void Connection::setReconnectWaitTime(int timeInMilliseconds)
 {
     Q_D(Connection);
-    d->setReconnectWaitTime(timeInSeconds);
+    d->setReconnectWaitTime(timeInMilliseconds);
 }
 
 const QString &Connection::getProtocolVersion()

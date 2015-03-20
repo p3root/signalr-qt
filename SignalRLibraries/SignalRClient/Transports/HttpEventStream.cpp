@@ -137,7 +137,6 @@ void HttpEventStream::open()
 #endif
 
     connect(_sock, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-    connect(_sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onSocketError(QAbstractSocket::SocketError)));
 
     //try to resolve the hostname
     QHostInfo info = QHostInfo::fromName(host);
@@ -152,6 +151,7 @@ void HttpEventStream::open()
                 _sock->connectToHost(info.addresses().first(), port);
             if(_sock->waitForConnected())
             {
+                connect(_sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onSocketError(QAbstractSocket::SocketError)));
                 _sock->setSocketOption(QAbstractSocket::KeepAliveOption,1);
                 _sock->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
@@ -287,7 +287,10 @@ void HttpEventStream::onSocketError(QAbstractSocket::SocketError error)
 
         }
 
-        Q_EMIT packetReady("", ex);
+        if(_connected)
+            Q_EMIT packetReady("", ex);
+        else
+            Q_EMIT connected(ex);
     }
 }
 

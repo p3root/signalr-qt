@@ -134,7 +134,7 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
             _connection->onError(error);
 
             connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
-            _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
+            _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
             _retryTimerTimeout.start();
 
             logReconnectMessage();
@@ -145,7 +145,7 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
             _connection->onError(error);
 
             connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
-            _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
+            _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
             _retryTimerTimeout.start();
 
             logReconnectMessage();
@@ -196,7 +196,7 @@ void ServerSentEventsTransport::connected(QSharedPointer<SignalException> error)
         _connection->onError(error);
 
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
-        _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
+        _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
         _retryTimerTimeout.start();
 
         logReconnectMessage();
@@ -251,7 +251,7 @@ void ServerSentEventsTransport::startEventStream()
 
 void ServerSentEventsTransport::logReconnectMessage()
 {
-    _connection->emitLogMessage("SSE: Lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", SignalR::Debug);
+    _connection->emitLogMessage("SSE: Lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "ms", SignalR::Debug);
 
 }
 

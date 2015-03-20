@@ -166,19 +166,19 @@ void WebSocketTransport::onDisconnected()
 
     if(_connection->ensureReconnecting())
     {
-        _connection->emitLogMessage("WS: lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", SignalR::Debug);
+        _connection->emitLogMessage("WS: lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "ms", SignalR::Debug);
 
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
-        _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
+        _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
         _retryTimerTimeout.start();
 
     }
     else if(_connection->getAutoReconnect())
     {
-        _connection->emitLogMessage("WebSocket: lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "s", SignalR::Debug);
+        _connection->emitLogMessage("WebSocket: lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "ms", SignalR::Debug);
 
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
-        _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime() * 1000);
+        _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
         _retryTimerTimeout.start();
 
         return;

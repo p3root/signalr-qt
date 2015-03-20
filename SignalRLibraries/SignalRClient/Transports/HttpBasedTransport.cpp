@@ -69,11 +69,11 @@ void HttpBasedTransport::negotiateCompleted(QString data, QSharedPointer<SignalE
     {
         if(_connection->getAutoReconnect())
         {
-            _connection->emitLogMessage(QString("Negotiation failed, will try it again after %1s").arg(_connection->getReconnectWaitTime()), SignalR::Error);
+            _connection->emitLogMessage(QString("Negotiation failed, will try it again after %1ms").arg(_connection->getReconnectWaitTime()), SignalR::Error);
             QSharedPointer<SignalException> error = QSharedPointer<SignalException>(new SignalException("Negotiation failed", ex->getType()));
             _connection->onError(error);
             connect(&_retryTimerTimeout, SIGNAL(timeout()), SLOT(retryNegotiation()));
-            _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime()*1000);
+            _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
             _retryTimerTimeout.start();
         }
         else

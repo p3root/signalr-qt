@@ -112,7 +112,7 @@ public:
 #endif
 
     int getReconnectWaitTime() { return _reconnectWaitTime; }
-    void setReconnectWaitTime(int timeInSeconds) { _reconnectWaitTime = timeInSeconds; }
+    void setReconnectWaitTime(int timeInMilliseconds) { _reconnectWaitTime = timeInMilliseconds; }
 
     bool tryWebSockets() { return _tryWebSockets; }
 
@@ -137,6 +137,7 @@ public:
 
     HeartbeatMonitor &getHeartbeatMonitor();
 
+    QString translateState(SignalR::State state);
 Q_SIGNALS:
     void sendData(const QString data);
     void startRetry();
