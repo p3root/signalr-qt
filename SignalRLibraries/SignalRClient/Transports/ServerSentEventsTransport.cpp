@@ -161,6 +161,7 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
     else
     {
         data = data.remove(0, data.indexOf("data: ")+5);
+
         _connection->changeState(_connection->getState(), SignalR::Connected);
         _connection->updateLastKeepAlive();
 

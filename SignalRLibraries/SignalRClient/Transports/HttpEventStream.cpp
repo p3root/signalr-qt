@@ -182,7 +182,7 @@ void HttpEventStream::open()
                     os << "\r\n";
                 }
 
-                 _connection->emitLogMessage(_id + " -- " + getRequest, SignalR::Trace);
+                _connection->emitLogMessage(_id + " -- " + getRequest, SignalR::Trace);
 
                 os << "\r\n";
                 //write data to socket
@@ -244,7 +244,7 @@ void HttpEventStream::onReadyRead()
         if(data == "data: initialized") {
             _connected = true;
             _connection->changeState(_connection->getState(), SignalR::Connected);
-             Q_EMIT connected(result.error);
+            Q_EMIT connected(result.error);
         }
         else if(data == "The ConnectionId is in the incorrect format.") {
             Q_EMIT restartConnection();
@@ -253,7 +253,20 @@ void HttpEventStream::onReadyRead()
             Q_EMIT connected(result.error);
         }
         else {
-            Q_EMIT packetReady(data, result.error);
+            int dataEndIndex = data.indexOf("\r\n\r\n");
+
+            if(data.length() > dataEndIndex) {
+                do {
+                    QString package = data.mid(0, dataEndIndex);
+                    Q_EMIT packetReady(package, result.error);
+
+                    data = data.mid(dataEndIndex+4, data.length()-dataEndIndex);
+                    dataEndIndex = data.indexOf("\r\n\r\n");
+                }
+                while(dataEndIndex > 0);
+            }
+            else
+                Q_EMIT packetReady(data, result.error);
         }
 
         if(!result.error.isNull())

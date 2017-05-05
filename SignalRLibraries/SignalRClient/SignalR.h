@@ -33,7 +33,8 @@ public:
         Debug,
         Info,
         Warning,
-        Error
+        Error,
+        Special
     };
 };
 
