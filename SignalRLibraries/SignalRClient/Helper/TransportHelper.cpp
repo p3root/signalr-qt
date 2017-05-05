@@ -64,9 +64,10 @@ QString TransportHelper::getReceiveQueryString(ConnectionPrivate* connection, QS
         qs += "&groupsToken=" + groupsToken;
     }
 
-    if(!connection->onSending().isEmpty())
+    QString onSending = connection->onSending();
+    if(!onSending.isEmpty())
     {
-        qs += "&connectionData=" + connection->onSending();
+        qs += "&connectionData=" + onSending;
     }
 
     if(!connection->getTid().isEmpty())

@@ -67,14 +67,17 @@ void HttpBasedTransport::negotiateCompleted(QString data, QSharedPointer<SignalE
     }
     else
     {
+        _connection->updateLastRetryTime();
         if(_connection->getAutoReconnect())
         {
             _connection->emitLogMessage(QString("Negotiation failed, will try it again after %1ms").arg(_connection->getReconnectWaitTime()), SignalR::Error);
             QSharedPointer<SignalException> error = QSharedPointer<SignalException>(new SignalException("Negotiation failed", ex->getType()));
             _connection->onError(error);
-            connect(&_retryTimerTimeout, SIGNAL(timeout()), SLOT(retryNegotiation()));
-            _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
-            _retryTimerTimeout.start();
+
+            _nretryTimerTimeout.stop();
+            connect(&_nretryTimerTimeout, SIGNAL(timeout()), SLOT(retryNegotiation()));
+            _nretryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
+            _nretryTimerTimeout.start();
         }
         else
         {
@@ -88,8 +91,8 @@ void HttpBasedTransport::negotiateCompleted(QString data, QSharedPointer<SignalE
 
 void HttpBasedTransport::retryNegotiation()
 {
-    disconnect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(retryNegotiation()));
-    _retryTimerTimeout.stop();
+    _nretryTimerTimeout.stop();
+    disconnect(&_nretryTimerTimeout, SIGNAL(timeout()), this, SLOT(retryNegotiation()));
     negotiate();
 }
 
@@ -178,10 +181,11 @@ void HttpBasedTransport::setConnectionPrivate(ConnectionPrivate *connection)
 
 void HttpBasedTransport::retry()
 {
-    if(_retryTimerTimeout.isActive())
+    if(_nretryTimerTimeout.isActive())
     {
-        _retryTimerTimeout.stop();
-        Q_EMIT retryNegotiation();
+        _nretryTimerTimeout.stop();
+        _nretryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
+        _nretryTimerTimeout.start();
     }
 }
 
@@ -220,7 +224,7 @@ void HttpBasedTransport::onSendHttpResponse(const QString httpResponse, QSharedP
 
 bool HttpBasedTransport::abort(int timeoutMs)
 {
-    _retryTimerTimeout.stop();
+    _nretryTimerTimeout.stop();
     disconnect(_httpClient, SIGNAL(postRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onSendHttpResponse(QString,QSharedPointer<SignalException>)));
 
     QString url = _connection->getUrl() +

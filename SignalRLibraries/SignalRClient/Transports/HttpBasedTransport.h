@@ -76,7 +76,7 @@ private:
     
     QQueue<SendQueueItem*> _sendQueue;
     bool _sending;
-    QTimer _retryTimerTimeout;
+    QTimer _nretryTimerTimeout;
     QTimer _postTimer;
 
 

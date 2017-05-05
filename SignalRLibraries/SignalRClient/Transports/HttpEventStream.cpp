@@ -33,6 +33,7 @@
 #include "Transports/ServerSentEventsTransport.h"
 #include "Connection_p.h"
 #include "HttpEventStreamParser.h"
+#include <QUuid>
 
 #if defined(Q_OS_QNX)
 #include <QtNetwork/qhostinfo.h>
@@ -50,6 +51,7 @@ HttpEventStream::HttpEventStream(QUrl url, ConnectionPrivate *con, QObject *pare
     _isRunning = false;
     _parser = new HttpEventStreamParser();
     _connected = false;
+    _id = QUuid::createUuid().toString();
 }
 
 HttpEventStream::~HttpEventStream()
@@ -138,6 +140,7 @@ void HttpEventStream::open()
 
     connect(_sock, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 
+
     //try to resolve the hostname
     QHostInfo info = QHostInfo::fromName(host);
 
@@ -149,6 +152,9 @@ void HttpEventStream::open()
                 ((QSslSocket*)_sock)->connectToHostEncrypted(_url.host(), port);
             else
                 _sock->connectToHost(info.addresses().first(), port);
+
+            if(!_sock)
+                return;
             if(_sock->waitForConnected())
             {
                 connect(_sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onSocketError(QAbstractSocket::SocketError)));
@@ -176,7 +182,7 @@ void HttpEventStream::open()
                     os << "\r\n";
                 }
 
-                 _connection->emitLogMessage(getRequest, SignalR::Trace);
+                 _connection->emitLogMessage(_id + " -- " + getRequest, SignalR::Trace);
 
                 os << "\r\n";
                 //write data to socket
@@ -184,14 +190,17 @@ void HttpEventStream::open()
             }
             else
             {
-                error = QSharedPointer<SignalException>(new SignalException(_sock->errorString(), SignalException::ConnectionRefusedError));
+                QString errorString = _sock->errorString();
+
+                error = QSharedPointer<SignalException>(new SignalException(errorString, SignalException::ConnectionRefusedError));
                 Q_EMIT connected(error);
             }
         }
     }
     else
     {
-        error = QSharedPointer<SignalException>(new SignalException(info.errorString(), SignalException::ConnectionRefusedError));
+        QString errorString = info.errorString();
+        error = QSharedPointer<SignalException>(new SignalException(errorString, SignalException::ConnectionRefusedError));
         Q_EMIT connected(error);
     }
 
@@ -273,7 +282,7 @@ void HttpEventStream::onSocketError(QAbstractSocket::SocketError error)
         case QAbstractSocket::SocketTimeoutError:
         case QAbstractSocket::RemoteHostClosedError:
             ex = QSharedPointer<SignalException>(new SignalException(errorString, SignalException::RemoteHostClosedConnection));
-            _isAborting = true;
+            //_isAborting = true;
             break;
         case QAbstractSocket::SslHandshakeFailedError:
             ex = QSharedPointer<SignalException>(new SignalException(errorString, SignalException::SslHandshakeFailed));

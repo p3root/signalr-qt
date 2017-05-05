@@ -35,9 +35,10 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-HubProxy::HubProxy(HubConnection* connection, QString hubName, QObject *objectToInvoke) : _connection(connection), _hubName(hubName)
+HubProxy::HubProxy(HubConnection* connection, QString hubName, QObject *objectToInvoke, Qt::ConnectionType conType) : _connection(connection), _hubName(hubName)
 {
     _objectsToInvoke.append(objectToInvoke);
+    _connectionType = conType;
 }
 
 HubProxy::~HubProxy()
@@ -87,36 +88,7 @@ QVariant HubProxy::syncInvoke(const QString &method, const QStringList &params, 
 
 QVariant HubProxy::syncInvoke(const QString &method, const QVariant &param, int timeoutMs, bool *ok)
 {
-    QEventLoop loop;
-
-    HubCallback *callback = new HubCallback(0, method);
-    QTimer timer;
-    timer.setInterval(timeoutMs);
-    timer.setSingleShot(true);
-    timer.start();
-    invoke(method, param, callback);
-
-    while(true)
-    {
-        loop.processEvents(QEventLoop::AllEvents, 100);
-
-        if(callback->isFinished() || !timer.isActive())
-            break;
-    }
-    if(ok)
-    {
-        if(!timer.isActive())
-        {
-            *ok = false;
-        }
-        else
-        {
-            *ok = true;
-        }
-    }
-    QVariant data = callback->data();
-    delete callback;
-    return data;
+    return syncInvoke(method, QVariantList() << param, timeoutMs, ok);
 }
 
 QVariant HubProxy::syncInvoke(const QString &method, const QVariantList &param, int timeoutMs, bool *ok)
@@ -127,32 +99,32 @@ QVariant HubProxy::syncInvoke(const QString &method, const QVariantList &param, 
         timeoutMs = 100000;
 
     HubCallback *callback = new HubCallback(0, method);
-    QTimer timer;
-    timer.setInterval(timeoutMs);
-    timer.setSingleShot(true);
-    timer.start();
     invoke(method, param, callback);
 
-    while(true)
+    int duration = 0;
+    const QDateTime start = QDateTime::currentDateTimeUtc();
+    while(duration < timeoutMs && !callback->isFinished())
     {
         loop.processEvents(QEventLoop::AllEvents, 100);
-
-        if(callback->isFinished() || !timer.isActive())
-            break;
+        duration = start.msecsTo(QDateTime::currentDateTimeUtc());
     }
 
-    bool isTimerActive = timer.isActive();
     if(ok)
-        *ok = isTimerActive;
+    {
+        *ok = callback->isFinished();
+    }
 
-    QVariant data = callback->data();
+    const QVariant data = callback->data();
     ///////////////////////////////////////////
     // MEMORY LEAK!
     // deleting the callback at this point may not be safe as it is not
     // guaranteed that it will not be called later after a timeout occured
-    if (isTimerActive)
-        delete callback;
+    if (callback->isFinished())
+    {
+        callback->deleteLater();
+    }
     ///////////////////////////////////////////
+
     return data;
 }
 
@@ -174,6 +146,8 @@ void HubProxy::invoke(const QString &method, const QVariantList &params, HubCall
 
 void HubProxy::onReceive(const QVariant &var)
 {
+    QString arg = "\n\n\n------------------------\n%1\n------------------------\n\n\n";
+    _connection->getConnectionPrivate()->emitLogMessage(arg.arg(QextJson::stringify(var)), SignalR::Special);
     QVariantMap qvl = var.toMap();
 
     if(_objectsToInvoke.count() > 0) {
@@ -183,6 +157,7 @@ void HubProxy::onReceive(const QVariant &var)
 #else
      foreach(QObject *objToInvoke,_objectsToInvoke) {
 #endif
+
             if(objToInvoke && qvl.contains(("M")) && qvl.contains("A"))
             {
                 QString method = qvl["M"].toString();
@@ -191,13 +166,16 @@ void HubProxy::onReceive(const QVariant &var)
                 const QMetaObject *meta = objToInvoke->metaObject();
                 bool invokeOk = false;
 
+                _connection->getConnectionPrivate()->emitLogMessage(QString("ObjectToInvoke name = " + QString(meta->className())), SignalR::Special);
+
                 for(int i = meta->methodOffset(); i < meta->methodCount(); ++i)
                 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
-                     QString curMethod = QString::fromLatin1(meta->method(i).methodSignature());
+                    QString curMethod = QString::fromLatin1(meta->method(i).methodSignature());
 #else
                     QString curMethod = QString::fromLatin1(meta->method(i).signature());
 #endif
+
                     if(curMethod.startsWith(method))
                     {
                         curMethod.remove(0, method.length()); //remove method name
@@ -243,28 +221,31 @@ void HubProxy::onReceive(const QVariant &var)
 
                         bool retVal = true;
 
+                        QString invokeMethodOn = "Class %1 method %2 paramsCount %3";
+                        _connection->getConnectionPrivate()->emitLogMessage(invokeMethodOn.arg(meta->className(), method, QString::number(paramCount)), SignalR::Special);
+
                         switch(paramCount)
                         {
                             case 0:
-                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str());
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(), _connectionType);
                                 break;
                             case 1:
-                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(), _connectionType,
                                                                    getGenericArgument(params[0], args[0].toString()));
                                 break;
                             case 2:
-                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(), _connectionType,
                                                                    getGenericArgument(params[0], args[0].toString()),
                                         getGenericArgument(params[1], args[1].toString()));
                                 break;
                             case 3:
-                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(), _connectionType,
                                                                    getGenericArgument(params[0], args[0].toString()),
                                         getGenericArgument(params[1], args[1].toString()),
                                         getGenericArgument(params[2], args[2].toString()));
                                 break;
                             case 4:
-                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(), _connectionType,
                                                                    getGenericArgument(params[0], args[0].toString()),
                                         getGenericArgument(params[1], args[1].toString()),
                                         getGenericArgument(params[2], args[2].toString()),
@@ -272,7 +253,7 @@ void HubProxy::onReceive(const QVariant &var)
 
                                 break;
                             case 5:
-                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(), _connectionType,
                                                                    getGenericArgument(params[0], args[0].toString()),
                                         getGenericArgument(params[1], args[1].toString()),
                                         getGenericArgument(params[2], args[2].toString()),
@@ -281,7 +262,7 @@ void HubProxy::onReceive(const QVariant &var)
 
                                 break;
                             case 6:
-                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(), _connectionType,
                                                                    getGenericArgument(params[0], args[0].toString()),
                                         getGenericArgument(params[1], args[1].toString()),
                                         getGenericArgument(params[2], args[2].toString()),
@@ -291,7 +272,7 @@ void HubProxy::onReceive(const QVariant &var)
 
                                 break;
                             case 7:
-                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(), _connectionType,
                                                                    getGenericArgument(params[0], args[0].toString()),
                                         getGenericArgument(params[1], args[1].toString()),
                                         getGenericArgument(params[2], args[2].toString()),
@@ -302,7 +283,7 @@ void HubProxy::onReceive(const QVariant &var)
 
                                 break;
                             case 8:
-                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(), _connectionType,
                                                                    getGenericArgument(params[0], args[0].toString()),
                                         getGenericArgument(params[1], args[1].toString()),
                                         getGenericArgument(params[2], args[2].toString()),
@@ -314,7 +295,7 @@ void HubProxy::onReceive(const QVariant &var)
 
                                 break;
                             case 9:
-                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(), _connectionType,
                                                                    getGenericArgument(params[0], args[0].toString()),
                                         getGenericArgument(params[1], args[1].toString()),
                                         getGenericArgument(params[2], args[2].toString()),
@@ -326,7 +307,7 @@ void HubProxy::onReceive(const QVariant &var)
                                         getGenericArgument(params[8], args[8].toString()));
                                 break;
                             case 10:
-                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(),
+                                retVal = QMetaObject::invokeMethod(objToInvoke, method.toStdString().c_str(), _connectionType,
                                                                    getGenericArgument(params[0], args[0].toString()),
                                         getGenericArgument(params[1], args[1].toString()),
                                         getGenericArgument(params[2], args[2].toString()),
@@ -436,6 +417,12 @@ void HubProxy::addObjectToInvoke(QObject *obj)
 {
     if(obj)
         _objectsToInvoke.append(obj);
+}
+
+void HubProxy::removeObjectToInvoke(QObject *obj)
+{
+    if(obj)
+        _objectsToInvoke.removeAll(obj);
 }
 
 }}}

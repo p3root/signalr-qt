@@ -60,6 +60,7 @@ public:
     void close();
 
     void open();
+    const QString &id() { return _id; }
 
 Q_SIGNALS:
     void packetReady(QString packet, QSharedPointer<SignalException> ex);
@@ -82,6 +83,7 @@ private:
     QUrl _url;
     bool _isRunning;
     bool _connected;
+    QString _id;
 
     class HttpEventStreamParser *_parser;
 };

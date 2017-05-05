@@ -77,6 +77,10 @@ private:
     QTimer _retryTimerTimeout;
     bool _getOpen;
 
+    QDateTime _lastMessageDate;
+    QString _lastMessage;
+    int _sameMessageCount;
+
 };
 
 }}}

@@ -41,6 +41,7 @@
 #include "SignalException.h"
 #include "ClientTransport.h"
 #include "HeartbeatMonitor.h"
+#include "KeepAliveData.h"
 
 #ifndef QT_NO_NETWORKPROXY
     #include <QNetworkProxy>
@@ -149,13 +150,15 @@ public:
     const QList<QPair<QString, QString> > &getAdditionalQueryString();
     void setAdditionalQueryString(QList<QPair<QString, QString> > lst);
 
+    const KeepAliveData *getKeepAliveData();
+
 #ifndef QT_NO_NETWORKPROXY
     void setProxySettings(const QNetworkProxy proxy);
     const QNetworkProxy &getProxySettings();
 #endif
 
     int getReconnectWaitTime();
-    void setReconnectWaitTime(int timeInMilliseconds);
+    void setReconnectWaitTime(int timeInMilliSeconds);
 
     const QString &getProtocolVersion();
 
@@ -175,6 +178,14 @@ public:
     const QString &getTid();
     void setTid(const QString &tid);
 
+//START: SYSTEMTERA CODE
+    void setMessageRepeatReconInterval(int intervalMs=60000);
+    int messageRepeatReconInterval();
+
+    void setMessageRepeatReconAmount(int amount=10);
+    int messageRepeatReconAmount();
+//END: SYSTEMTERA_CODE
+
 Q_SIGNALS:
     void stateChanged(SignalR::State old_state, SignalR::State new_state);
     void errorOccured(QSharedPointer<SignalException> error);
@@ -182,6 +193,8 @@ Q_SIGNALS:
     void logMessage(QString, int severity);
     void messageSentCompleted(QSharedPointer<SignalException> ex);
     void exceptionReceived(QString message, QString stackTrace);
+    void keepAliveReceived();
+    void retryReceived();
 
 protected:
     ConnectionPrivate * getConnectionPrivate() { return d_ptr; }

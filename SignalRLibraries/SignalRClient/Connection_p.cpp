@@ -263,6 +263,17 @@ void ConnectionPrivate::updateLastKeepAlive()
 {
     if(_keepAliveData)
         _keepAliveData->setLastKeepAlive(QDateTime::currentDateTimeUtc());
+
+    Q_Q(Connection);
+    Q_EMIT q->keepAliveReceived();
+}
+
+void ConnectionPrivate::updateLastRetryTime()
+{
+    _lastRetry = QDateTime::currentDateTimeUtc();
+
+    Q_Q(Connection);
+    Q_EMIT q->retryReceived();
 }
 
 void ConnectionPrivate::connectionSlow()
@@ -351,7 +362,6 @@ QString ConnectionPrivate::translateState(SignalR::State state)
     return "N/A";
 }
 
-
 void ConnectionPrivate::onSendData(const QString data)
 {
     _transport->send(data);
@@ -372,7 +382,7 @@ void ConnectionPrivate::transportStarted(QSharedPointer<SignalException> error)
         else
             changeState(SignalR::Connecting, SignalR::Connected);
 
-        if(_transport->supportsKeepAlive())
+        if(_transport && _transport->supportsKeepAlive())
             _monitor->start();
     }
     else

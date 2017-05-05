@@ -68,9 +68,11 @@ void ServerSentEventsTransport::start(QString)
 
 bool ServerSentEventsTransport::abort(int timeoutMs)
 {
-    _eventStream->close();
-    _eventStream->deleteLater();
-    _eventStream = 0;
+    if(_eventStream) {
+        _eventStream->close();
+        _eventStream->deleteLater();
+        _eventStream = 0;
+    }
 
     return HttpBasedTransport::abort(timeoutMs);
 }
@@ -160,7 +162,7 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
     {
         data = data.remove(0, data.indexOf("data: ")+5);
         _connection->changeState(_connection->getState(), SignalR::Connected);
-        _connection->getKeepAliveData()->setLastKeepAlive(QDateTime::currentDateTimeUtc());
+        _connection->updateLastKeepAlive();
 
         _connection->emitLogMessage("SSE: Message received", SignalR::Debug);
         QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, data, &timedOut, &disconnected);
@@ -173,7 +175,14 @@ void ServerSentEventsTransport::packetReceived(QString data, QSharedPointer<Sign
 
     if(disconnected)
     {
+        _connection->emitLogMessage("SSE: SignalR Server said we should disconnect, and open a new connection if we want", SignalR::Info);
         _connection->stop(2000);
+    }
+    else if(timedOut)
+    {
+        _connection->emitLogMessage("SSE: SignalR timed out, we should reconnect", SignalR::Info);
+        _connection->changeState(_connection->getState(), SignalR::Reconnecting);
+        start("");
     }
 }
 
@@ -239,6 +248,7 @@ void ServerSentEventsTransport::closeEventStream()
 
 void ServerSentEventsTransport::startEventStream()
 {
+    _connection->updateLastRetryTime();
     closeEventStream();
 
     _eventStream = new HttpEventStream(_url,_connection, this);

@@ -50,7 +50,7 @@ public:
     virtual void send(const QString &data, const QString &id, HubCallback*);
     virtual bool stop(int timeoutMs=0);
 
-    HubProxy* createHubProxy(QString name, QObject *objectToInvoke=0);
+    HubProxy* createHubProxy(QString name, QObject *objectToInvoke=0, Qt::ConnectionType conType = Qt::AutoConnection);
 
     QString onSending();
     virtual void onReceived(QVariant &data);
@@ -62,13 +62,14 @@ public:
 friend class HubProxy;
 
 protected:
-    virtual HubProxy* newHubProxy(const QString &name, QObject *objectToInvoke=0);
+    virtual HubProxy* newHubProxy(const QString &name, QObject *objectToInvoke=0, Qt::ConnectionType conType = Qt::AutoConnection);
 
 protected:
     QMap<QString, HubProxy*> _hubs;
 
 private:
     QMap<QString, HubCallback*> _callbacks;
+    QMutex _callbacksMutex;
 
 };
 

@@ -42,6 +42,8 @@ LongPollingTransport::LongPollingTransport() :
 
     connect(&_keepAliveTimer, SIGNAL(timeout()), this, SLOT(keepAliveTimerTimeout()));
     _getOpen = false;
+    _sameMessageCount = 0;
+    _lastMessage = "";
 }
 
 
@@ -51,7 +53,7 @@ LongPollingTransport::~LongPollingTransport(void)
 
 void LongPollingTransport::start(QString)
 {
-    disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onPollHttpResponse(QString,QSharedPointer<SignalException>)));
+     disconnect(_httpClient, SIGNAL(getRequestCompleted(QString,QSharedPointer<SignalException>)), this, SLOT(onPollHttpResponse(QString,QSharedPointer<SignalException>)));
 
     _httpClient->abortGet();
     _keepAliveTimer.stop();
@@ -114,6 +116,22 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, QShar
 
     if(ex.isNull())
     {
+        //if we receive the same message 3 times in a short amount of time, we reinit a new SignalR connection
+        int msSinceLastDifMsg = QDateTime::currentMSecsSinceEpoch() - (_lastMessageDate.isNull() ? QDateTime::currentMSecsSinceEpoch() : _lastMessageDate.toMSecsSinceEpoch());
+        if(_lastMessage.isEmpty()) {
+            _lastMessage = QString(httpResponse);
+            _sameMessageCount = 0;
+            _lastMessageDate = QDateTime::currentDateTimeUtc();
+        }
+        else if(_lastMessage == httpResponse && msSinceLastDifMsg < _connection->messageRepeatReconInterval()) {
+            _sameMessageCount++;
+        }
+        else {
+            _sameMessageCount = 0;
+            _lastMessageDate = QDateTime::currentDateTimeUtc();
+             _lastMessage = QString(httpResponse);
+        }
+
         _connection->updateLastKeepAlive();
         QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, httpResponse, &timedOut, &disconnected);
         if(e)
@@ -121,9 +139,17 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, QShar
             _connection->onError(e);
         }
         _connection->changeState(_connection->getState(), SignalR::Connected);
+
+        if(_sameMessageCount >= _connection->messageRepeatReconAmount()) {
+            disconnected = true;
+            _connection->emitLogMessage("LP: Received the same message times in a row, going to reinit new SignalR connection", SignalR::Warning);
+        }
     }
     else
     {
+        _connection->updateLastRetryTime();
+        _lastMessage = "";
+        _sameMessageCount = 0;
         if(ex->getType() == SignalException::ServerRequiresAuthorization)
         {
             _connection->onError(ex);
@@ -168,7 +194,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, QShar
                 else
                 {
                     _connection->emitLogMessage("LP: Unknown error (" + ex->getMessage() + ")", SignalR::Error);
-                    _connection->changeState(_connection->getState(), SignalR::Reconnecting);
+                     _connection->changeState(_connection->getState(), SignalR::Reconnecting);
 
                     connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectErrorRetry()));
                     _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
@@ -236,7 +262,6 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, QShar
         _connection->changeState(_connection->getState(), SignalR::Reconnecting);
         start("");
     }
-
     else if(!serverError && !_connection->getConnectionToken().isEmpty())
     {
         startConnection();
@@ -265,6 +290,10 @@ void LongPollingTransport::onConnectRequestFinished(const QString &httpResponse,
     }
     else
     {
+        if(_started && error->getType() == SignalException::UnkownContentError) {
+           _connection->stop(1000);
+           return;
+        }
         _connection->onError(error);
         _lastSignalException = error;
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(errorStartRetry()));

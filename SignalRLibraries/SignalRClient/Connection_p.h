@@ -85,6 +85,7 @@ public:
     KeepAliveData* getKeepAliveData();
 
     void updateLastKeepAlive();
+    void updateLastRetryTime();
     void connectionSlow();
     void changeState(SignalR::State oldState, SignalR::State newState);
 
@@ -112,7 +113,7 @@ public:
 #endif
 
     int getReconnectWaitTime() { return _reconnectWaitTime; }
-    void setReconnectWaitTime(int timeInMilliseconds) { _reconnectWaitTime = timeInMilliseconds; }
+    void setReconnectWaitTime(int timeInMilliSeconds) { _reconnectWaitTime = timeInMilliSeconds; }
 
     bool tryWebSockets() { return _tryWebSockets; }
 
@@ -138,6 +139,15 @@ public:
     HeartbeatMonitor &getHeartbeatMonitor();
 
     QString translateState(SignalR::State state);
+
+//START: SYSTEMTERA CODE
+    void setMessageRepeatReconInterval(int intervalMs=60000) { _messageRepeatReconInterval = intervalMs; }
+    int messageRepeatReconInterval() { return _messageRepeatReconInterval; }
+
+    void setMessageRepeatReconAmount(int amount=10) { _messageRepeatReconAmount = amount; }
+    int messageRepeatReconAmount() { return _messageRepeatReconAmount; }
+//END: SYSTEMTERA_CODE
+
 Q_SIGNALS:
     void sendData(const QString data);
     void startRetry();
@@ -186,6 +196,11 @@ private:
 
     QString _tid;
     Connection * const q_ptr;
+
+    int _messageRepeatReconInterval;
+    int _messageRepeatReconAmount;
+
+    QDateTime _lastRetry;
 };
 
 }}}

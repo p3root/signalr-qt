@@ -35,7 +35,7 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-HubConnection::HubConnection(const QString &url) : Connection(url)
+HubConnection::HubConnection(const QString &url) : Connection(url), _callbacksMutex(QMutex::Recursive)
 {
 
 }
@@ -52,8 +52,15 @@ HubConnection::~HubConnection()
 
 void HubConnection::send(const QString &data, const QString &id, HubCallback *c)
 {
-    if (c)
-        _callbacks.insert(id, c);
+    {
+        QMutexLocker l(&_callbacksMutex);
+
+        if(_callbacks.contains(id))
+             d_ptr->emitLogMessage("Duplicated HUB ID!", SignalR::Error);
+
+        if (c)
+            _callbacks.insert(id, c);
+    }
 
     Connection::send(data);
 }
@@ -63,23 +70,25 @@ bool HubConnection::stop(int timeoutMs)
     return Connection::stop(timeoutMs);
 }
 
-HubProxy *HubConnection::createHubProxy(QString name, QObject *objectToInvoke)
+HubProxy *HubConnection::createHubProxy(QString name, QObject *objectToInvoke, Qt::ConnectionType conType)
 {
     if(_hubs.contains(name))
     {
         _hubs[name]->addObjectToInvoke(objectToInvoke);
+        _hubs[name]->_connectionType = conType;
         return _hubs[name];
     }
     if(getState() != SignalR::Disconnected)
     {
-        d_ptr->emitLogMessage("A HubProxy cannot be added after the connection has been started", SignalR::Error);
+        QString objToInvoke = QString(objectToInvoke->metaObject()->className());
+        d_ptr->emitLogMessage(QString("A HubProxy (%1 - %2) cannot be added after the connection has been started").arg(name, objToInvoke), SignalR::Error);
         return 0;
     }
 
     HubProxy* proxy;
     if(!_hubs.contains(name))
     {
-        proxy = newHubProxy(name, objectToInvoke);
+        proxy = newHubProxy(name, objectToInvoke, conType);
         _hubs.insert(name, proxy);
         return proxy;
     }
@@ -121,14 +130,13 @@ void HubConnection::onReceived(QVariant &data)
         }
         else if(map.contains("I"))
         {
-            QVariant id = map["I"];
-
-            if(_callbacks.contains(id.toString()))
+            QMutexLocker l(&_callbacksMutex);
+            QString id = map["I"].toString();
+            HubCallback* callback = _callbacks.value(id);
+            if(callback)
             {
-                HubCallback* callback = _callbacks[id.toString()];
-                if(callback)
-                    Q_EMIT callback->raiseMessageReceived(data);
-                _callbacks.remove(id.toString());
+                _callbacks.remove(id);
+                Q_EMIT callback->raiseMessageReceived(data);
             }
         }
         else
@@ -157,9 +165,9 @@ quint64 HubConnection::getNextCount()
     return d_ptr->getNextCount();
 }
 
-HubProxy *HubConnection::newHubProxy(const QString &name, QObject *objectToInvoke)
+HubProxy *HubConnection::newHubProxy(const QString &name, QObject *objectToInvoke, Qt::ConnectionType conType)
 {
-    return new HubProxy(this, name, objectToInvoke);
+    return new HubProxy(this, name, objectToInvoke, conType);
 }
 
 }}}

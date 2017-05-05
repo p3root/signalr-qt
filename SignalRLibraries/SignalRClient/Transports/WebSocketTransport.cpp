@@ -14,6 +14,8 @@ WebSocketTransport::WebSocketTransport() :
 
 void WebSocketTransport::start(QString)
 {
+     _connection->updateLastRetryTime();
+
     if(_webSocket)
     {
         _webSocket->deleteLater();
@@ -155,6 +157,7 @@ void WebSocketTransport::onDisconnected()
     case QAbstractSocket::SslInvalidUserDataError:
     case QAbstractSocket::TemporaryError:
 #endif
+
         error = QSharedPointer<SignalException>(new SignalException(_webSocket->errorString(), SignalException::UnkownError));
         break;
     }

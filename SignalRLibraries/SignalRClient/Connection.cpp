@@ -117,6 +117,12 @@ void Connection::setAdditionalQueryString(QList<QPair<QString, QString> > lst)
     d->setAdditionalQueryString(lst);
 }
 
+const KeepAliveData *Connection::getKeepAliveData()
+{
+    Q_D(Connection);
+    return d->getKeepAliveData();
+}
+
 
 void Connection::onReceived(QVariant &data)
 {
@@ -183,10 +189,10 @@ int Connection::getReconnectWaitTime()
     return d->getReconnectWaitTime();
 }
 
-void Connection::setReconnectWaitTime(int timeInMilliseconds)
+void Connection::setReconnectWaitTime(int timeInMilliSeconds)
 {
     Q_D(Connection);
-    d->setReconnectWaitTime(timeInMilliseconds);
+    d->setReconnectWaitTime(timeInMilliSeconds);
 }
 
 const QString &Connection::getProtocolVersion()
@@ -247,6 +253,30 @@ void Connection::setTid(const QString &tid)
 {
     Q_D(Connection);
     d->setTid(tid);
+}
+
+void Connection::setMessageRepeatReconInterval(int intervalMs)
+{
+    Q_D(Connection);
+    d->setMessageRepeatReconInterval(intervalMs);
+}
+
+int Connection::messageRepeatReconInterval()
+{
+    Q_D(Connection);
+    return d->messageRepeatReconInterval();
+}
+
+void Connection::setMessageRepeatReconAmount(int amount)
+{
+    Q_D(Connection);
+    d->setMessageRepeatReconAmount(amount);
+}
+
+int Connection::messageRepeatReconAmount()
+{
+    Q_D(Connection);
+    return d->messageRepeatReconAmount();
 }
 
 void Connection::onTransportStarted(QSharedPointer<SignalException>)

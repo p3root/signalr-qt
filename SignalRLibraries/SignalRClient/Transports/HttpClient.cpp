@@ -124,6 +124,7 @@ void HttpClient::get(QString url)
 
 
     _connection->emitLogMessage("starting get request (" + _connection->getConnectionId() + "), active connections: " + QString::number(_currentConnections.size()+1), SignalR::Debug);
+    _connection->emitLogMessage("get request url %s" +  QString::fromAscii(reqUrl.toEncoded()), SignalR::Trace);
     QNetworkReply *getReply = _man->get(req);
 
 #ifndef QT_NO_SSL
@@ -281,6 +282,7 @@ void HttpClient::onDoPost(QString url, QMap<QString, QString> arguments)
     }
 
     _connection->emitLogMessage("starting post request (" + _connection->getConnectionId() +"), active connections: " + QString::number(_currentConnections.size()+1), SignalR::Debug);
+    _connection->emitLogMessage("post request url %s" + QString::fromAscii(reqUrl.toEncoded()), SignalR::Trace);
 
     QNetworkReply *postReply = _man->post(req, QByteArray().append(queryString));
 
@@ -400,7 +402,7 @@ void HttpClient::replyError(QNetworkReply::NetworkError err, QNetworkReply *repl
     int error = (int)err;
     QString errorString = reply->errorString();
 
-    _connection->emitLogMessage("request error " + method + " - " + errorString + " " + QString::number(error), SignalR::Error);
+    _connection->emitLogMessage("request error " + method + " - " + errorString + " " + QString::number(error) + "Content: \n" + QString(reply->readAll()), SignalR::Error);
 
     if(error != QNetworkReply::NoError)
     {

@@ -46,7 +46,7 @@ class SIGNALR_EXPORT HubProxy : public QObject
     Q_OBJECT
 
 public:
-    HubProxy(HubConnection* connection, QString hubName, QObject *objectToInvoke=0);
+    HubProxy(HubConnection* connection, QString hubName, QObject *objectToInvoke=0, Qt::ConnectionType conType =Qt::AutoConnection);
     ~HubProxy();
 
     void invoke(const QString &method, const QString &param, HubCallback* callback = 0);
@@ -66,6 +66,9 @@ public:
 
     const QString& getName() const { return _hubName; }
 
+    void addObjectToInvoke(QObject *obj);
+    void removeObjectToInvoke(QObject *obj);
+
 protected:
     virtual void send(const QString &data, const QString &id, HubCallback *c);
 
@@ -75,12 +78,11 @@ Q_SIGNALS:
 private:
     QGenericArgument getGenericArgument(const QString &type, const QString &val);
 
-    void addObjectToInvoke(QObject *obj);
-
 private:
     QList<QObject*> _objectsToInvoke;
     HubConnection* _connection;
     const QString _hubName;
+    Qt::ConnectionType _connectionType;
 
     friend class HubConnection;
 };

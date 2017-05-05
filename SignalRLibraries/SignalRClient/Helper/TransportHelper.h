@@ -40,7 +40,7 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-class NegotiateResponse;
+struct NegotiateResponse;
 
 class TransportHelper : public QObject
 {
