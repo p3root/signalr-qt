@@ -11,9 +11,9 @@ namespace SignalRServerSample
     {
         static void Main(string[] args)
         {
-            using (WebApp.Start<Startup>("http://192.168.1.137:8080"))
+            using (WebApp.Start<Startup>("http://192.168.8.119:8080"))
             {
-                Console.WriteLine("Server running at http://192.168.1.137:8080/");
+                Console.WriteLine("Server running at http://192.168.8.119:8080/");
                 Console.ReadLine();
             }
         }

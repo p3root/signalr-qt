@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNet.SignalR;
 using Microsoft.Owin.Cors;
 using Owin;
-using SignalRServerSample.Connections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,15 +15,7 @@ namespace SignalRServerSample
         public void Configuration(IAppBuilder app)
         {
             app.UseErrorPage();
-
-            app.Map("/raw-connection", map =>
-            {
-                // Turns cors support on allowing everything
-                // In real applications, the origins should be locked down
-                map.UseCors(CorsOptions.AllowAll)
-                   .RunSignalR<RawConnection>();
-            });
-
+       
             app.Map("/signalr", map =>
             {
                 var config = new HubConfiguration
