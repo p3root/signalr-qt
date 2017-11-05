@@ -64,7 +64,7 @@ bool HttpEventStreamParser::next(HttpEventStreamParserResult &result)
         _curPackageLeftToRead -= bytesToUse;
 
         // \n\n signalises the end of a packet which may be sent in multiple chunks (each with its own size)
-        if (_curPackageLeftToRead <= 0 && _curPackage.endsWith("\n\n"))
+        if (_curPackageLeftToRead <= 0 && (_curPackage.endsWith("\r\n\r\n") || _curPackage.endsWith("\n\n")))
         {
             _curPackage.remove(_curPackage.length()-2, 2);
             result.packet = _curPackage;

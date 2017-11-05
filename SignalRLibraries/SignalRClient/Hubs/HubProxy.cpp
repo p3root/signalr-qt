@@ -32,6 +32,7 @@
 #include "HubConnection.h"
 #include <QextJson.h>
 #include "Connection_p.h"
+#include "Argument.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
@@ -369,43 +370,53 @@ QGenericArgument HubProxy::getGenericArgument(const QString &type, const QString
     }
     else if(type == "int")
     {
-        return Q_ARG(int, int(val.toInt()));
+        int* intVal = new int(val.toInt());
+        return Argument("int", intVal);
     }
     else if(type == "float")
     {
-        return Q_ARG(float, val.toFloat());
+        float* floatVal = new float(val.toFloat());
+        return Argument("float", (void*)floatVal);
     }
     else if(type == "double")
     {
-        return Q_ARG(double, val.toDouble());
+        double* tVal = new double(val.toDouble());
+        return Argument("double", tVal);
     }
     else if(type == "short")
     {
-        return Q_ARG(short, val.toShort());
+        auto* tVal = new short(val.toShort());
+        return Argument("short", tVal);
     }
     else if(type == "ushort")
     {
-        return Q_ARG(ushort, val.toUShort());
+        auto* tVal = new short(val.toUShort());
+        return Argument("ushort", tVal);
     }
     else if(type == "uint")
-    {
-        return Q_ARG(uint, val.toUInt());
+    {        
+        auto* tVal = new short(val.toUInt());
+        return Argument("uint", tVal);
     }
     else if(type == "long")
     {
-        return Q_ARG(long, val.toLong());
+        auto* tVal = new short(val.toLong());
+        return Argument("long", tVal);
     }
     else if(type == "ulong")
     {
-        return Q_ARG(ulong, val.toULong());
+        auto* tVal = new short(val.toULong());
+        return Argument("ulong", tVal);
     }
     else if(type == "qlonglong" || type == "long long" || type == "qint64")
     {
-        return Q_ARG(qlonglong, val.toLongLong());
+        auto* tVal = new short(val.toLongLong());
+        return Argument("longlong", tVal);
     }
     else if(type == "qulonglong" || type == "unsigned long long" || type == "quint64")
     {
-        return Q_ARG(qulonglong, val.toULongLong());
+        auto* tVal = new short(val.toULongLong());
+        return Argument("ulonglong", tVal);
     }
 
 

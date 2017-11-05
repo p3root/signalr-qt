@@ -52,7 +52,7 @@ Client::~Client()
 
 void Client::start()
 {
-    _connection = new HubConnection("http://192.168.1.69:9098/signalr");
+    _connection = new HubConnection("http://192.168.8.119:8080/signalr");
     _connection->setIgnoreSslErrors(true);
     _connection->setReconnectWaitTime(3);
     _monitor = &_connection->getHeartbeatMonitor();
@@ -144,6 +144,11 @@ void Client::send(QString message)
     qDebug() << "send method called : " << message;
 }
 
+void Client::sendFloat(float number)
+{
+    qDebug() << number;
+}
+
 int Client::test(HubConnection *t)
 {
     //HubProxy* prox = t->getByName("Chat");
@@ -172,9 +177,12 @@ QString Client::getStateAsText(SignalR::State state)
 
 void Client::timerTick()
 {
-   // qDebug() << "start retry before retrytimer ticks";
-   // HubProxy* prox = _connection->getByName("Chat");
-   // prox->invoke("Send", QString("message"), 0);
+    static int x = 0;
+    auto msg = QString("message %1").arg(x);
+    qDebug() << "send message to server "<<msg;
+    HubProxy* prox = _connection->getByName("Chat");
+    prox->invoke("SendFloat", msg, 0);
+    x++;
 
 }
 

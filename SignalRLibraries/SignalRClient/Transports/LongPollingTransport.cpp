@@ -140,7 +140,7 @@ void LongPollingTransport::onPollHttpResponse(const QString& httpResponse, QShar
         }
         _connection->changeState(_connection->getState(), SignalR::Connected);
 
-        if(_sameMessageCount >= _connection->messageRepeatReconAmount()) {
+        if(_sameMessageCount >= _connection->messageRepeatReconAmount() && _connection->messageRepeatReconAmount() > 0) {
             disconnected = true;
             _connection->emitLogMessage("LP: Received the same message times in a row, going to reinit new SignalR connection", SignalR::Warning);
         }

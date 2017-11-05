@@ -65,6 +65,7 @@ PRIVATE_HEADERS +=  \
 
 HEADERS += $$PUBLIC_HEADERS \
            $$PRIVATE_HEADERS \
+    Hubs/Argument.h
 
 
 

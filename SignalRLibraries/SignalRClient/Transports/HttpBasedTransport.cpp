@@ -114,7 +114,7 @@ void HttpBasedTransport::onNegotiatenCompleted(const NegotiateResponse &)
 
 void HttpBasedTransport::negotiate()
 {
-    QString url = _connection->getUrl() + "/negotiate?clientProtocol=1.3&connectionData=" + _connection->onSending();
+    QString url = _connection->getUrl() + "/negotiate?clientProtocol=1.5&connectionData=" + _connection->onSending();
     //url += TransportHelper::getReceiveQueryString(_connection, _connection->onSending(), getTransportType());
 
     disconnect(this, SLOT(negotiateCompleted(QString,QSharedPointer<SignalException>)));

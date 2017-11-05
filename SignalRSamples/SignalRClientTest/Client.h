@@ -65,6 +65,7 @@ private Q_SLOTS:
     void onLogMessage(QString, int severity);
 
     void send(QString message);
+    void sendFloat(float number);
 
 private:
     static int test(HubConnection* t);

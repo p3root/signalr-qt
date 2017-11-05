@@ -62,7 +62,7 @@ void messageOutput(QtMsgType type, const char *msg)
 
     switch (type) {
     case QtDebugMsg:
-        fprintf(stdout, "Debug: %s %s\n", dateTime.toStdString().c_str(), msg);
+       fprintf(stdout, "Debug: %s %s\n", dateTime.toStdString().c_str(), msg);
         break;
     case QtWarningMsg:
         fprintf(stderr, "Warning: %s %s\n", dateTime.toStdString().c_str(), msg);

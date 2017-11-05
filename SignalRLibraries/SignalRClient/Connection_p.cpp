@@ -58,6 +58,7 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
     _reconnectWaitTime = 5000;
     _postTimeoutMs = 60*3*1000; //3 min
 
+    _messageRepeatReconAmount = -1;
 #ifndef QT_NO_SSL
     _sslConfiguration = QSslConfiguration::defaultConfiguration();
 #endif
@@ -308,7 +309,7 @@ bool ConnectionPrivate::stop(int timeoutMs)
 void ConnectionPrivate::negotiateCompleted(const NegotiateResponse* negotiateResponse)
 {
 
-    if( !(negotiateResponse->protocolVersion == "1.3" || negotiateResponse->protocolVersion == "1.2"))
+    if( !(negotiateResponse->protocolVersion == "1.3" || negotiateResponse->protocolVersion == "1.2" || negotiateResponse->protocolVersion == "1.5"))
     {
         QSharedPointer<SignalException> invalidProtocol = QSharedPointer<SignalException>(new SignalException("Invalid protocol version", SignalException::InvalidProtocolVersion));
         onError(invalidProtocol);

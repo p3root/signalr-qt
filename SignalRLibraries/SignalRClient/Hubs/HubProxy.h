@@ -36,7 +36,6 @@
 #include <QVariant>
 #include "HubCallback.h"
 
-
 namespace P3 { namespace SignalR { namespace Client {
 
 class HubConnection;
@@ -46,7 +45,7 @@ class SIGNALR_EXPORT HubProxy : public QObject
     Q_OBJECT
 
 public:
-    HubProxy(HubConnection* connection, QString hubName, QObject *objectToInvoke=0, Qt::ConnectionType conType =Qt::AutoConnection);
+    HubProxy(HubConnection* connection, QString hubName, QObject *objectToInvoke=0, Qt::ConnectionType conType =Qt::DirectConnection);
     ~HubProxy();
 
     void invoke(const QString &method, const QString &param, HubCallback* callback = 0);
@@ -76,7 +75,7 @@ Q_SIGNALS:
     void hubMethodCalled(const QString &method, const QVariantList &args);
 
 private:
-    QGenericArgument getGenericArgument(const QString &type, const QString &val);
+    QGenericArgument getGenericArgument(const QString &type, const QString& val);
 
 private:
     QList<QObject*> _objectsToInvoke;

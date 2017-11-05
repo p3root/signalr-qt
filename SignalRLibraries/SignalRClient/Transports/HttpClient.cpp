@@ -124,7 +124,7 @@ void HttpClient::get(QString url)
 
 
     _connection->emitLogMessage("starting get request (" + _connection->getConnectionId() + "), active connections: " + QString::number(_currentConnections.size()+1), SignalR::Debug);
-    _connection->emitLogMessage("get request url %s" +  QString::fromUtf8(reqUrl.toEncoded()), SignalR::Trace);
+    _connection->emitLogMessage("get request url " +  QString::fromUtf8(reqUrl.toEncoded()), SignalR::Trace);
     QNetworkReply *getReply = _man->get(req);
 
 #ifndef QT_NO_SSL
