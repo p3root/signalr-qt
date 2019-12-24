@@ -1,6 +1,12 @@
 SignalR-QT
 ==========
 
+## Donate
+[![Donate with Bitcoin](https://en.cryptobadges.io/badge/micro/1Ck4XgAxys3aBjdesKQQ62zx7m4vozUest)](https://en.cryptobadges.io/donate/1Ck4XgAxys3aBjdesKQQ62zx7m4vozUest)
+
+Donate DogeCoin: DPVz6RSAJrXZqTF4sGXpS1dqwvU36hSaAQ
+
+
 This is an C++ implementation of Microsofts ASP.Net SignalR. (https://github.com/SignalR).
 
 For questions please send me an email (patrik.pfaffenbauer@p3.co.at) or conatct me via skype (patrik.pfaffenbauer)
