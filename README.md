@@ -7,6 +7,9 @@ SignalR-QT
 Donate DogeCoin: DPVz6RSAJrXZqTF4sGXpS1dqwvU36hSaAQ
 
 
+Signalr-Qt
+====
+
 This is an C++ implementation of Microsofts ASP.Net SignalR. (https://github.com/SignalR).
 
 For questions please send me an email (patrik.pfaffenbauer@p3.co.at) or conatct me via skype (patrik.pfaffenbauer)
